@@ -1,0 +1,54 @@
+# Glossary
+
+| **TEA (EN)**                | **TEA (PT)** | **Description (EN)** | **Descrição (PT)** |
+|-----------------------------|--------------|---------------------|--------------------|
+| **Admin**                   | **Administrador** | System user responsible for managing users and system configuration. | Utilizador responsável por gerir utilizadores e configuração do sistema. |
+| **Aircraft**                | **Aeronave** | A specific instance of an aircraft model belonging to a company. | Instância concreta de um modelo de aeronave pertencente a uma empresa. |
+| **Aircraft Model**          | **Modelo de Aeronave** | Defines characteristics of an aircraft such as weight, speed, and capacity. | Define as características de uma aeronave como peso, velocidade e capacidade. |
+| **Air Control Area**        | **Área de Controlo Aéreo** | A geographic region where flight control operations are managed. | Região geográfica onde são geridas operações de controlo aéreo. |
+| **Air Transport Company**   | **Companhia Aérea** | Organization responsible for operating flights and managing aircraft and pilots. | Organização responsável por operar voos e gerir aeronaves e pilotos. |
+| **Airport**                 | **Aeroporto** | Location where aircraft take off and land, identified by IATA and ICAO codes. | Local onde aeronaves descolam e aterram, identificado por códigos IATA e ICAO. |
+| **ANTLR**                   | **ANTLR** | Tool used to generate parsers for processing the DSL. | Ferramenta usada para gerar parsers para processar a DSL. |
+| **Authentication**          | **Autenticação** | Process of verifying a user's identity in the system. | Processo de verificação da identidade de um utilizador no sistema. |
+| **Authorization**           | **Autorização** | Process of granting permissions to users based on roles. | Processo de atribuição de permissões aos utilizadores com base nos seus papéis. |
+| **Backoffice Operator**     | **Operador de Backoffice** | User responsible for managing core system data like airports and aircraft models. | Utilizador responsável por gerir dados base do sistema como aeroportos e modelos. |
+| **Collaborator**            | **Colaborador** | A user associated with a company or control entity. | Utilizador associado a uma empresa ou entidade de controlo. |
+| **Continuous Integration**  | **Integração Contínua** | Practice of automatically building and testing code changes. | Prática de construir e testar automaticamente alterações ao código. |
+| **Domain Model**            | **Modelo de Domínio** | Conceptual representation of the system’s business entities and relationships. | Representação conceptual das entidades de negócio e suas relações. |
+| **DSL (Domain Specific Language)** | **DSL (Linguagem Específica de Domínio)** | Custom language used to define flight plans. | Linguagem personalizada usada para definir planos de voo. |
+| **Engine Model**            | **Modelo de Motor** | Defines engine characteristics such as power and efficiency. | Define características do motor como potência e eficiência. |
+| **Flight**                  | **Voo** | A connection between two airports with a defined schedule and aircraft. | Ligação entre dois aeroportos com horário e aeronave definidos. |
+| **Flight Control Operator** | **Operador de Controlo Aéreo** | User responsible for monitoring and simulating flights. | Utilizador responsável por monitorizar e simular voos. |
+| **Flight Plan**             | **Plano de Voo** | Structured description of how a flight will be executed. | Descrição estruturada de como um voo será executado. |
+| **Flight Route**            | **Rota de Voo** | Predefined path between two airports. | Caminho predefinido entre dois aeroportos. |
+| **Fuel**                    | **Combustível** | Quantity of fuel required for a flight. | Quantidade de combustível necessária para um voo. |
+| **IATA Code**               | **Código IATA** | Three-letter code identifying an airport. | Código de três letras que identifica um aeroporto. |
+| **ICAO Code**               | **Código ICAO** | Four-letter code identifying an airport. | Código de quatro letras que identifica um aeroporto. |
+| **Leg (Flight Leg)**        | **Trecho de Voo** | A segment of a flight between two airports. | Parte de um voo entre dois aeroportos. |
+| **Node**                    | **Nó** | Connection point between flight segments. | Ponto de ligação entre segmentos de voo. |
+| **Pilot**                   | **Piloto** | User responsible for creating and managing flight plans. | Utilizador responsável por criar e gerir planos de voo. |
+| **Process**                 | **Processo** | Independent execution unit used in simulation. | Unidade de execução independente usada na simulação. |
+| **Route**                   | **Rota** | Path followed by a flight including segments and nodes. | Caminho seguido por um voo incluindo segmentos e nós. |
+| **Segment**                 | **Segmento** | Linear path between two coordinates in a route. | Caminho linear entre duas coordenadas numa rota. |
+| **Shared Memory**           | **Memória Partilhada** | Memory region used for communication between processes. | Região de memória usada para comunicação entre processos. |
+| **Simulation**              | **Simulação** | Execution of flight scenarios to validate safety and behavior. | Execução de cenários de voo para validar segurança e comportamento. |
+| **User**                    | **Utilizador** | Entity that interacts with the system. | Entidade que interage com o sistema. |
+| **Weather Data**            | **Dados Meteorológicos** | Information about weather conditions affecting flights. | Informação sobre condições meteorológicas que afetam voos. |
+| **Weather Person**          | **Responsável Meteorológico** | User responsible for managing weather data. | Utilizador responsável por gerir dados meteorológicos. |
+
+---
+
+## Scrum & Project Management Terms
+
+| **TEA (EN)** | **TEA (PT)** | **Description (EN)** | **Descrição (PT)** |
+|--------------|--------------|---------------------|--------------------|
+| **Acceptance Criteria** | **Critérios de Aceitação** | Conditions that must be met for a user story to be complete. | Condições que devem ser cumpridas para uma user story estar concluída. |
+| **Backlog** | **Backlog** | Ordered list of tasks and requirements. | Lista ordenada de tarefas e requisitos. |
+| **Epic** | **Épico** | Large body of work that can be broken into smaller tasks. | Conjunto grande de trabalho dividido em tarefas menores. |
+| **Issue** | **Issue** | Task or problem tracked in the project repository. | Tarefa ou problema registado no repositório. |
+| **Product Owner** | **Product Owner** | Responsible for defining requirements and priorities. | Responsável por definir requisitos e prioridades. |
+| **Scrum** | **Scrum** | Agile framework used for project management. | Framework ágil usado para gestão de projeto. |
+| **Scrum Master** | **Scrum Master** | Facilitates the Scrum process and removes impediments. | Facilita o processo Scrum e remove impedimentos. |
+| **Sprint** | **Sprint** | Time-boxed iteration where work is completed. | Iteração com tempo definido onde o trabalho é realizado. |
+| **User Story (US)** | **História de Utilizador** | Requirement expressed from the user's perspective. | Requisito descrito do ponto de vista do utilizador. |
+| **GitHub**                  | **GitHub** | Platform used for version control and collaboration. | Plataforma usada para controlo de versões e colaboração. |
