@@ -1,4 +1,4 @@
-package test1;
+package simpleTest.test1;
 
 public class Car{
     public static void showCarExample(){

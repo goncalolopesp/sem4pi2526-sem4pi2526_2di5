@@ -1,4 +1,4 @@
-package test2;
+package simpleTest.test2;
 
 public class CarRepository{
 

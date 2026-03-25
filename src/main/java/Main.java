@@ -1,5 +1,5 @@
-import test1.Car;
-import test2.CarRepository;
+import simpleTest.test1.Car;
+import simpleTest.test2.CarRepository;
 
 public class Main{
     public static void main(String[] args){
