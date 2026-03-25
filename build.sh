@@ -1,3 +1,3 @@
 #!/bin/bash
 
-javac -d out $(find src/main/java -name "*.java")
+javac -d target/classes $(find src/main/java -name "*.java")
