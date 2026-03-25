@@ -6,4 +6,4 @@
 
 echo "Finished compiling, trying to run"
 
-java -cp out Main
+java -cp target/classes Main
