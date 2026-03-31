@@ -350,7 +350,7 @@ Manufacturer "1" -- "0..*" AircraftModel : produces >
 AirControlArea *-- GeographicBoundary
 Airport *-- Coordinates
 Airport "0..*" --> "1" AirControlArea : belongs to >
-AircraftModel "1" -- "1..*" EngineModel : certified engines >
+AircraftModel "1" -right- "1..*" EngineModel : certified engines >
 
 ' =========================
 ' Air Transport Operations relations
@@ -364,7 +364,7 @@ CompanyCollaborator "1" --> "1" User : user >
 Pilot "1" --> "1" User : user >
 Pilot "0..*" -- "1..*" AircraftModel : certified for >
 
-Aircraft "0..*" --> "1" AircraftModel : model >
+Aircraft "0..*" -up-> "1" AircraftModel : model >
 Aircraft "0..*" --> "1" EngineModel : engine >
 Aircraft *-- CabinConfiguration
 
@@ -378,11 +378,11 @@ FlightRoute "0..*" --> "1" Airport : destination >
 ' =========================
 
 ' One FlightRoute has many Flight instances (different dates/times)
-FlightRoute "1" -- "0..*" Flight : instantiates >
+FlightRoute "1" -up- "0..*" Flight : instantiates >
 
 ' One Flight may have multiple FlightPlans (draft, validated, rejected)
 ' but only one validated at a time
-Flight "1" -- "0..*" FlightPlan : has >
+Flight "1" -up- "0..*" FlightPlan : has >
 
 ' FlightPlan references aircraft and pilot
 FlightPlan "0..*" --> "1" Aircraft : aircraft >
@@ -391,7 +391,7 @@ FlightPlan "0..*" --> "1" Pilot : pilot >
 ' RouteDefinition is composed inside FlightPlan
 ' Segments and nodes are part of DSL — not standalone domain entities
 FlightPlan "1" *-- "1" RouteDefinition
-RouteDefinition "1" o-- "1..*" AltitudeSlot
+RouteDefinition "1" o-up- "1..*" AltitudeSlot
 FlightPlan "1" *-- "1" FuelInfo
 
 ' =========================
@@ -399,7 +399,7 @@ FlightPlan "1" *-- "1" FuelInfo
 ' =========================
 WeatherData "0..*" --> "1" AirControlArea : area >
 WeatherData "0..*" --> "1" WeatherSource : source >
-WeatherImportBatch "0..*" --> "1" WeatherSource : source >
+WeatherImportBatch "0..*" -up-> "1" WeatherSource : source >
 WeatherImportBatch "0..*" --> "1" User : imported by >
 
 ' =========================
