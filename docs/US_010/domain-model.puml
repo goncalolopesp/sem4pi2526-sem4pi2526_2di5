@@ -1,5 +1,4 @@
 @startuml
-hide circle
 skinparam classAttributeIconSize 0
 skinparam classBorderColor #888888
 skinparam classBackgroundColor #FAFAFA
@@ -13,7 +12,7 @@ skinparam shadowing false
 ' =============================================
 package "Identity & Access" {
 
-  class User {
+  class User <<AggregateRoot>> {
     +userId: UserId
     +name: String
     +email: Email
@@ -23,7 +22,7 @@ package "Identity & Access" {
     +lastSkillsAssessmentDate: Date
   }
 
-  class Role {
+  class Role <<AggregateRoot>> {
     +roleId: RoleId
     +name: String
   }
@@ -47,14 +46,13 @@ package "Identity & Access" {
 ' =============================================
 package "Backoffice Configuration" {
 
-  class Manufacturer {
+  class Manufacturer <<AggregateRoot>> {
     +manufacturerId: ManufacturerId
     +name: String
     +country: String
-    ' Note: same entity can be aircraft AND engine manufacturer
   }
 
-  class EngineModel {
+  class EngineModel <<AggregateRoot>> {
     +engineModelId: EngineModelId
     +name: String
     +type: String
@@ -63,7 +61,7 @@ package "Backoffice Configuration" {
     +efficiency: Decimal
   }
 
-  class AircraftModel {
+  class AircraftModel <<AggregateRoot>> {
     +aircraftModelId: AircraftModelId
     +modelName: String
     +type: AircraftType
@@ -81,14 +79,14 @@ package "Backoffice Configuration" {
     +aspectRatio: Decimal
   }
 
-  class AirControlArea {
+  class AirControlArea <<AggregateRoot>> {
     +airControlAreaId: AirControlAreaId
     +code: String
     +name: String
     +minimumReserveFuelRule: Decimal
   }
 
-  class Airport {
+  class Airport <<AggregateRoot>> {
     +airportId: AirportId
     +name: String
     +town: String
@@ -119,25 +117,25 @@ package "Backoffice Configuration" {
 ' =============================================
 package "Air Transport Operations" {
 
-  class AirTransportCompany {
+  class AirTransportCompany <<AggregateRoot>> {
     +companyId: CompanyId
     +name: String
     +iataCode: String
     +icaoCode: String
   }
 
-  class CompanyCollaborator {
+  class CompanyCollaborator <<Entity>> {
     +collaboratorId: CollaboratorId
     +position: String
     +status: CollaboratorStatus
   }
 
-  class Pilot {
+  class Pilot <<Entity>> {
     +pilotId: PilotId
     +status: PilotStatus
   }
 
-  class Aircraft {
+  class Aircraft <<Entity>> {
     +aircraftId: AircraftId
     +registration: String
     +countryOfRegistration: String
@@ -145,14 +143,10 @@ package "Air Transport Operations" {
     +crewSize: Integer
   }
 
-  class FlightRoute {
+  class FlightRoute <<AggregateRoot>> {
     +flightRouteId: FlightRouteId
     +code: String
-    ' code format: company initials + up to 4 digits (e.g. TP123)
     +type: FlightType
-    ' [CHANGED] type belongs to FlightRoute, not FlightPlan
-    ' A charter route is a separate route from a regular one
-    ' (see client Q&A: TO3910 vs TO3914 example)
     +activeFrom: Date
     +deactivatedFrom: Date
   }
@@ -187,37 +181,25 @@ package "Air Transport Operations" {
 
 ' =============================================
 ' PACKAGE: Flight Planning
-' [CHANGED] Added Flight entity between FlightRoute and FlightPlan
-' Hierarchy: FlightRoute -1:N-> Flight -1:N-> FlightPlan
 ' =============================================
 package "Flight Planning" {
 
-  ' [NEW] Flight = concrete instance of a FlightRoute on a specific date/time
-  ' e.g. TP123 on Tuesday 24th March 2026 06:45
-  class Flight {
+  class FlightPlan <<AggregateRoot>> {
+    +flightPlanId: FlightPlanId
+    +status: FlightPlanStatus
+    +createdAt: DateTime
+  }
+
+  class Flight <<Entity>> {
     +flightId: FlightId
     +designator: String
-    ' format: xxn(n)(n)(n)(a)  e.g. TP1234A
     +scheduledDate: Date
     +scheduledDepartureTime: Time
   }
 
-  class FlightPlan {
-    +flightPlanId: FlightPlanId
-    ' [CHANGED] flightType removed — now lives in FlightRoute
-    +status: FlightPlanStatus
-    +createdAt: DateTime
-    +fuelQuantity: Decimal
-    +fuelUnit: String
-  }
-
-  ' [CHANGED] RouteDefinition is a Value Object / internal structure of FlightPlan
-  ' Segments and nodes/junctions are part of the DSL specification,
-  ' not managed independently (confirmed by client Q&A 18/03)
   class RouteDefinition <<ValueObject>> {
     +originCode: String
     +destinationCode: String
-    ' segments and nodes live here as DSL-parsed structures
   }
 
   class AltitudeSlot <<ValueObject>> {
@@ -243,7 +225,21 @@ package "Flight Planning" {
 ' =============================================
 package "Weather Service" {
 
-  class WeatherData {
+  class WeatherSource <<AggregateRoot>> {
+    +weatherSourceId: WeatherSourceId
+    +name: String
+    +type: String
+    +format: String
+  }
+
+  class WeatherImportBatch <<AggregateRoot>> {
+    +batchId: BatchId
+    +importedAt: DateTime
+    +status: ImportBatchStatus
+    +importedRecords: Integer
+  }
+
+  class WeatherData <<Entity>> {
     +weatherDataId: WeatherDataId
     +date: Date
     +time: Time
@@ -253,20 +249,6 @@ package "Weather Service" {
     +pressure: Decimal
     +humidity: Decimal
     +altitude: Decimal
-  }
-
-  class WeatherSource {
-    +weatherSourceId: WeatherSourceId
-    +name: String
-    +type: String
-    +format: String
-  }
-
-  class WeatherImportBatch {
-    +batchId: BatchId
-    +importedAt: DateTime
-    +status: ImportBatchStatus
-    +importedRecords: Integer
   }
 
   enum ImportBatchStatus {
@@ -281,7 +263,7 @@ package "Weather Service" {
 ' =============================================
 package "Flight Simulation" {
 
-  class Simulation {
+  class Simulation <<AggregateRoot>> {
     +simulationId: SimulationId
     +startTime: DateTime
     +endTime: DateTime
@@ -290,7 +272,7 @@ package "Flight Simulation" {
     +status: SimulationStatus
   }
 
-  class SimulatedFlight {
+  class SimulatedFlight <<Entity>> {
     +simulatedFlightId: SimulatedFlightId
     +currentVelocity: Decimal
     +currentAltitude: Decimal
@@ -304,14 +286,14 @@ package "Flight Simulation" {
     +timestamp: DateTime
   }
 
-  class SafetyViolation {
+  class SafetyViolation <<Entity>> {
     +violationId: ViolationId
     +timestamp: DateTime
     +severity: String
     +type: String
   }
 
-  class SimulationReport {
+  class SimulationReport <<ValueObject>> {
     +reportId: ReportId
     +totalFlights: Integer
     +finalValidationResult: String
@@ -337,83 +319,68 @@ package "Flight Simulation" {
 ' =========================
 ' Identity relations
 ' =========================
-User "1" -- "1..*" Role : has >
-User *-- Email
-User *-- PhoneNumber
+User "1" --> "1..*" Role : has >
+User "1" *--> "1" Email
+User "1" *--> "1" PhoneNumber
 
 ' =========================
 ' Backoffice relations
 ' =========================
-' Same Manufacturer can produce both aircraft models and engine models
-Manufacturer "1" -- "0..*" EngineModel : produces >
-Manufacturer "1" -- "0..*" AircraftModel : produces >
-AirControlArea *-- GeographicBoundary
-Airport *-- Coordinates
+Manufacturer "1" --> "0..*" EngineModel : produces >
+Manufacturer "1" --> "0..*" AircraftModel : produces >
+AirControlArea "1" *--> "1" GeographicBoundary
+Airport "1" *--> "1" Coordinates
 Airport "0..*" --> "1" AirControlArea : belongs to >
-AircraftModel "1" -right- "1..*" EngineModel : certified engines >
+AircraftModel "1" --> "1..*" EngineModel : certified engines >
 
 ' =========================
 ' Air Transport Operations relations
 ' =========================
-AirTransportCompany "1" -- "0..*" CompanyCollaborator : has >
-AirTransportCompany "1" -- "0..*" Pilot : has >
-AirTransportCompany "1" -- "0..*" Aircraft : owns >
-AirTransportCompany "1" -- "0..*" FlightRoute : manages >
+AirTransportCompany "1" *--> "0..*" CompanyCollaborator : has >
+AirTransportCompany "1" *--> "0..*" Pilot : has >
+AirTransportCompany "1" *--> "0..*" Aircraft : owns >
+AirTransportCompany "1" *--> "0..*" FlightRoute : manages >
 
-CompanyCollaborator "1" --> "1" User : user >
-Pilot "1" --> "1" User : user >
-Pilot "0..*" -- "1..*" AircraftModel : certified for >
+CompanyCollaborator "0..*" --> "1" User : user >
+Pilot "0..*" --> "1" User : user >
 
-Aircraft "0..*" -up-> "1" AircraftModel : model >
+Aircraft "0..*" --> "1" AircraftModel : model >
 Aircraft "0..*" --> "1" EngineModel : engine >
-Aircraft *-- CabinConfiguration
+Aircraft "1" *--> "1" CabinConfiguration
 
-' FlightRoute has origin and destination airports
 FlightRoute "0..*" --> "1" Airport : origin >
 FlightRoute "0..*" --> "1" Airport : destination >
 
 ' =========================
 ' Flight Planning relations
-' [CHANGED] Full hierarchy: FlightRoute -> Flight -> FlightPlan
 ' =========================
-
-' One FlightRoute has many Flight instances (different dates/times)
-FlightRoute "1" -up- "0..*" Flight : instantiates >
-
-' One Flight may have multiple FlightPlans (draft, validated, rejected)
-' but only one validated at a time
-Flight "1" -up- "0..*" FlightPlan : has >
-
-' FlightPlan references aircraft and pilot
+FlightPlan "1" *--> "0..*" Flight : flights >
+FlightPlan "0..*" --> "1" FlightRoute : route >
 FlightPlan "0..*" --> "1" Aircraft : aircraft >
 FlightPlan "0..*" --> "1" Pilot : pilot >
-
-' RouteDefinition is composed inside FlightPlan
-' Segments and nodes are part of DSL — not standalone domain entities
-FlightPlan "1" *-- "1" RouteDefinition
-RouteDefinition "1" o-up- "1..*" AltitudeSlot
-FlightPlan "1" *-- "1" FuelInfo
+FlightPlan "1" *--> "1" RouteDefinition
+FlightPlan "1" *--> "1" FuelInfo
+RouteDefinition "1" *--> "1..*" AltitudeSlot
 
 ' =========================
 ' Weather relations
 ' =========================
-WeatherData "0..*" --> "1" AirControlArea : area >
-WeatherData "0..*" --> "1" WeatherSource : source >
-WeatherImportBatch "0..*" -up-> "1" WeatherSource : source >
+WeatherImportBatch "1" *--> "0..*" WeatherData : imports >
+WeatherImportBatch "0..*" --> "1" WeatherSource : source >
 WeatherImportBatch "0..*" --> "1" User : imported by >
+WeatherData "0..*" --> "1" AirControlArea : area >
 
 ' =========================
 ' Simulation relations
 ' =========================
 Simulation "0..*" --> "1" AirControlArea : area >
-Simulation "1" *-- "1..*" SimulatedFlight : flights >
-Simulation "1" *-- "0..*" SafetyViolation : violations >
-Simulation "1" *-- "0..1" SimulationReport : report >
+Simulation "1" *--> "1..*" SimulatedFlight : flights >
+Simulation "1" *--> "0..*" SafetyViolation : violations >
+Simulation "1" *--> "0..1" SimulationReport : report >
 
 SimulatedFlight "0..*" --> "1" FlightPlan : based on >
-SimulatedFlight *-- Position : current position >
+SimulatedFlight "1" *--> "1" Position : current position >
 
-SafetyViolation "0..*" -- "2..*" SimulatedFlight : involves >
-SafetyViolation *-- Position
+SafetyViolation "1" *--> "1" Position : location >
 
 @enduml
