@@ -1,85 +1,139 @@
-# US 666
-
-*This is an example template*
+# US003 - Project Structure
 
 ## 1. Context
 
-*Explain the context for this task. It is the first time the task is assigned to be developed or this tasks was incomplete in a previous sprint and is to be completed in this sprint? Are we fixing some bug?*
+This is the first time this task is being developed.
+
+The goal of this User Story is to define and configure the project structure to support the system architecture and the technologies required for the project.
+
+This structure will be the foundation for all future development.
 
 ### 1.1 List of issues
 
 Analysis:
+- Study of Maven standard structure
+- Identification of required layers (domain, application, etc.)
 
 Design:
+- Definition of layered architecture
+- Definition of package organization
 
 Implement:
+- Creation of folder structure
 
 Test:
+- Validation of structure compliance with requirements
 
+---
 
 ## 2. Requirements
 
-*In this section you should present the functionality that is being developed, how do you understand it, as well as possible correlations to other requirements (i.e., dependencies). You should also add acceptance criteria.*
-
-*Example*
-
-**US G101** As {Ator} I Want...
+**US003** As Project Manager, I want the team to configure the project structure to facilitate the development of upcoming user stories.
 
 **Acceptance Criteria:**
 
-- US666.1 The system should...Blá Blá Blá ...
-
-- US666.2. Blá Blá Blá ...
+- US003.1 The project follows the standard Maven structure  
+- US003.2 The structure supports the system architecture  
+- US003.3 The structure supports future development  
+- US003.4 The structure is documented  
 
 **Dependencies/References:**
 
-*Regarding this requirement we understand that it relates to...*
+- US001 - Technical Constraints  
+- US010 - Domain Model  
+
+---
 
 ## 3. Analysis
 
-*In this section, the team should report the study/analysis/comparison that was done in order to take the best design decisions for the requirement. This section should also include supporting diagrams/artifacts (such as domain model; use case diagrams, etc.),*
+The project requires a structure that supports:
+
+- Domain modeling (DDD approach)
+- Future implementation of DSL (ANTLR)
+- Simulation components
+- Separation of concerns
+
+The standard Maven structure was selected as it is required by the project and ensures compatibility with build tools and CI.
+
+Additionally, a layered architecture was chosen to:
+
+- Improve maintainability
+- Allow scalability
+- Separate business logic from infrastructure
+
+---
 
 ## 4. Design
 
-*In this sections, the team should present the solution design that was adopted to solve the requirement. This should include, at least, a diagram of the realization of the functionality (e.g., sequence diagram) and the specification of the main tests used to validade the functionality. A class diagram may be useful to describe the classes involved.*
+### 4.1. Project Structure
 
-### 4.1. Realization
-
-![a class diagram](class-diagram-01.svg "A Class Diagram")
-
-
-### 4.2. Acceptance Tests
-
-Include here the main tests used to validate the functionality. Focus on how they relate to the acceptance criteria. May be automated or manual tests.
-
-**Test 1:** *Verifies that it is not possible to ...*
-
-**Refers to Acceptance Criteria:** US666.1
-
+The adopted structure is:
 
 ```
-@Test(expected = IllegalArgumentException.class)
-public void ensureXxxxYyyy() {
-	...
-}
-````
+
+src/
+├── main/
+│   ├── java/
+│   │   └── pt/isep/sem4pi/
+│   │        ├── domain/
+│   │        ├── application/
+│   │        ├── infrastructure/
+│   │        ├── controllers/
+│   │        └── services/
+│   └── resources/
+└── test/
+└── java/
+
+```
+
+### 4.2. Architectural Decisions
+
+- **Domain** → core business logic  
+- **Application** → use case coordination  
+- **Infrastructure** → persistence and external systems  
+- **Controllers** → interaction layer  
+- **Services** → auxiliary operations  
+
+---
+
+### 4.3 Package Naming
+
+The base package `pt.isep.sem4pi` follows standard Java conventions using reverse domain naming.
+
+This approach ensures:
+
+- Uniqueness of the package namespace  
+- Clear identification of the project context  
+- Alignment with best practices in Java project organization  
+
+The use of `pt.isep` reflects the academic institution, while `sem4pi` identifies the specific project.
+
+---
 
 ## 5. Implementation
 
-*In this section the team should present, if necessary, some evidencies that the implementation is according to the design. It should also describe and explain other important artifacts necessary to fully understand the implementation like, for instance, configuration files.*
+The structure was implemented by creating the required directories following Maven conventions.
 
-*It is also a best practice to include a listing (with a brief summary) of the major commits regarding this requirement.*
+Initial placeholder classes were added to validate the structure.
+
+The project is now ready to support future development.
+
+---
 
 ## 6. Integration/Demonstration
 
-*In this section the team should describe the efforts realized in order to integrate this functionality with the other parts/components of the system*
+The defined structure integrates with:
 
-*It is also important to explain any scripts or instructions required to execute an demonstrate this functionality*
+- Maven build system  
+- Continuous Integration (GitHub Actions)  
+- Future modules such as DSL processing and simulation  
+
+The structure allows new components to be added without breaking existing code.
+
+---
 
 ## 7. Observations
 
-*This section should be used to include any content that does not fit any of the previous sections.*
+This structure is designed to support future complexity of the system.
 
-*The team should present here, for instance, a critical prespective on the developed work including the analysis of alternative solutioons or related works*
-
-*The team should include in this section statements/references regarding third party works that were used in the development this work.*
+Alternative simpler structures were considered but rejected due to lack of scalability and poor separation of concerns.
