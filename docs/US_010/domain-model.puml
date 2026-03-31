@@ -326,12 +326,12 @@ User "1" *--> "1" PhoneNumber
 ' =========================
 ' Backoffice relations
 ' =========================
-Manufacturer "1" --> "0..*" EngineModel : produces >
+Manufacturer "1" -right-> "0..*" EngineModel : produces >
 Manufacturer "1" --> "0..*" AircraftModel : produces >
 AirControlArea "1" *--> "1" GeographicBoundary
 Airport "1" *--> "1" Coordinates
 Airport "0..*" --> "1" AirControlArea : belongs to >
-AircraftModel "1" --> "1..*" EngineModel : certified engines >
+AircraftModel "1" -down-> "1..*" EngineModel : certified engines >
 
 ' =========================
 ' Air Transport Operations relations
@@ -341,8 +341,8 @@ AirTransportCompany "1" *--> "0..*" Pilot : has >
 AirTransportCompany "1" *--> "0..*" Aircraft : owns >
 AirTransportCompany "1" *--> "0..*" FlightRoute : manages >
 
-CompanyCollaborator "0..*" --> "1" User : user >
-Pilot "0..*" --> "1" User : user >
+CompanyCollaborator "0..*" -up-> "1" User : user >
+Pilot "0..*" -left-> "1" User : user >
 
 Aircraft "0..*" --> "1" AircraftModel : model >
 Aircraft "0..*" --> "1" EngineModel : engine >
@@ -354,12 +354,12 @@ FlightRoute "0..*" --> "1" Airport : destination >
 ' =========================
 ' Flight Planning relations
 ' =========================
-FlightPlan "1" *--> "0..*" Flight : flights >
-FlightPlan "0..*" --> "1" FlightRoute : route >
-FlightPlan "0..*" --> "1" Aircraft : aircraft >
-FlightPlan "0..*" --> "1" Pilot : pilot >
+FlightPlan "1" *-down-> "0..*" Flight : flights >
+FlightPlan "0..*" -down-> "1" FlightRoute : route >
+FlightPlan "0..*" -down-> "1" Aircraft : aircraft >
+FlightPlan "0..*" -down-> "1" Pilot : pilot >
 FlightPlan "1" *--> "1" RouteDefinition
-FlightPlan "1" *--> "1" FuelInfo
+FlightPlan "1" *-up-> "1" FuelInfo
 RouteDefinition "1" *--> "1..*" AltitudeSlot
 
 ' =========================
@@ -378,8 +378,8 @@ Simulation "1" *--> "1..*" SimulatedFlight : flights >
 Simulation "1" *--> "0..*" SafetyViolation : violations >
 Simulation "1" *--> "0..1" SimulationReport : report >
 
-SimulatedFlight "0..*" --> "1" FlightPlan : based on >
-SimulatedFlight "1" *--> "1" Position : current position >
+SimulatedFlight "0..*" -left-> "1" FlightPlan : based on >
+SimulatedFlight "1" *-left-> "1" Position : current position >
 
 SafetyViolation "1" *--> "1" Position : location >
 
