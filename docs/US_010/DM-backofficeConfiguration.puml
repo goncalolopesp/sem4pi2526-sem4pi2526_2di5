@@ -1,0 +1,93 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+package "Backoffice Configuration" {
+
+  class Manufacturer <<AggregateRoot>> {
+    +manufacturerId: ManufacturerId
+    +name: String
+    +country: String
+  }
+
+  class EngineModel <<AggregateRoot>> {
+    +engineModelId: EngineModelId
+    +manufacturerId: ManufacturerId
+    +name: String
+    +type: String
+    +power: Decimal
+    +fuelType: String
+    +efficiency: Decimal
+  }
+
+  class AircraftModel <<AggregateRoot>> {
+    +aircraftModelId: AircraftModelId
+    +manufacturerId: ManufacturerId
+    +modelName: String
+    +type: AircraftType
+    +motorization: String
+    +emptyWeight: Decimal
+    +maximumTakeoffWeight: Decimal
+    +maximumZeroFuelWeight: Decimal
+    +maximumFuelCapacity: Decimal
+    +serviceCeiling: Decimal
+    +cruiseSpeed: Decimal
+    +wingArea: Decimal
+    +dragCoefficient: Decimal
+    +liftCoefficient: Decimal
+    +maximumRange: Decimal
+    +aspectRatio: Decimal
+  }
+
+  class CertifiedEngine <<Entity>> {
+    +engineModelId: EngineModelId
+  }
+
+  class AirControlArea <<AggregateRoot>> {
+    +airControlAreaId: AirControlAreaId
+    +code: String
+    +name: String
+    +minimumReserveFuelRule: Decimal
+  }
+
+  class AirControlAreaBoundary <<ValueObject>> {
+    +minLatitude: Decimal
+    +maxLatitude: Decimal
+    +minLongitude: Decimal
+    +maxLongitude: Decimal
+  }
+
+  class Airport <<AggregateRoot>> {
+    +airportId: AirportId
+    +airControlAreaId: AirControlAreaId
+    +name: String
+    +town: String
+    +country: String
+    +iataCode: String
+    +icaoCode: String
+    +elevation: Decimal
+  }
+
+  class Coordinates <<ValueObject>> {
+    +latitude: Decimal
+    +longitude: Decimal
+  }
+
+  enum AircraftType {
+    PASSENGER
+    CARGO
+    MIXED
+  }
+}
+
+AircraftModel "1" *-- "1..*" CertifiedEngine
+AirControlArea "1" *-- "1" AirControlAreaBoundary
+Airport "1" *-- "1" Coordinates
+
+EngineModel --> Manufacturer : made by >
+AircraftModel --> Manufacturer : made by >
+CertifiedEngine --> EngineModel : certified model >
+Airport --> AirControlArea : belongs to >
+
+@enduml
