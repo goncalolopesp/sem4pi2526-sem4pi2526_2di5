@@ -1,4 +1,4 @@
-package simpleTest;
+package pt.isep.sem4pi.services;
 
 import org.junit.Test;
 
