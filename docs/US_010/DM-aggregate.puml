@@ -1,0 +1,78 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+package "Identity & Access" {
+  class User <<AggregateRoot>>
+  class Role <<AggregateRoot>>
+}
+
+package "Backoffice Configuration" {
+  class Manufacturer <<AggregateRoot>>
+  class EngineModel <<AggregateRoot>>
+  class AircraftModel <<AggregateRoot>>
+  class AirControlArea <<AggregateRoot>>
+  class Airport <<AggregateRoot>>
+}
+
+package "Customer Management" {
+  class AirTransportCompany <<AggregateRoot>>
+  class CustomerCollaborator <<AggregateRoot>>
+  class Pilot <<AggregateRoot>>
+  class Aircraft <<AggregateRoot>>
+  class FlightRoute <<AggregateRoot>>
+}
+
+package "Flight Planning" {
+  class Flight <<AggregateRoot>>
+  class FlightPlan <<AggregateRoot>>
+}
+
+package "Weather Service" {
+  class WeatherSource <<AggregateRoot>>
+  class WeatherImportBatch <<AggregateRoot>>
+  class WeatherData <<AggregateRoot>>
+}
+
+package "Simulation Integration" {
+  class Simulation <<AggregateRoot>>
+  class SimulationReport <<AggregateRoot>>
+}
+
+User --> Role : assigned roles
+
+CustomerCollaborator --> User : system identity
+Pilot --> User : system identity
+
+CustomerCollaborator --> AirTransportCompany : works for
+Pilot --> AirTransportCompany : works for
+Aircraft --> AirTransportCompany : belongs to
+FlightRoute --> AirTransportCompany : owned by
+
+Airport --> AirControlArea : belongs to
+
+EngineModel --> Manufacturer : made by
+AircraftModel --> Manufacturer : made by
+AircraftModel --> EngineModel : certified engine models
+
+Aircraft --> AircraftModel : model
+Aircraft --> EngineModel : selected engine model
+
+FlightRoute --> Airport : origin
+FlightRoute --> Airport : destination
+
+Flight --> FlightRoute : instantiates route
+FlightPlan --> Flight : plan for
+FlightPlan --> Aircraft : assigned aircraft
+FlightPlan --> Pilot : assigned pilot
+
+WeatherImportBatch --> WeatherSource : imported from
+WeatherData --> AirControlArea : registered for
+
+Simulation --> AirControlArea : simulated area
+Simulation --> FlightPlan : input plans
+Simulation --> WeatherData : weather input
+SimulationReport --> Simulation : result of
+
+@enduml
