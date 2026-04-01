@@ -1,0 +1,102 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+package "Weather Service" {
+
+  class WeatherSource <<AggregateRoot>> {
+    +weatherSourceId: WeatherSourceId
+    +name: String
+    +type: String
+    +format: String
+  }
+
+  class WeatherImportBatch <<AggregateRoot>> {
+    +batchId: BatchId
+    +weatherSourceId: WeatherSourceId
+    +importedByUserId: UserId
+    +importedAt: DateTime
+    +status: ImportBatchStatus
+    +importedRecords: Integer
+  }
+
+  class ImportedWeatherRecord <<Entity>> {
+    +weatherDataId: WeatherDataId
+  }
+
+  class WeatherData <<AggregateRoot>> {
+    +weatherDataId: WeatherDataId
+    +airControlAreaId: AirControlAreaId
+    +date: Date
+    +time: Time
+    +windSpeed: Decimal
+    +windDirection: Decimal
+    +temperature: Decimal
+    +pressure: Decimal
+    +humidity: Decimal
+    +altitude: Decimal
+  }
+
+  enum ImportBatchStatus {
+    PENDING
+    COMPLETED
+    FAILED
+  }
+}
+
+package "Simulation Integration" {
+
+  class Simulation <<AggregateRoot>> {
+    +simulationId: SimulationId
+    +airControlAreaId: AirControlAreaId
+    +startTime: DateTime
+    +endTime: DateTime
+    +timeStep: Integer
+    +safetyThreshold: Decimal
+    +status: SimulationStatus
+  }
+
+  class SimulatedFlightInput <<Entity>> {
+    +flightPlanId: FlightPlanId
+  }
+
+  class SimulationReport <<AggregateRoot>> {
+    +reportId: ReportId
+    +simulationId: SimulationId
+    +totalFlights: Integer
+    +finalValidationResult: String
+    +generatedAt: DateTime
+    +fileLocation: String
+  }
+
+  class SimulationIssue <<Entity>> {
+    +issueId: IssueId
+    +timestamp: DateTime
+    +severity: String
+    +description: String
+  }
+
+  enum SimulationStatus {
+    CREATED
+    RUNNING
+    FINISHED
+    FAILED
+  }
+}
+
+WeatherImportBatch "1" *-- "0..*" ImportedWeatherRecord
+ImportedWeatherRecord --> WeatherData : imported data >
+
+WeatherImportBatch --> WeatherSource : source >
+WeatherImportBatch --> User : imported by >
+WeatherData --> AirControlArea : area >
+
+Simulation "1" *-- "1..*" SimulatedFlightInput
+SimulationReport "1" *-- "0..*" SimulationIssue
+
+Simulation --> AirControlArea : simulated area >
+SimulatedFlightInput --> FlightPlan : input >
+SimulationReport --> Simulation : result of >
+
+@enduml
