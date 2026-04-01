@@ -2,7 +2,16 @@
 
 ## 1. Description of the Project
 
-*To Do*
+**Project AIControl** (developed for the startup AlSafe) is a comprehensive flight management and air traffic simulation prototype designed to modernize obsolete flight control infrastructures. The system provides a scalable, multi-component architecture to manage, validate, and simulate complex aeronautical operations.
+
+The project is built upon a Domain-Driven Design (DDD) architecture and is divided into several core operational modules:
+
+* **Backoffice & Fleet Management:** A Java-based core system to manage essential aeronautical entities, including air control areas, airports, aircraft models, air transport companies, and user roles.
+* **Flight Planning & DSL:** To avoid vendor lock-in, the system features a custom Domain Specific Language (Flight DSL) processed via ANTLR. This allows pilots and operators to formally define, syntactically validate, and safely import flight plans into the system.
+* **High-Performance Simulation Engine:** A robust simulation engine developed in C that utilizes multi-processing, shared memory, and inter-process communication (IPC). It simulates real-world flight physics (lift, drag, fuel consumption), integrates real-time weather data, and continuously monitors the airspace to detect and report safety violations or potential collisions.
+* **Monitoring & Visualization:** A dedicated UDP logging server and web interface that tracks and displays step-by-step flight progression and safety statuses in real-time.
+
+By integrating these modules, AIControl serves as a robust proof-of-concept for the next generation of safe, parallelized, and data-driven air traffic control systems.
 
 ## 2. Planning and Technical Documentation
 
