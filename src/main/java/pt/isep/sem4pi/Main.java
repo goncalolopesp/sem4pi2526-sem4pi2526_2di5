@@ -1,4 +1,5 @@
 package pt.isep.sem4pi;
+
 import pt.isep.sem4pi.controllers.Menu;
 
 public class Main {
