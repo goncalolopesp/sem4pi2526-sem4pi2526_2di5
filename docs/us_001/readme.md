@@ -1,85 +1,129 @@
-# US 666
-
-*This is an example template*
+# US001 - Technical Constraints
 
 ## 1. Context
 
-*Explain the context for this task. It is the first time the task is assigned to be developed or this tasks was incomplete in a previous sprint and is to be completed in this sprint? Are we fixing some bug?*
+This User Story aims to identify and document all technical constraints and non-functional requirements defined in section 5 of the project specification.
 
-### 1.1 List of issues
+These constraints must be considered throughout the development of the system.
 
-Analysis:
-
-Design:
-
-Implement:
-
-Test:
-
+---
 
 ## 2. Requirements
 
-*In this section you should present the functionality that is being developed, how do you understand it, as well as possible correlations to other requirements (i.e., dependencies). You should also add acceptance criteria.*
+**US001** As Project Manager, I want the team to follow the technical constraints and concerns of the project.
 
-*Example*
+### Acceptance Criteria
 
-**US G101** As {Ator} I Want...
+- All constraints from section 5 are identified and documented  
+- The chosen technologies comply with the constraints  
+- The project structure reflects the defined constraints  
+- Evidence of constraints is present in documentation  
 
-**Acceptance Criteria:**
+---
 
-- US666.1 The system should...Blá Blá Blá ...
+## 3. Identified Constraints
 
-- US666.2. Blá Blá Blá ...
+Based on section 5 of the specification, the following constraints were identified:
 
-**Dependencies/References:**
+### NFR01 - Scrum
 
-*Regarding this requirement we understand that it relates to...*
+- The project must follow Scrum methodology  
+- Weekly meetings must be held  
 
-## 3. Analysis
+---
 
-*In this section, the team should report the study/analysis/comparison that was done in order to take the best design decisions for the requirement. This section should also include supporting diagrams/artifacts (such as domain model; use case diagrams, etc.),*
+### NFR02 - Technical Documentation
 
-## 4. Design
+- Documentation must be in the repository  
+- Must use Markdown  
+- UML diagrams must use PlantUML  
+- Diagrams must include source and image  
 
-*In this sections, the team should present the solution design that was adopted to solve the requirement. This should include, at least, a diagram of the realization of the functionality (e.g., sequence diagram) and the specification of the main tests used to validade the functionality. A class diagram may be useful to describe the classes involved.*
+---
 
-### 4.1. Realization
+### NFR03 - Unit Testing
 
-![a class diagram](class-diagram-01.svg "A Class Diagram")
+- Test coverage must be at least 90%  
+- Recommended use of TDD  
+- Use of AAA pattern  
 
+---
 
-### 4.2. Acceptance Tests
+### NFR04 - Source Control
 
-Include here the main tests used to validate the functionality. Focus on how they relate to the acceptance criteria. May be automated or manual tests.
+- Use GitHub repository  
+- Use main branch  
+- Frequent commits  
 
-**Test 1:** *Verifies that it is not possible to ...*
+---
 
-**Refers to Acceptance Criteria:** US666.1
+### NFR05 - Continuous Integration
 
+- Use GitHub Actions  
+- Use Maven for build  
 
-```
-@Test(expected = IllegalArgumentException.class)
-public void ensureXxxxYyyy() {
-	...
-}
-````
+---
 
-## 5. Implementation
+### NFR06 - Valid Commits
 
-*In this section the team should present, if necessary, some evidencies that the implementation is according to the design. It should also describe and explain other important artifacts necessary to fully understand the implementation like, for instance, configuration files.*
+- Every commit must leave the system in a valid state  
+- System must compile and pass tests  
 
-*It is also a best practice to include a listing (with a brief summary) of the major commits regarding this requirement.*
+---
 
-## 6. Integration/Demonstration
+### NFR07 - Deployment
 
-*In this section the team should describe the efforts realized in order to integrate this functionality with the other parts/components of the system*
+- System must include scripts for:
+  - build
+  - execution
+  - deployment  
+- Must run in Unix environment  
 
-*It is also important to explain any scripts or instructions required to execute an demonstrate this functionality*
+---
 
-## 7. Observations
+### NFR08 - Database
 
-*This section should be used to include any content that does not fit any of the previous sections.*
+- Support in-memory database  
+- Support relational database  
+- Allow configuration-based switching  
 
-*The team should present here, for instance, a critical prespective on the developed work including the analysis of alternative solutioons or related works*
+---
 
-*The team should include in this section statements/references regarding third party works that were used in the development this work.*
+### NFR09 - Authentication and Authorization
+
+- All users must be authenticated  
+- Authorization must be enforced  
+
+---
+
+## 4. Compliance with Constraints
+
+The project complies with the identified constraints as follows:
+
+- Scrum is used for project management (GitHub Issues and sprint organization)  
+- GitHub is used for source control (NFR04)  
+- Maven is used for build and dependency management (NFR05)  
+- GitHub Actions supports continuous integration (NFR05)  
+- Documentation is maintained in `/docs` (NFR02)  
+- PlantUML is used for diagrams (NFR02)  
+- The system is designed to support configurable persistence (NFR08)  
+- Authentication and authorization will be implemented (NFR09)  
+
+---
+
+## 5. Project Structure Alignment
+
+The project structure reflects the defined constraints:
+
+- `/docs` contains all documentation (NFR02)
+- `/src` follows a layered architecture (domain, application, etc.)
+- CI configuration is placed in `.github/workflows`
+- Build configuration is defined in `pom.xml`
+
+---
+
+## 6. Conclusion
+
+All technical constraints defined in section 5 were identified and documented.
+
+The project structure and chosen technologies are aligned with these constraints, ensuring compliance throughout development.
