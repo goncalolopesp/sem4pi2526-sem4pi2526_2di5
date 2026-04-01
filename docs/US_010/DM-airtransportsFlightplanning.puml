@@ -1,0 +1,118 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+package "Air Transport Operations" {
+
+  class AirTransportCompany <<AggregateRoot>> {
+    +companyId: CompanyId
+    +name: String
+    +iataCode: String
+    +icaoCode: String
+  }
+
+  class Aircraft <<AggregateRoot>> {
+    +aircraftId: AircraftId
+    +companyId: CompanyId
+    +aircraftModelId: AircraftModelId
+    +engineModelId: EngineModelId
+    +registration: String
+    +countryOfRegistration: String
+    +operationalStatus: AircraftOperationalStatus
+    +crewSize: Integer
+  }
+
+  class CabinConfiguration <<ValueObject>> {
+    +economySeats: Integer
+    +businessSeats: Integer
+    +firstClassSeats: Integer
+  }
+
+  class FlightRoute <<AggregateRoot>> {
+    +flightRouteId: FlightRouteId
+    +companyId: CompanyId
+    +code: String
+    +originAirportId: AirportId
+    +destinationAirportId: AirportId
+    +activeFrom: Date
+    +deactivatedFrom: Date
+  }
+
+  class Flight <<AggregateRoot>> {
+    +flightId: FlightId
+    +flightRouteId: FlightRouteId
+    +type: FlightType
+    +status: FlightStatus
+  }
+
+  class FlightScheduleEntry <<Entity>> {
+    +dayOfWeek: DayOfWeek
+    +departureTime: Time
+  }
+
+  enum AircraftOperationalStatus {
+    ACTIVE
+    MAINTENANCE
+    RETIRED
+  }
+
+  enum FlightType {
+    REGULAR
+    CHARTER
+  }
+
+  enum FlightStatus {
+    SCHEDULED
+    CANCELLED
+    COMPLETED
+  }
+}
+
+package "Flight Planning" {
+
+  class FlightPlan <<AggregateRoot>> {
+    +flightPlanId: FlightPlanId
+    +flightId: FlightId
+    +aircraftId: AircraftId
+    +pilotId: PilotId
+    +status: FlightPlanStatus
+    +createdAt: DateTime
+  }
+
+  class FuelInfo <<ValueObject>> {
+    +quantity: Decimal
+    +unit: String
+  }
+
+  class FlightPlanFile <<ValueObject>> {
+    +format: String
+    +contentReference: String
+  }
+
+  enum FlightPlanStatus {
+    DRAFT
+    VALIDATED
+    REJECTED
+  }
+}
+
+Aircraft "1" *-- "1" CabinConfiguration
+
+Flight --> FlightRoute : instance of >
+Flight "1" *-- "0..*" FlightScheduleEntry
+FlightPlan "1" *-- "1" FuelInfo
+FlightPlan "1" *-- "0..1" FlightPlanFile
+
+FlightPlan --> Flight : for >
+FlightPlan --> Aircraft : assigned aircraft >
+FlightPlan --> Pilot : assigned pilot >
+
+Aircraft --> AircraftModel : model >
+Aircraft --> EngineModel : selected engine >
+Aircraft --> AirTransportCompany : belongs to >
+FlightRoute --> AirTransportCompany : owned by >
+FlightRoute --> Airport : origin >
+FlightRoute --> Airport : destination >
+
+@enduml

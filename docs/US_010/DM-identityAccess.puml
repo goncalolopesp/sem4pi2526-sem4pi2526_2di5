@@ -1,0 +1,93 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+package "Identity & Access" {
+
+  class User <<AggregateRoot>> {
+    +userId: UserId
+    +name: String
+    +email: Email
+    +phoneNumber: PhoneNumber
+    +status: UserStatus
+    +securityClearanceExpiryDate: Date
+    +lastSkillsAssessmentDate: Date
+  }
+
+  class Role <<AggregateRoot>> {
+    +roleId: RoleId
+    +name: String
+  }
+
+  class Email <<ValueObject>> {
+    +value: String
+  }
+
+  class PhoneNumber <<ValueObject>> {
+    +value: String
+  }
+
+  enum UserStatus {
+    ACTIVE
+    DISABLED
+  }
+}
+
+package "Customer Management" {
+
+  class AirTransportCompany <<AggregateRoot>> {
+    +companyId: CompanyId
+    +name: String
+    +iataCode: String
+    +icaoCode: String
+  }
+
+  class CustomerCollaborator <<AggregateRoot>> {
+    +collaboratorId: CollaboratorId
+    +userId: UserId
+    +customerType: CustomerType
+    +customerId: String
+    +position: String
+    +status: CollaboratorStatus
+  }
+
+  class Pilot <<AggregateRoot>> {
+    +pilotId: PilotId
+    +userId: UserId
+    +companyId: CompanyId
+    +status: PilotStatus
+  }
+
+  class PilotCertification <<Entity>> {
+    +certificationId: CertificationId
+    +aircraftModelId: AircraftModelId
+  }
+
+  enum CustomerType {
+    AIR_TRANSPORT_COMPANY
+    AIR_CONTROL_AREA
+  }
+
+  enum CollaboratorStatus {
+    ACTIVE
+    DISABLED
+  }
+
+  enum PilotStatus {
+    ACTIVE
+    INACTIVE
+  }
+}
+
+User "1" *-- "1" Email
+User "1" *-- "1" PhoneNumber
+User "1" --> "1..*" Role : assigned >
+
+CustomerCollaborator --> User : identity >
+Pilot --> User : identity >
+
+Pilot "1" *-- "1..*" PilotCertification
+Pilot --> AirTransportCompany : works for >
+
+@enduml
