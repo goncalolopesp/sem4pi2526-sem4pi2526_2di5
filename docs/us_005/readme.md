@@ -1,85 +1,108 @@
-# US 666
-
-*This is an example template*
+# US 005 - Automated Deployment
 
 ## 1. Context
 
-*Explain the context for this task. It is the first time the task is assigned to be developed or this tasks was incomplete in a previous sprint and is to be completed in this sprint? Are we fixing some bug?*
+This is the first time this task is assigned. The goal is to provide a set of automation scripts to streamline the development lifecycle (cleaning, building, testing, running, and deploying) of the system. While the primary requirement specifies Unix compatibility, the team also developed parallel scripts for Windows environments to support local development.
 
 ### 1.1 List of issues
 
-Analysis:
+**Analysis:** Identify the core tasks that require automation during the development and deployment phases.
 
-Design:
+**Design:** Define the commands and sequence of execution for each task across both Unix (Bash) and Windows (Batch) environments.
 
-Implement:
+**Implement:** Create the `.sh` and `.bat` files for building, testing, running, deploying, and cleaning the project.
 
-Test:
+**Test:** Execute each script in its respective environment to ensure correct behavior and error handling.
 
 
 ## 2. Requirements
 
-*In this section you should present the functionality that is being developed, how do you understand it, as well as possible correlations to other requirements (i.e., dependencies). You should also add acceptance criteria.*
-
-*Example*
-
-**US G101** As {Ator} I Want...
+**US 005** As Project Manager, I want the team to add to the project the necessary scripts, so that build/executions/deployments can be executed effortlessly in a Unix compatible machine. Include scripts for all the major tasks and execution of applications.
 
 **Acceptance Criteria:**
 
-- US666.1 The system should...Blá Blá Blá ...
-
-- US666.2. Blá Blá Blá ...
+- AC 1 The system must include scripts for building the project.
+- AC 2 The system must include scripts for executing the applications.
+- AC 3 The system must include scripts for deploying the applications.
+- AC 4 The scripts must be executable without effort on a Unix compatible machine.
 
 **Dependencies/References:**
 
-*Regarding this requirement we understand that it relates to...*
+This requirement directly relates to **NFR07 - Deployment and Scripts**, which mandates that the repository includes the necessary scripts to build and deploy the solution in a Linux system.
+
 
 ## 3. Analysis
 
-*In this section, the team should report the study/analysis/comparison that was done in order to take the best design decisions for the requirement. This section should also include supporting diagrams/artifacts (such as domain model; use case diagrams, etc.),*
+To ensure an effortless developer experience and reliable deployments, the team mapped the standard Java/Maven lifecycle commands to simple shell execution scripts.
+
+The identified required actions were:
+1. **Clean:** Remove old compiled binaries to prevent cache issues.
+2. **Build:** Compile the source code.
+3. **Test:** Run the automated unit test suite.
+4. **Deploy:** Package the application into a distributable format (JAR).
+5. **Run:** Chain the clean and build processes, then start the main application.
+
+To accommodate different operating systems used by the development team, every Unix shell script (`.sh`) was paired with a corresponding Windows batch file (`.bat`).
+
 
 ## 4. Design
 
-*In this sections, the team should present the solution design that was adopted to solve the requirement. This should include, at least, a diagram of the realization of the functionality (e.g., sequence diagram) and the specification of the main tests used to validade the functionality. A class diagram may be useful to describe the classes involved.*
+The design of this feature relies on OS-level scripting rather than application code.
 
 ### 4.1. Realization
 
-![a class diagram](class-diagram-01.svg "A Class Diagram")
-
+*No class diagram is applicable for this US.* The execution flow for the most complex script, `run.sh`, follows this sequence:
+1. Triggers `clean.sh` -> Removes `./out` and `./target` directories.
+2. Triggers `build.sh` -> Finds all `.java` files and compiles them into `target/classes`.
+3. Executes the application using `java -cp target/classes Main`.
 
 ### 4.2. Acceptance Tests
 
-Include here the main tests used to validate the functionality. Focus on how they relate to the acceptance criteria. May be automated or manual tests.
+The validation of this functionality relies on manual execution tests across different terminals (e.g., Git Bash, WSL, Command Prompt, PowerShell).
 
-**Test 1:** *Verifies that it is not possible to ...*
+**Test 1:** *Verifies that the build script compiles the code successfully.*
+- Open a Unix terminal.
+- Run `./build.sh`.
+- Check if the `target/classes` directory is populated with `.class` files.
 
-**Refers to Acceptance Criteria:** US666.1
+**Test 2:** *Verifies that the deploy script generates the executable JAR.*
+- Open a Unix terminal.
+- Run `./deploy.sh`.
+- Check if a `.jar` file is created inside the `/target/` directory and the success echo is printed.
 
-
-```
-@Test(expected = IllegalArgumentException.class)
-public void ensureXxxxYyyy() {
-	...
-}
-````
 
 ## 5. Implementation
 
-*In this section the team should present, if necessary, some evidencies that the implementation is according to the design. It should also describe and explain other important artifacts necessary to fully understand the implementation like, for instance, configuration files.*
+The implementation consists of the following script files added to the project root:
 
-*It is also a best practice to include a listing (with a brief summary) of the major commits regarding this requirement.*
+**Unix Scripts (`.sh`):**
+* `clean.sh`: Uses `rm -rf` to clear the `out` and `target` directories.
+* `build.sh`: Uses `javac` to compile all `.java` files found in the `src` tree.
+* `test.sh`: Executes `mvn test`.
+* `deploy.sh`: Executes `mvn clean` followed by `mvn package` to generate the JAR file.
+* `run.sh`: Chains the execution of `clean.sh` and `build.sh`, then starts the Java application.
+
+**Windows Scripts (`.bat`):**
+* `build.bat`: Recreates the `out` directory and recursively compiles `.java` files.
+* `test.bat`: Executes `mvn test`.
+* `deploy.bat`: Uses Maven to clean and package the project.
+* `run.bat`: Calls `build.bat` and runs the compiled `Main` class.
+
+*Note: The Unix scripts must be granted execution permissions before running using `chmod +x *.sh`.*
+
 
 ## 6. Integration/Demonstration
 
-*In this section the team should describe the efforts realized in order to integrate this functionality with the other parts/components of the system*
+These scripts are integrated into the root directory of the repository. They serve as the primary entry points for interacting with the application during development and demonstration phases.
 
-*It is also important to explain any scripts or instructions required to execute an demonstrate this functionality*
+To demonstrate the application:
+1. Open a terminal in the root directory.
+2. Execute `./run.sh` (Unix) or `run.bat` (Windows).
+3. The system will automatically clean old artifacts, compile the latest source code, and launch the `Main` class.
+
 
 ## 7. Observations
 
-*This section should be used to include any content that does not fit any of the previous sections.*
+While the requirement specifically asks for Unix compatibility, providing `.bat` scripts ensures that team members developing on native Windows machines do not face friction.
 
-*The team should present here, for instance, a critical prespective on the developed work including the analysis of alternative solutioons or related works*
-
-*The team should include in this section statements/references regarding third party works that were used in the development this work.*
+It is noted that `build.sh` uses standard `javac` while `deploy.sh` utilizes `mvn`. As the project scales and relies more heavily on Maven for dependency management (as per NFR05), the `build.sh` script should eventually be refactored to use `mvn compile` instead of direct `javac` calls to ensure third-party dependencies are properly resolved.
