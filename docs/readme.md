@@ -28,6 +28,19 @@ In this section, we will add links to all technical files.
 
 ---
 
+# Group Composition
+
+| Number | Name |
+|---------|----------|
+| 1231573 | Mariana Gabriel |
+| 1231568 | Guilherme Tavares |
+| 1241232 | Gonçalo Pinto |
+| 1211103 | João Sousa |
+| 1250667 | Pedro Soares |
+| 1220780 | Tiago Alves |
+
+---
+
 # Team Planning
 
 In this section, we assign each task to a team member.
