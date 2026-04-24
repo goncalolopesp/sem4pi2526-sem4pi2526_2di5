@@ -7,6 +7,8 @@ import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
 
+// NOT IN USE, FOR NOW USE ../persistence/InMemoryRepositoryFactory.java
+
 /**
  * Bootstrapper to register master users (admin, backoffice operator).
  */
