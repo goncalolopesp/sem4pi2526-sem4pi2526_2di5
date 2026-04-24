@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.controllers;
+package pt.isep.sem4pi.application;
 
 public class Menu{
 
