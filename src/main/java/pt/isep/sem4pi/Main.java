@@ -1,7 +1,9 @@
 package pt.isep.sem4pi;
 
+import pt.isep.sem4pi.presentation.SEM4PIBackoffice;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Project structure ready.");
+        SEM4PIBackoffice.main(args);
     }
 }

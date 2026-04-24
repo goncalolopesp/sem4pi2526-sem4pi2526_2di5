@@ -12,6 +12,10 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- EAPLI framework versions (kept aligned with example) -->
+        <eapli.framework.core.version>25.0.0-RELEASE</eapli.framework.core.version>
+        <eapli.framework.authz.version>25.0.0-RELEASE</eapli.framework.authz.version>
     </properties>
     <dependencies>
         <dependency>
@@ -20,7 +24,27 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- EAPLI framework dependencies required for authz integration -->
+        <dependency>
+            <groupId>org.bitbucket.pag_isep.eapliframework</groupId>
+            <artifactId>eapli.framework.core</artifactId>
+            <version>${eapli.framework.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bitbucket.pag_isep.eapliframework</groupId>
+            <artifactId>eapli.framework.infrastructure.authz</artifactId>
+            <version>${eapli.framework.authz.version}</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <!-- JitPack repository used by the EAPLI framework artifacts in the example project -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
