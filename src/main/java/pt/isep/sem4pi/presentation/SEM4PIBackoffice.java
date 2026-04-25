@@ -1,0 +1,54 @@
+package pt.isep.sem4pi.presentation;
+
+import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
+import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
+import pt.isep.sem4pi.infrastructure.bootstrap.MasterUsersBootstrapper;
+import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
+import pt.isep.sem4pi.presentation.authz.LoginUI;
+
+/**
+ * Backoffice application launcher for SEM4PI using EAPLI framework authz.
+ */
+public final class SEM4PIBackoffice extends BaseApp {
+
+    private SEM4PIBackoffice() {
+        // prevent
+    }
+
+    public static void main(final String[] args) {
+        AuthzRegistry.configure(
+                PersistenceContext.repositories().users(),
+                new SEM4PIPasswordPolicy(),
+                new PlainTextEncoder()
+        );
+
+//        new MasterUsersBootstrapper().execute();
+
+        new SEM4PIBackoffice().run(args);
+    }
+
+    @Override
+    protected void doMain(final String[] args) {
+        // login and go to main menu
+        if (new LoginUI().show()) {
+            final var menu = new MainMenu();
+            menu.mainLoop();
+        }
+    }
+
+    @Override
+    protected String appTitle() {
+        return "SEM4PI Back Office";
+    }
+
+    @Override
+    protected String appGoodbye() {
+        return "SEM4PI Back Office";
+    }
+
+    @Override
+    protected void doSetupEventHandlers() {
+        // no events
+    }
+}
