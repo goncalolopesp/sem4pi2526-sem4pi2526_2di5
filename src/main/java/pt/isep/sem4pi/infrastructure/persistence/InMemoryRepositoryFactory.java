@@ -3,6 +3,9 @@ package pt.isep.sem4pi.infrastructure.persistence;
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
+import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
+import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
+import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 
@@ -28,6 +31,21 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
         }
 
         return userRepository;
+    }
+
+    @Override
+    public AircraftModelRepository aircraftModels() {
+        return new InMemoryAircraftModelRepository();
+    }
+
+    @Override
+    public EngineModelRepository engineModels() {
+        return null;
+    }
+
+    @Override
+    public ManufacturerRepository manufacturers() {
+        return null;
     }
 
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {

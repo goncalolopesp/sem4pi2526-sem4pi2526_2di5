@@ -6,6 +6,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class AircraftModel, an aggregate root of the Domain Model
+ */
+
 @Entity
 public class AircraftModel implements AggregateRoot<AircraftModelId> {
     @EmbeddedId
