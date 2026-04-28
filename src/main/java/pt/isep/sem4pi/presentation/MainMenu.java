@@ -9,7 +9,6 @@ import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.presentation.console.AbstractUI;
 import eapli.framework.presentation.console.ExitWithMessageAction;
 import eapli.framework.presentation.console.ShowMessageAction;
-import eapli.framework.presentation.console.menu.HorizontalMenuRenderer;
 import eapli.framework.presentation.console.menu.MenuItemRenderer;
 import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
@@ -81,6 +80,7 @@ public class MainMenu extends AbstractUI {
             if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
                 final var adminMenu = new Menu("Admin >");
                 adminMenu.addItem(1, "Admin Task (TODO)", new ShowMessageAction("Admin task not implemented yet"));
+                adminMenu.addItem(2, "Register Backoffice User", new pt.isep.sem4pi.presentation.usermanagement.RegisterBackofficeUserUI()::show);
                 adminMenu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
                 mainMenu.addSubMenu(3, adminMenu);
             }
