@@ -14,6 +14,7 @@ public class BackofficeUser {
     private final String phoneNumber;
     private final LocalDate securityClearanceExpirationDate;
     private final LocalDate skillsAssessmentDate;
+    private boolean enabled;
 
     public BackofficeUser(final String username, final String name, final String email,
                           final String phoneNumber, final LocalDate securityClearanceExpirationDate,
@@ -42,6 +43,7 @@ public class BackofficeUser {
         this.phoneNumber = phoneNumber.trim();
         this.securityClearanceExpirationDate = securityClearanceExpirationDate;
         this.skillsAssessmentDate = skillsAssessmentDate;
+        this.enabled = true;
     }
 
     public String username() {
@@ -68,6 +70,20 @@ public class BackofficeUser {
         return skillsAssessmentDate;
     }
 
+    /**
+     * Returns whether this backoffice user is enabled. Disabled users are blocked from logging in.
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * Set enabled status. This is persisted when saving the entity via the repository.
+     */
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
@@ -87,6 +103,7 @@ public class BackofficeUser {
                 "username='" + username + '\'' +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
+                ", enabled='" + enabled + '\'' +
                 '}';
     }
 }

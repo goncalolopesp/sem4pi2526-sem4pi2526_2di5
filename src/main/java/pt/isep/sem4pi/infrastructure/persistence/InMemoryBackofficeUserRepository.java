@@ -3,9 +3,11 @@ package pt.isep.sem4pi.infrastructure.persistence;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class InMemoryBackofficeUserRepository implements BackofficeUserRepository {
 
@@ -38,5 +40,9 @@ public class InMemoryBackofficeUserRepository implements BackofficeUserRepositor
     public boolean existsByEmail(final String email) {
         return byEmail.containsKey(email == null ? null : email.toLowerCase());
     }
-}
 
+    @Override
+    public List<BackofficeUser> findAll() {
+        return byUsername.values().stream().collect(Collectors.toList());
+    }
+}
