@@ -2,42 +2,43 @@ package pt.isep.sem4pi.application.usermanagement;
 
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.application.AuthenticationService;
+import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import eapli.framework.infrastructure.authz.domain.model.Role;
+import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
+import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
+
+import java.util.Optional;
+
+import static org.junit.Assert.*;
 
 public class UserStatusServiceTest {
 
-    @BeforeClass
-    public static void setupAuth() {
+    @Before
+    public void setUp() {
         AuthzRegistry.configure(PersistenceContext.repositories().users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());
     }
 
     @Test
-    public void enableDisableUser() {
-        final BackofficeUserRepository boRepo = PersistenceContext.repositories().backofficeUsers();
-
-        var opt = boRepo.ofIdentity("bo");
-        Assert.assertTrue(opt.isPresent());
-        var user = opt.get();
-        Assert.assertTrue(user.isEnabled());
-
+    public void disableAndEnableUser_updatesRepository() {
         final AuthenticationService auth = AuthzRegistry.authenticationService();
-        var authOpt = auth.authenticate("admin", "Password1");
-        Assert.assertTrue(authOpt.isPresent());
+        final AuthorizationService authz = AuthzRegistry.authorizationService();
+        final Optional<?> login = auth.authenticate("admin", "Password1", new Role[0]);
+        assertTrue("admin should authenticate", login.isPresent());
+        assertTrue("admin should have ADMIN role", authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN));
 
         final UserStatusService svc = new UserStatusService();
         svc.disableUser("bo");
-        user = boRepo.ofIdentity("bo").get();
-        Assert.assertFalse(user.isEnabled());
-
+        final var repo = PersistenceContext.repositories().backofficeUsers();
+        final var opt = repo.ofIdentity("bo");
+        assertTrue(opt.isPresent());
+        assertFalse(opt.get().isEnabled());
         svc.enableUser("bo");
-        user = boRepo.ofIdentity("bo").get();
-        Assert.assertTrue(user.isEnabled());
+        final var opt2 = repo.ofIdentity("bo");
+        assertTrue(opt2.isPresent());
+        assertTrue(opt2.get().isEnabled());
     }
 }
-
