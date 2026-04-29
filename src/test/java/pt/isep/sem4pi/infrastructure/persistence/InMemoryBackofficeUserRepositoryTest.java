@@ -34,7 +34,6 @@ public class InMemoryBackofficeUserRepositoryTest {
         BackofficeUser u = new BackofficeUser("amy", "Amy", "amy@example.org",
                 "+351111111111", LocalDate.now().plusYears(1), LocalDate.now());
         repo.save(u);
-        // update enabled flag via setEnabled
         final var opt = repo.ofIdentity("amy");
         assertTrue(opt.isPresent());
         final BackofficeUser found = opt.get();
