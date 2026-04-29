@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.infrastructure.persistence;
+package pt.isep.sem4pi.infrastructure.persistence.JPA;
 
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
 import pt.isep.sem4pi.domain.model.Manufacture.Manufacturer;
