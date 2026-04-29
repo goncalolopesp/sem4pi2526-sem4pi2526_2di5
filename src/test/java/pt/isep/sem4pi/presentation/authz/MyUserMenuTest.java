@@ -23,7 +23,7 @@ public class MyUserMenuTest {
     }
 
     /**
-     * Garante que o menu constrói correctamente quando não existe sessão e quando existe.
+     * Garante que o menu constrói corretamente quando não existe sessão e quando existe.
      */
     @Test
     public void constructsWithAndWithoutSession() {

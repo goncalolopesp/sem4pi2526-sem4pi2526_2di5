@@ -29,7 +29,6 @@ public class LogoutUITest {
     @Test
     public void doShow_clearsSessionAndReturnsTrue() {
         final AuthenticationService auth = AuthzRegistry.authenticationService();
-        // authenticate a user to create a session
         auth.authenticate("admin", "Password1", new Role[0]);
         final LogoutUI ui = new LogoutUI();
         final boolean result = ui.show();

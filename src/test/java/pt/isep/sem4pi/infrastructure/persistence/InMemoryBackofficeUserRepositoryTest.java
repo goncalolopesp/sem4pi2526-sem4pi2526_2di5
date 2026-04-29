@@ -23,7 +23,7 @@ public class InMemoryBackofficeUserRepositoryTest {
     }
 
     /**
-     * Verifica que um utilizador salvo é recuperado correctamente.
+     * Verifica que um utilizador salvo é recuperado corretamente.
      */
     @Test
     public void saveAndFind_returnsSavedUser() {

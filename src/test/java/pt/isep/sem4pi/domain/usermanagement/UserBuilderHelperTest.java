@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 /**
  * Teste para o UserBuilderHelper.
  *
- * Garante que o builder devolve um SystemUserBuilder configurado com a política e encoder do projecto
+ * Garante que o builder devolve um SystemUserBuilder configurado com a política e encoder do projeto
  * e que é possível construir um SystemUser simples.
  */
 public class UserBuilderHelperTest {
