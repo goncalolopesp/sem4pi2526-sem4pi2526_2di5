@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.aircraftModel;
+package pt.isep.sem4pi.domain.model.engineModel;
 
 import eapli.framework.domain.model.ValueObject;
 import jakarta.persistence.Embeddable;

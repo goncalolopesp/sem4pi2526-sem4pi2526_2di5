@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.aircraftModel;
+package pt.isep.sem4pi.domain.model.Manufacture;
 
 import eapli.framework.domain.model.AggregateRoot;
 import jakarta.persistence.Column;

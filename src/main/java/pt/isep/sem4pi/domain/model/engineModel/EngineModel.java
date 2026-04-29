@@ -1,7 +1,8 @@
-package pt.isep.sem4pi.domain.aircraftModel;
+package pt.isep.sem4pi.domain.model.engineModel;
 
 import eapli.framework.domain.model.AggregateRoot;
 import jakarta.persistence.*;
+import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
