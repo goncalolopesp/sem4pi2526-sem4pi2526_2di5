@@ -5,6 +5,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+/**
+ * Teste para a ação de logout.
+ *
+ * Verifica construção e implementação da interface Action.
+ */
 public class LogoutActionTest {
 
     @Test
@@ -14,4 +19,3 @@ public class LogoutActionTest {
         assertTrue(a instanceof Action);
     }
 }
-

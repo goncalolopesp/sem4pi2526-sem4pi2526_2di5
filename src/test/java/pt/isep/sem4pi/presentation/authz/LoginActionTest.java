@@ -5,6 +5,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+/**
+ * Teste para a ação de login.
+ *
+ * Verifica que a ação pode ser construída e implementa a interface Action.
+ */
 public class LoginActionTest {
 
     @Test
@@ -17,4 +22,3 @@ public class LoginActionTest {
         assertTrue(a2 instanceof Action);
     }
 }
-

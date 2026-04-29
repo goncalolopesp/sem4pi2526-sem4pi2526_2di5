@@ -1,7 +1,9 @@
 package pt.isep.sem4pi.presentation;
 
 /**
- * Minimal BaseApp similar to the example's BaseApp to run console applications.
+ * Classe base mínima para aplicações de consola neste projecto.
+ *
+ * Define o ciclo de vida simples: header, setup, main e footer.
  */
 public abstract class BaseApp {
 

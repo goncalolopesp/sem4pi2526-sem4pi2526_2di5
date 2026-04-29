@@ -9,7 +9,10 @@ import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 /**
- * UI for user login action adapted from example project, using AuthzRegistry.authenticationService().
+ * Interface de utilizador para login.
+ *
+ * Le username password da consola e tenta autenticar. Se o utilizador estiver
+ * desativado informa e impede o acesso.
  */
 @SuppressWarnings("squid:S106")
 public class LoginUI extends AbstractUI {

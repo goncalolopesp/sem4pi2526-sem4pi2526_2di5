@@ -16,7 +16,9 @@ import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 
 /**
- * Main menu with role-based protection using EAPLI AuthorizationService.
+ * Menu principal da aplicacao SEM4PI.
+ *
+ * Mostra opcoes com base nas roles do utilizador autenticado.
  */
 public class MainMenu extends AbstractUI {
 
@@ -56,7 +58,7 @@ public class MainMenu extends AbstractUI {
     }
 
     /**
-     * Run the menu loop until the user selects exit.
+     * Executa o ciclo do menu principal ate o utilizador escolher sair.
      */
     public void mainLoop() {
         var exit = false;

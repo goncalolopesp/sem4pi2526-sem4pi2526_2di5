@@ -9,6 +9,12 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * Repositório em memória para BackofficeUser.
+ *
+ * Implementa operações básicas usadas nas user stories de gestão de utilizadores.
+ * Não usa base de dados; adequado para testes e para a implementação padrão deste projecto.
+ */
 public class InMemoryBackofficeUserRepository implements BackofficeUserRepository {
 
     private final Map<String, BackofficeUser> byUsername = new ConcurrentHashMap<>();

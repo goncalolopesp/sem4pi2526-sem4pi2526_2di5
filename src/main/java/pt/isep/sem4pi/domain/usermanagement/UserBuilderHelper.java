@@ -5,7 +5,9 @@ import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
 import eapli.framework.util.Utility;
 
 /**
- * Helper to build SystemUser and SignupRequest objects using the EAPLI framework builders.
+ * Helper para construir SystemUser usando as definições de senha e codificação do projeto.
+ *
+ * Usado quando é preciso criar um SystemUser com a política local e o encoder definido.
  */
 @Utility
 public final class UserBuilderHelper {
@@ -14,8 +16,11 @@ public final class UserBuilderHelper {
         // utility
     }
 
+    /**
+     * Retorna um SystemUserBuilder configurado com a política SEM4PI e codificador em claro.
+     * @return SystemUserBuilder pronto a usar
+     */
     public static SystemUserBuilder builder() {
         return new SystemUserBuilder(new SEM4PIPasswordPolicy(), new PlainTextEncoder());
     }
 }
-

@@ -5,6 +5,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+/**
+ * Testes para as roles do projecto (US30/US32).
+ *
+ * Verifica que existem valores para atribuir a novos utilizadores e que a ajuda isCollaborator funciona.
+ */
 public class SEM4PIRolesTest {
 
     @Test
@@ -16,4 +21,3 @@ public class SEM4PIRolesTest {
         assertFalse(SEM4PIRoles.isCollaborator(null));
     }
 }
-

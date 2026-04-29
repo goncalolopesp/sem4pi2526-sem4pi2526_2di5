@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 /**
- * Simple domain entity to hold additional backoffice user data.
+ * Entidade que guarda dados extra de um utilizador do backoffice.
+ *
+ * Utilizada para armazenar contacto, datas e estado (enabled disabled) de um utilizador.
  */
 public class BackofficeUser {
 
@@ -46,39 +48,65 @@ public class BackofficeUser {
         this.enabled = true;
     }
 
+    /**
+     * Nome de utilizador.
+     * @return username
+     */
     public String username() {
         return username;
     }
 
+    /**
+     * Nome completo (nome + apelido).
+     * @return nome do utilizador
+     */
     public String name() {
         return name;
     }
 
+    /**
+     * E mail do utilizador (em minusculas).
+     * @return e mail
+     */
     public String email() {
         return email;
     }
 
+    /**
+     * Telefone de contacto.
+     * @return numero de telemovel
+     */
     public String phoneNumber() {
         return phoneNumber;
     }
 
+    /**
+     * Data de validade da habilitacao de seguranca.
+     * @return data
+     */
     public LocalDate securityClearanceExpirationDate() {
         return securityClearanceExpirationDate;
     }
 
+    /**
+     * Data da avaliacao de competencias.
+     * @return data
+     */
     public LocalDate skillsAssessmentDate() {
         return skillsAssessmentDate;
     }
 
     /**
-     * Returns whether this backoffice user is enabled. Disabled users are blocked from logging in.
+     * Indica se o utilizador esta ativo e pode fazer login.
+     * @return true se activo
      */
     public boolean isEnabled() {
         return enabled;
     }
 
     /**
-     * Set enabled status. This is persisted when saving the entity via the repository.
+     * Altera o estado ativo do utilizador. Isto e persistido quando se salva via repo.
+     * @param enabled novo estado
      */
     public void setEnabled(final boolean enabled) {
         this.enabled = enabled;

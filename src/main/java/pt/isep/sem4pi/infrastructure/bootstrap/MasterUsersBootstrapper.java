@@ -10,7 +10,9 @@ import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
 // NOT IN USE, FOR NOW USE ../persistence/InMemoryRepositoryFactory.java
 
 /**
- * Bootstrapper to register master users (admin, backoffice operator).
+ * Bootstrapper para registar utilizadores mestres (admin, backoffice operator).
+ *
+ * Pode ser usado para inicializar o sistema com contas por omissao. Atualmente nao e invocado por omissao.
  */
 public class MasterUsersBootstrapper {
 

@@ -15,11 +15,21 @@ import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.util.Optional;
 
+/**
+ * Controlador para registo de utilizadores backoffice.
+ *
+ * Serve para validar dados e criar tanto o SystemUser (framework) como o BackofficeUser
+ * na persistencia. Usado no contexto de gestao de utilizadores (registo).
+ */
 public class RegisterBackofficeUserController {
 
     public RegisterBackofficeUserController() {
     }
 
+    /**
+     * Garante que a sessao atual pertence a um administrador.
+     * Lanca IllegalStateException se nao existir servico de autorizacao ou sessao/role.
+     */
     public void ensureAdmin() {
         final AuthorizationService authz = AuthzRegistry.authorizationService();
         if (authz == null) {
@@ -35,6 +45,11 @@ public class RegisterBackofficeUserController {
         }
     }
 
+    /**
+     * Verifica disponibilidade de username.
+     * @param username nome de utilizador a validar
+     * @return true se o username for permitido e nao existir na repo
+     */
     public boolean isUsernameAvailable(final String username) {
         if (username == null || username.trim().isEmpty()) {
             return false;
@@ -50,6 +65,11 @@ public class RegisterBackofficeUserController {
         return !boRepo.existsByUsername(username.trim());
     }
 
+    /**
+     * Verifica disponibilidade de e-mail (forma e existencia).
+     * @param email e-mail a verificar
+     * @return true se o e-mail tiver formato valido e nao existir
+     */
     public boolean isEmailAvailable(final String email) {
         if (email == null || email.trim().isEmpty()) {
             return false;
@@ -68,6 +88,11 @@ public class RegisterBackofficeUserController {
         return !boRepo.existsByEmail(email.trim().toLowerCase());
     }
 
+    /**
+     * Valida o formato do e-mail.
+     * @param email e-mail a validar
+     * @return true se o formato e valido
+     */
     public boolean isEmailFormatValid(final String email) {
         if (email == null || email.trim().isEmpty()) {
             return false;
@@ -80,6 +105,11 @@ public class RegisterBackofficeUserController {
         }
     }
 
+    /**
+     * Verifica se uma password satisfaz a politica local.
+     * @param password a password a validar
+     * @return true se a password cumprir a politica
+     */
     public boolean isPasswordValid(final String password) {
         if (password == null) {
             return false;
@@ -88,6 +118,11 @@ public class RegisterBackofficeUserController {
         return policy.isSatisfiedBy(password);
     }
 
+    /**
+     * Procura um BackofficeUser por username.
+     * @param username nome de utilizador
+     * @return Optional com o BackofficeUser se existir
+     */
     public Optional<BackofficeUser> findBackofficeUserByUsername(final String username) {
         if (username == null) {
             return Optional.empty();
@@ -103,6 +138,19 @@ public class RegisterBackofficeUserController {
         return boRepo.ofIdentity(username.trim());
     }
 
+    /**
+     * Regista um novo utilizador backoffice.
+     * Regras aplicadas: admin ativo, dados obrigatorios, password valida, unicidade de username/email.
+     * @param username username do novo utilizador
+     * @param password password em claro
+     * @param firstName nome proprio
+     * @param lastName apelido
+     * @param email e-mail
+     * @param phoneNumber contacto
+     * @param securityClearanceExpirationDate validade da habilitacao de seguranca
+     * @param skillsAssessmentDate data da avaliacao de competencias
+     * @return o BackofficeUser criado e persistido
+     */
     public BackofficeUser register(final String username, final String password,
                                    final String firstName, final String lastName,
                                    final String email, final String phoneNumber,

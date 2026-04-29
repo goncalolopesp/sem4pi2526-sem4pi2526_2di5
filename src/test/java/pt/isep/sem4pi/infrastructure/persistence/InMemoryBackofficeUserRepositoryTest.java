@@ -8,6 +8,11 @@ import java.time.LocalDate;
 
 import static org.junit.Assert.*;
 
+/**
+ * Testes para o repositório em memória de BackofficeUser (US32).
+ *
+ * Verifica salvar, procurar e actualizar o estado enabled.
+ */
 public class InMemoryBackofficeUserRepositoryTest {
 
     private InMemoryBackofficeUserRepository repo;
@@ -17,6 +22,9 @@ public class InMemoryBackofficeUserRepositoryTest {
         repo = new InMemoryBackofficeUserRepository();
     }
 
+    /**
+     * Verifica que um utilizador salvo é recuperado correctamente.
+     */
     @Test
     public void saveAndFind_returnsSavedUser() {
         BackofficeUser u = new BackofficeUser("joe", "Joe", "joe@example.org",
@@ -29,6 +37,9 @@ public class InMemoryBackofficeUserRepositoryTest {
         assertTrue(stored.get().isEnabled());
     }
 
+    /**
+     * Verifica que guardar um utilizador existente actualiza o estado (overwrite).
+     */
     @Test
     public void save_overwritesExistingUser() {
         BackofficeUser u = new BackofficeUser("amy", "Amy", "amy@example.org",

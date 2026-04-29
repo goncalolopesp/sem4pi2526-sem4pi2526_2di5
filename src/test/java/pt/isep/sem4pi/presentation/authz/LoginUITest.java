@@ -4,6 +4,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+/**
+ * Testes básicos para a UI de login.
+ *
+ * Valida propriedades simples como o título (headline). A leitura de credenciais é feita por consola
+ * e não é testada automaticamente aqui.
+ */
 public class LoginUITest {
 
     @Test
@@ -14,4 +20,3 @@ public class LoginUITest {
         assertEquals("Login", ui2.headline());
     }
 }
-
