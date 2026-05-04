@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.model.Manufacture;
+package pt.isep.sem4pi.domain.model.Manufacturer;
 
 import eapli.framework.domain.model.ValueObject;
 import jakarta.persistence.Embeddable;
@@ -21,9 +21,13 @@ public class ManufacturerId implements ValueObject, Comparable<ManufacturerId>, 
         this.code = code;
     }
 
+    public String getCode() {
+        return code;
+    }
+
     @Override
     public int compareTo(ManufacturerId o) {
-        return this.code.compareTo(o.code);
+        return this.code.compareTo(o.getCode());
     }
 
     @Override

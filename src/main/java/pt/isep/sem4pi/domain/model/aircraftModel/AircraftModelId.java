@@ -21,9 +21,13 @@ public class AircraftModelId implements ValueObject, Comparable<AircraftModelId>
         this.code = code;
     }
 
+    public String code() {
+        return code;
+    }
+
     @Override
     public int compareTo(AircraftModelId o) {
-        return this.code.compareTo(o.code);
+        return this.code.compareTo(o.code());
     }
 
     @Override

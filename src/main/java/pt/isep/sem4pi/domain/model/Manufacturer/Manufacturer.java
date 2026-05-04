@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.model.Manufacture;
+package pt.isep.sem4pi.domain.model.Manufacturer;
 
 import eapli.framework.domain.model.AggregateRoot;
 import jakarta.persistence.Column;

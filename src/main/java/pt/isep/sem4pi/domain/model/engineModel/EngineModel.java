@@ -2,7 +2,7 @@ package pt.isep.sem4pi.domain.model.engineModel;
 
 import eapli.framework.domain.model.AggregateRoot;
 import jakarta.persistence.*;
-import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.Manufacturer.ManufacturerId;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

@@ -2,9 +2,10 @@ package pt.isep.sem4pi.domain.model.aircraftModel;
 
 import eapli.framework.domain.model.AggregateRoot;
 import jakarta.persistence.*;
-import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.Manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.CertifiedEngine;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
+import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -15,6 +16,14 @@ import java.util.List;
  */
 
 @Entity
+
+@Table(uniqueConstraints = {
+        @UniqueConstraint(
+                name = "UC_AIRCRAFTMODEL_MANUFACTURER_NAME",
+                columnNames = {"manufacturerId", "modelName"}
+        )
+})
+
 public class AircraftModel implements AggregateRoot<AircraftModelId> {
     @EmbeddedId
     private AircraftModelId id;
@@ -35,98 +44,100 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
     @Column(nullable = false)
     private String modelName;
 
-    @Column(nullable = false)
-    private String motorization;
+    @Enumerated(EnumType.STRING)
+    private MotorizationType motorization;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal emptyWeight;
+    @Embedded
+    private Fuel fuel;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal maximumTakeoffWeight;
+    @Embedded
+    private WingGeometry wingGeometry;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal maximumZeroFuelWeight;
+    @Embedded
+    private AircraftPerformance performance;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal maximumFuelCapacity;
+    @Embedded
+    private Weight weightLimits;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal serviceCeiling;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal cruiseSpeed;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal wingArea;
-
-    @Column(nullable = false, precision = 10, scale = 4)
-    private BigDecimal dragCoefficient;
-
-    @Column(nullable = false, precision = 10, scale = 4)
-    private BigDecimal liftCoefficient;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal maximumRange;
-
-    @Column(nullable = false, precision = 10, scale = 4)
-    private BigDecimal aspectRatio;
+    @Embedded
+    private Coefficient aerodynamics;
 
     @Version
     private Long version;
 
     protected AircraftModel(){}
 
-    public AircraftModel(AircraftModelId id, ManufacturerId manufacturerId, AircraftType aircraftType, String modelName, String motorization,
-                         BigDecimal emptyWeight, BigDecimal maximumTakeoffWeight, BigDecimal maximumZeroFuelWeight,
-                         BigDecimal maximumFuelCapacity, BigDecimal serviceCeiling, BigDecimal cruiseSpeed,
-                         BigDecimal wingArea, BigDecimal dragCoefficient, BigDecimal liftCoefficient,
-                         BigDecimal maximumRange, BigDecimal aspectRatio) {
+    public AircraftModel(AircraftModelId id, ManufacturerId manufacturerId, AircraftType aircraftType,
+                         String modelName, MotorizationType motorization,
+                         Weight weightLimits, Coefficient aerodynamics,
+                         AircraftPerformance performance, Fuel fuel,
+                         WingGeometry wingGeometry,
+                         List<EngineModelId> engineModelIds) {
+
         if (id == null) throw new IllegalArgumentException("AircraftModelId cannot be null");
         if (manufacturerId == null) throw new IllegalArgumentException("ManufacturerId cannot be null");
         if (aircraftType == null) throw new IllegalArgumentException("AircraftType cannot be null");
         if (modelName == null || modelName.trim().isEmpty()) throw new IllegalArgumentException("ModelName cannot be null or empty");
-        if (motorization == null || motorization.trim().isEmpty()) throw new IllegalArgumentException("Motorization cannot be null or empty");
-        validateBigDecimal(emptyWeight, "EmptyWeight");
-        validateBigDecimal(maximumTakeoffWeight, "MaximumTakeoffWeight");
-        validateBigDecimal(maximumZeroFuelWeight, "MaximumZeroFuelWeight");
-        validateBigDecimal(maximumFuelCapacity, "MaximumFuelCapacity");
-        validateBigDecimal(serviceCeiling, "ServiceCeiling");
-        validateBigDecimal(cruiseSpeed, "CruiseSpeed");
-        validateBigDecimal(wingArea, "WingArea");
-        validateBigDecimal(dragCoefficient, "DragCoefficient");
-        validateBigDecimal(liftCoefficient, "LiftCoefficient");
-        validateBigDecimal(maximumRange, "MaximumRange");
-        validateBigDecimal(aspectRatio, "AspectRatio");
+        if (motorization == null) throw new IllegalArgumentException("Motorization cannot be null");
+
+        if (fuel == null) throw new IllegalArgumentException("Fuel cannot be null");
+        if (wingGeometry == null) throw new IllegalArgumentException("Wing geometry cannot be null");
+        if (performance == null) throw new IllegalArgumentException("AircraftPerformance cannot be null");
+        if (weightLimits == null) throw new IllegalArgumentException("Weight limits cannot be null");
+        if (aerodynamics == null) throw new IllegalArgumentException("Aerodynamics coefficients cannot be null");
+
+        if (engineModelIds == null || engineModelIds.isEmpty()) throw new IllegalArgumentException("At least one Engine Model ID must be provided");
 
         this.id = id;
         this.manufacturerId = manufacturerId;
         this.aircraftType = aircraftType;
         this.modelName = modelName;
         this.motorization = motorization;
-        this.emptyWeight = emptyWeight;
-        this.maximumTakeoffWeight = maximumTakeoffWeight;
-        this.maximumZeroFuelWeight = maximumZeroFuelWeight;
-        this.maximumFuelCapacity = maximumFuelCapacity;
-        this.serviceCeiling = serviceCeiling;
-        this.cruiseSpeed = cruiseSpeed;
-        this.wingArea = wingArea;
-        this.dragCoefficient = dragCoefficient;
-        this.liftCoefficient = liftCoefficient;
-        this.maximumRange = maximumRange;
-        this.aspectRatio = aspectRatio;
-    }
 
-    private void validateBigDecimal(BigDecimal value, String fieldName) {
-        if (value == null) throw new IllegalArgumentException(fieldName + " cannot be null");
-        if (value.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException(fieldName + " must be non-negative");
+        this.fuel = fuel;
+        this.wingGeometry = wingGeometry;
+        this.performance = performance;
+        this.weightLimits = weightLimits;
+        this.aerodynamics = aerodynamics;
+
+        for (EngineModelId engine : engineModelIds) {
+            this.certifyEngine(engine);
+        }
     }
 
     // Business method to ensure invariants
-    public void certifyEngine(EngineModel engine) {
-        if (engine == null) {
-            throw new IllegalArgumentException("Engine cannot be null.");
+    public void certifyEngine(EngineModelId engineId) {
+        if (engineId == null) {
+            throw new IllegalArgumentException("Engine ID cannot be null.");
         }
-        this.certifiedEngines.add(new CertifiedEngine(engine));
+
+        /// Business rule: Ensure that doesn't insert the same engine twice in the same aircraft
+        boolean alreadyCertified = this.certifiedEngines.stream()
+                .anyMatch(ce -> ce.engineModelId().equals(engineId));
+
+        if (alreadyCertified) {
+            throw new IllegalArgumentException("This engine is already certified for this aircraft model.");
+        }
+
+        this.certifiedEngines.add(new CertifiedEngine(engineId));
+    }
+
+    public AircraftModelId id() {return this.id;}
+    public ManufacturerId manufacturerId() {return this.manufacturerId;}
+    public AircraftType aircraftType() {return this.aircraftType;}
+    public String modelName() {return this.modelName;}
+    public MotorizationType motorization() {return this.motorization;}
+    public Fuel fuel() {return this.fuel;}
+    public WingGeometry wingGeometry() {return this.wingGeometry;}
+    public Coefficient aerodynamics() {return this.aerodynamics;}
+    public AircraftPerformance performance() {return this.performance;}
+    public Weight weightLimits() {return this.weightLimits;}
+    public List<EngineModelId> engineModelIds() {
+        List<EngineModelId> engineIds = new ArrayList<>();
+        for (CertifiedEngine ce : this.certifiedEngines) {
+            engineIds.add(ce.engineModelId());
+        }
+        return engineIds;
     }
 
     @Override
