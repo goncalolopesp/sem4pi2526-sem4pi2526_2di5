@@ -12,6 +12,9 @@ import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 public class InMemoryRepositoryFactory implements RepositoryFactory {
 
     private static eapli.framework.infrastructure.authz.domain.repositories.UserRepository userRepository;
+    private static AircraftModelRepository aircraftModelRepository;
+    private static EngineModelRepository engineModelRepository;
+    private static ManufacturerRepository manufacturerRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -35,17 +38,26 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
 
     @Override
     public AircraftModelRepository aircraftModels() {
-        return new InMemoryAircraftModelRepository();
+        if (aircraftModelRepository == null) {
+            aircraftModelRepository = new InMemoryAircraftModelRepository();
+        }
+        return aircraftModelRepository;
     }
 
     @Override
     public EngineModelRepository engineModels() {
-        return null;
+        if (engineModelRepository == null) {
+            engineModelRepository = new InMemoryEngineModelRepository();
+        }
+        return engineModelRepository;
     }
 
     @Override
     public ManufacturerRepository manufacturers() {
-        return null;
+        if (manufacturerRepository == null) {
+            manufacturerRepository = new InMemoryManufacturerRepository();
+        }
+        return manufacturerRepository;
     }
 
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {

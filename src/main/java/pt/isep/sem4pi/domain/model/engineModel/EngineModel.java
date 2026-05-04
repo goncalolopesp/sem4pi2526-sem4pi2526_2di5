@@ -1,13 +1,22 @@
 package pt.isep.sem4pi.domain.model.engineModel;
 
 import eapli.framework.domain.model.AggregateRoot;
-import jakarta.persistence.*;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
+@Table(name = "engine_model", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"manufacturer_id", "name"})
+})
 public class EngineModel implements AggregateRoot<EngineModelId>, Serializable {
 
     @EmbeddedId
@@ -78,5 +87,12 @@ public class EngineModel implements AggregateRoot<EngineModelId>, Serializable {
     @Override
     public EngineModelId identity() {
         return id;
+    }
+
+    public boolean hasManufacturerAndName(final ManufacturerId manufacturerId, final String name) {
+        if (manufacturerId == null || name == null || name.trim().isEmpty()) {
+            return false;
+        }
+        return this.manufacturerId.equals(manufacturerId) && this.name.equalsIgnoreCase(name.trim());
     }
 }
