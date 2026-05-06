@@ -66,7 +66,7 @@ public class AppSettings {
 
 	private void setDefaultProperties() {
 		this.applicationProperties.setProperty(REPOSITORY_FACTORY_KEY,
-				"eapli.exemplo.persistence.jpa.JpaRepositoryFactory");
+				"pt.isep.sem4pi.infrastructure.persistence.InMemoryRepositoryFactory");
 		this.applicationProperties.setProperty(UI_MENU_LAYOUT_KEY, "horizontal");
 		this.applicationProperties.setProperty(PERSISTENCE_UNIT_KEY, "eapli.exemplo");
 		this.applicationProperties.setProperty(HIGH_CALORIES_DISH_LIMIT, "300");

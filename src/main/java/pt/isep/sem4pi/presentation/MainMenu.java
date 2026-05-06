@@ -13,6 +13,7 @@ import eapli.framework.presentation.console.menu.HorizontalMenuRenderer;
 import eapli.framework.presentation.console.menu.MenuItemRenderer;
 import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
+import pt.isep.sem4pi.presentation.aircraftModel.AddAircraftModelAction;
 
 /**
  * Main menu with role-based protection using EAPLI AuthorizationService.
@@ -27,6 +28,8 @@ public class MainMenu extends AbstractUI {
     private static final int ADD_USER_OPTION = 1;
     private static final int LIST_USERS_OPTION = 2;
     private static final int DEACTIVATE_USER_OPTION = 3;
+    private static final int OPERATOR_OPTION = 4;
+    private static final int ADMIN_OPTION = 5;
 
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
@@ -78,11 +81,18 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(USERS_OPTION, usersMenu);
             }
 
+            if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR)) {
+                final var operatorMenu = new Menu("Operator >");
+                operatorMenu.addItem(1, "Add New Aircraft Model", new AddAircraftModelAction());
+                operatorMenu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
+                mainMenu.addSubMenu(OPERATOR_OPTION, operatorMenu);
+            }
+
             if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
                 final var adminMenu = new Menu("Admin >");
                 adminMenu.addItem(1, "Admin Task (TODO)", new ShowMessageAction("Admin task not implemented yet"));
                 adminMenu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
-                mainMenu.addSubMenu(3, adminMenu);
+                mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
             }
         }
 

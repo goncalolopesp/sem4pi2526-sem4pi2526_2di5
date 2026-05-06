@@ -31,6 +31,10 @@ public class MasterUsersBootstrapper {
         final SystemUser boUser = boBuilder.build();
         users.save(boUser);
 
+        //Add US056 bootstrappers
+
+        new AircraftModelBootstrapper().execute();
+
         return true;
     }
 }

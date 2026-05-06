@@ -15,6 +15,7 @@ import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @UseCaseController
@@ -24,6 +25,9 @@ public class AddAircraftModelController {
     private final AircraftModelRepository aircraftRepo;
     private final ManufacturerRepository manufacturerRepo;
     private final EngineModelRepository engineRepo;
+
+    private ManufacturerId airbus = new ManufacturerId("AIRBUS");
+    private ManufacturerId boeing = new ManufacturerId("BOEING");
 
     // Constructor for production (uses EAPLI factories)
     public AddAircraftModelController() {
@@ -42,14 +46,37 @@ public class AddAircraftModelController {
         this.engineRepo = engineRepo;
     }
 
+//    public Iterable<Manufacturer> getManufacturers() {
+//        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR);
+//        return manufacturerRepo.findAll();
+//    }
+
     public Iterable<Manufacturer> getManufacturers() {
-        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR);
-        return manufacturerRepo.findAll();
+
+        // --- Temporary Bypass to test UI from US055 ---
+        List<Manufacturer> dummyManufacturers = new ArrayList<>();
+        dummyManufacturers.add(new Manufacturer(airbus, "Airbus", "USA"));
+        dummyManufacturers.add(new Manufacturer(boeing, "Boeing", "USA"));
+
+        return dummyManufacturers;
+
+        // --- When US056 is completed, delete this method and leave method above
     }
 
+//    public Iterable<EngineModel> getEngineModels() {
+//        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR);
+//        return engineRepo.findAll();
+//    }
+
     public Iterable<EngineModel> getEngineModels() {
-        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR);
-        return engineRepo.findAll();
+
+        List<EngineModel> dummyEngines = new ArrayList<>();
+        dummyEngines.add(new EngineModel(new EngineModelId("CFM56-5B"), airbus, "CFM56-5B", "TYPE", new BigDecimal("1000"), "TYPE", new BigDecimal("1000")));
+        dummyEngines.add(new EngineModel(new EngineModelId("GE90-115B"), boeing, "GE90-115B", "TYPE", new BigDecimal("1000"), "TYPE", new BigDecimal("1000")));
+
+        return dummyEngines;
+
+        // --- When US056 is completed, delete this method and leave method above
     }
 
     public AircraftModel addAircraftModel(String id, Manufacturer manufacturer, String type, String name,
