@@ -13,6 +13,8 @@ import eapli.framework.presentation.console.menu.HorizontalMenuRenderer;
 import eapli.framework.presentation.console.menu.MenuItemRenderer;
 import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
+import pt.isep.sem4pi.presentation.authz.ListUsersAction;
+import pt.isep.sem4pi.presentation.authz.ListUsersUI;
 
 /**
  * Main menu with role-based protection using EAPLI AuthorizationService.
@@ -95,7 +97,7 @@ public class MainMenu extends AbstractUI {
         final var menu = new Menu("Users >");
 
         menu.addItem(ADD_USER_OPTION, "Add User", new ShowMessageAction("Add User - TODO"));
-        menu.addItem(LIST_USERS_OPTION, "List all Users", new ShowMessageAction("List Users - TODO"));
+        menu.addItem(LIST_USERS_OPTION, "List Users", new ListUsersAction());
         menu.addItem(DEACTIVATE_USER_OPTION, "Deactivate User", new ShowMessageAction("Deactivate User - TODO"));
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
