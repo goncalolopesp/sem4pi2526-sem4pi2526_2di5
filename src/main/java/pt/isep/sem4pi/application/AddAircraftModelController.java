@@ -18,6 +18,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller to add a new Aircraft Model to the system. Only users with BACKOFFICE_OPERATOR role can perform this action.
+ * The controller interacts with the repositories to fetch necessary data and save the new Aircraft Model.
+ */
+
 @UseCaseController
 public class AddAircraftModelController {
 

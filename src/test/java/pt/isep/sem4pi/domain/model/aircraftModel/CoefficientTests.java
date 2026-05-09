@@ -7,6 +7,12 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the Coefficient value object.
+ * <p>This class contains unit tests for the Coefficient class,
+ * verifying constructor validation for drag and lift coefficients,
+ * including boundary checks, and equality and hashing behavior.</p>
+ */
 @DisplayName("Coefficient Tests")
 public class CoefficientTests {
 

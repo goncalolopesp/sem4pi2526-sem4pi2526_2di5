@@ -4,6 +4,12 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the AircraftPerformance value object.
+ * <p>This class contains unit tests for the AircraftPerformance class,
+ * verifying constructor validation for service ceiling, cruise speed, and maximum range,
+ * as well as equality and hashing behavior.</p>
+ */
 class AircraftPerformanceTests {
 
     @Test

@@ -7,6 +7,13 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the Weight value object.
+ * <p>This class contains unit tests for the Weight class,
+ * verifying constructor validation for empty weight, maximum zero fuel weight,
+ * and maximum takeoff weight, including relationship constraints,
+ * and equality and hashing behavior.</p>
+ */
 @DisplayName("Weight Tests")
 public class WeightTests {
 

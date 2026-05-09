@@ -11,6 +11,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the AircraftModel aggregate.
+ * <p>This class contains comprehensive unit tests for the AircraftModel class,
+ * including constructor validation, engine certification, identity comparison,
+ * and various edge cases for all parameters.</p>
+ */
 class AircraftModelTests {
 
     private AircraftModelId aircraftModelId;
@@ -264,4 +270,3 @@ class AircraftModelTests {
         assertEquals(aircraftModelId, am.identity());
     }
 }
-

@@ -27,6 +27,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Test class for the AddAircraftModelController.
+ * <p>This class contains unit tests for the AddAircraftModelController,
+ * verifying the functionality of adding aircraft models, including validation
+ * of uniqueness constraints based on manufacturer and model name.</p>
+ */
 class AddAircraftModelControllerTests {
 
     private AddAircraftModelController controller;

@@ -4,6 +4,12 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the WingGeometry value object.
+ * <p>This class contains unit tests for the WingGeometry class,
+ * verifying constructor validation for wing area and aspect ratio,
+ * and equality and hashing behavior.</p>
+ */
 class WingGeometryTests {
 
     @Test

@@ -5,6 +5,10 @@ import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * The ID for Aircraft Model, which is a value object that uniquely identifies an Aircraft Model by its code. It implements Comparable to allow sorting by code.
+ */
+
 @Embeddable
 public class AircraftModelId implements ValueObject, Comparable<AircraftModelId>, Serializable {
 

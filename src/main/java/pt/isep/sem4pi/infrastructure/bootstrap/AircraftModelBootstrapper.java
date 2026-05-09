@@ -8,8 +8,22 @@ import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Bootstrapper class for initializing AircraftModel data.
+ * <p>This class implements the Action interface and is responsible for bootstrapping
+ * aircraft models into the system during application startup. It uses the
+ * AddAircraftModelController to add predefined aircraft models.</p>
+ */
 public class AircraftModelBootstrapper implements Action {
 
+    /**
+     * Executes the bootstrapping process for aircraft models.
+     * <p>This method attempts to bootstrap aircraft models by retrieving manufacturers
+     * and engine models, then adding aircraft models. Currently, the actual addition
+     * is commented out pending completion of related user stories.</p>
+     *
+     * @return true if the bootstrapping succeeds, false otherwise
+     */
     @Override
     public boolean execute() {
         AddAircraftModelController controller = new AddAircraftModelController();

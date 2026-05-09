@@ -4,6 +4,12 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the Fuel value object.
+ * <p>This class contains unit tests for the Fuel class,
+ * verifying constructor validation for maximum fuel capacity,
+ * and equality and hashing behavior.</p>
+ */
 class FuelTests {
 
     @Test
@@ -81,4 +87,3 @@ class FuelTests {
         assertEquals(fuel1.hashCode(), fuel2.hashCode());
     }
 }
-

@@ -6,6 +6,11 @@ import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+/**
+ * Aircraft Performance is a Value Object that encapsulates the performance characteristics of an aircraft model, including service ceiling, cruise speed, and maximum range. It includes validation to ensure that all values are positive and non-null.
+ * This class is designed to be embedded within the AircraftModel entity, allowing for a clean separation of concerns.
+ */
+
 @Embeddable
 public class AircraftPerformance implements ValueObject {
 

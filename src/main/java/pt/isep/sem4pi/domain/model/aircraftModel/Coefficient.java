@@ -6,6 +6,12 @@ import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+/**
+ * Coefficient is a Value Object that encapsulates the aerodynamic coefficients of an aircraft model, specifically the drag coefficient and lift coefficient.
+ * It includes validation to ensure that both coefficients are positive, non-null, and within realistic bounds.
+ * This class is designed to be embedded within the AircraftModel entity, allowing for a clean separation of concerns.
+ */
+
 @Embeddable
 public class Coefficient implements ValueObject {
 

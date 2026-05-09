@@ -3,6 +3,11 @@ package pt.isep.sem4pi.domain.model.aircraftModel;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the AircraftModelId value object.
+ * <p>This class contains unit tests for the AircraftModelId class,
+ * verifying constructor validation, equality, hashing, and comparison methods.</p>
+ */
 class AircraftModelIdTests {
 
     @Test
@@ -70,4 +75,3 @@ class AircraftModelIdTests {
         assertEquals(code, id.toString());
     }
 }
-
