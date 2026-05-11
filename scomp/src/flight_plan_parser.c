@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Parser JSON, escrito à mão para evitar dependências. */
 static char *read_file(const char *path, long *size_out) {
     FILE *file = fopen(path, "rb");
     if (!file) return NULL;
@@ -21,6 +22,7 @@ static char *read_file(const char *path, long *size_out) {
     return buffer;
 }
 
+/* Leio todo o ficheiro para memória. */
 static char *find_matching_brace(char *open_brace) {
     int depth = 0;
     for (char *p = open_brace; *p; ++p) {
@@ -33,6 +35,7 @@ static char *find_matching_brace(char *open_brace) {
     return NULL;
 }
 
+/* Procuro a '}' que fecha o bloco, contando profundidade */
 static int extract_string_after_key(char *start, const char *key, char *out, size_t out_size) {
     char pattern[64];
     snprintf(pattern, sizeof(pattern), "\"%s\"", key);
@@ -53,6 +56,7 @@ static int extract_string_after_key(char *start, const char *key, char *out, siz
     return 0;
 }
 
+/* Extraio strings do pseudo-JSON (ex: "Mode": "CRUISE"). */
 static int extract_number_after_key(char *start, const char *key, double *value) {
     char pattern[64];
     snprintf(pattern, sizeof(pattern), "\"%s\"", key);
@@ -70,12 +74,14 @@ static int extract_number_after_key(char *start, const char *key, double *value)
     return 0;
 }
 
+/* Extraio números com strtod; valido erros para poder reportar no parser. */
 static int extract_altitude_quantity(char *block, double *value) {
     char *alt = strstr(block, "\"Altitude\"");
     if (!alt) return -1;
     return extract_number_after_key(alt, "Quantity", value);
 }
 
+/* Procura especificamente o campo de altitude dentro de um bloco de posição. */
 static int parse_position_block(char *segment_block, const char *position_key, Position *position) {
     char pattern[64];
     snprintf(pattern, sizeof(pattern), "\"%s\"", position_key);
@@ -94,6 +100,7 @@ static int parse_position_block(char *segment_block, const char *position_key, P
     return ok ? 0 : -1;
 }
 
+/* Analisa um bloco "Start" ou "End" e preenche a estrutura Position. */
 int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_size) {
     if (!path || !plan) return -1;
     memset(plan, 0, sizeof(*plan));
@@ -104,6 +111,7 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
         return -1;
     }
 
+    /* Buffer contém o JSON inteiro; faço buscas simples por chaves.*/
     double numeric_id = 0;
     if (extract_number_after_key(buffer, "ID", &numeric_id) == 0) {
         snprintf(plan->flight_id, sizeof(plan->flight_id), "%.0f", numeric_id);
@@ -111,6 +119,7 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
         snprintf(plan->flight_id, sizeof(plan->flight_id), "%s", path);
     }
 
+    /* Se não houver ID numérico, uso o caminho como identificador. */
     char *segments = strstr(buffer, "\"Segments\"");
     if (!segments) {
         snprintf(err, err_size, "Flight plan '%s' has no Segments block", path);
@@ -139,6 +148,8 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
             plan->segment_count++;
         }
 
+        /* Só conto o segmento se Mode, Start e End forem válidos, isso evita
+           segfaults com dados incompletos. */
         *(end + 1) = saved;
         cursor = end + 1;
     }

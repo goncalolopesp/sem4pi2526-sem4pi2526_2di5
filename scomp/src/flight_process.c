@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
+/* Processo filho que simula um voo. Recebe SIGUSR1 para arrancar e envia updates pelo pipe. */
 static volatile sig_atomic_t start_requested = 0;
 static volatile sig_atomic_t terminate_requested = 0;
 
@@ -18,6 +19,7 @@ static void handle_term(int signo) {
     terminate_requested = 1;
 }
 
+/* Handlers mínimos: inicio e termo. Uso sig_atomic_t para segurança em sinais. */
 static Position interpolate(Position a, Position b, double ratio) {
     Position p;
     p.latitude = a.latitude + (b.latitude - a.latitude) * ratio;
@@ -26,6 +28,7 @@ static Position interpolate(Position a, Position b, double ratio) {
     return p;
 }
 
+/* Interpolação linear entre duas posições. */
 static int send_update(int fd, const FlightPlan *plan, int t, Position p, int status) {
     PositionUpdate update;
     memset(&update, 0, sizeof(update));
@@ -38,6 +41,7 @@ static int send_update(int fd, const FlightPlan *plan, int t, Position p, int st
     return written == (ssize_t)sizeof(update) ? 0 : -1;
 }
 
+/* Envia um PositionUpdate pelo pipe. Uso formato fixo para simplificar leitura pelo processo pai. */
 void run_flight_process(const char *flight_file, int write_fd, const SimulationConfig *config) {
     struct sigaction start_action;
     struct sigaction term_action;
@@ -72,6 +76,7 @@ void run_flight_process(const char *flight_file, int write_fd, const SimulationC
         _exit(EXIT_SUCCESS);
     }
 
+    /* Espero pelo sinal de arranque; isto permite sincronizar todos os filhos. */
     int total_steps = (config->end_time - config->start_time) / config->step_seconds;
     if (total_steps < plan.segment_count) total_steps = plan.segment_count;
     int steps_per_segment = total_steps / plan.segment_count;

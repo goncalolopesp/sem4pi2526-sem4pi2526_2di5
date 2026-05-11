@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 
+/* Estado do voo durante a simulação. */
 #define MAX_FLIGHTS 32
 #define MAX_SEGMENTS 128
 #define MAX_PATH 256
@@ -12,24 +13,29 @@
 #define STATUS_FINISHED 2
 #define STATUS_ABORTED 3
 
+
+/* Estrutura  para armazenar uma posição (lat, lon, altitude). */
 typedef struct {
     double latitude;
     double longitude;
     double altitude_m;
 } Position;
 
+/* Cada segmento tem início/fim e um modo (ex: TAXI, CRUISE) */
 typedef struct {
     Position start;
     Position end;
     char mode[16];
 } Segment;
 
+/* FlightPlan: guardo o id e a lista de segmentos. */
 typedef struct {
     char flight_id[FLIGHT_ID_SIZE];
     int segment_count;
     Segment segments[MAX_SEGMENTS];
 } FlightPlan;
 
+/* PositionUpdate: formato enviado pelos processos filhos. */
 typedef struct {
     int time_step;
     char flight_id[FLIGHT_ID_SIZE];
@@ -44,6 +50,7 @@ typedef struct {
     int status;
 } HistoryEntry;
 
+/* FlightRuntime: estado de cada voo enquanto a simulação corre. */
 typedef struct {
     char flight_id[FLIGHT_ID_SIZE];
     pid_t pid;

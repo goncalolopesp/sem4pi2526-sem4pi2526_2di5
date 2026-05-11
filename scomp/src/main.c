@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+/* Programa principal: cria processos filhos, sincroniza o arranque com SIGUSR1 e recolhe updates via pipes. */
 static volatile sig_atomic_t stop_requested = 0;
 
 static void handle_interrupt(int signo) {
@@ -17,6 +18,7 @@ static void handle_interrupt(int signo) {
     stop_requested = 1;
 }
 
+/* Handler para ctrl-c, marco pedido de paragem para terminar filhos com SIGTERM. */
 void print_usage(const char *program) {
     fprintf(stderr,
         "Usage: %s --area <minLat> <maxLat> <minLon> <maxLon> --start <sec> --end <sec> --step <sec> --flight <file> [--flight <file> ...]\n"
@@ -24,6 +26,7 @@ void print_usage(const char *program) {
         program, program);
 }
 
+/* Funções auxiliares para argumentos e validação. */
 int parse_args(int argc, char **argv, SimulationConfig *config) {
     memset(config, 0, sizeof(*config));
     config->step_seconds = 60;
@@ -90,6 +93,7 @@ int position_inside_area(Position p, const SimulationConfig *config) {
            p.longitude >= config->min_lon && p.longitude <= config->max_lon;
 }
 
+/* Verifica se a posição está dentro da área. */
 int append_history(FlightRuntime *runtime, const PositionUpdate *update) {
     if (runtime->history_count == runtime->history_capacity) {
         size_t new_capacity = runtime->history_capacity == 0 ? 16 : runtime->history_capacity * 2;
@@ -105,6 +109,7 @@ int append_history(FlightRuntime *runtime, const PositionUpdate *update) {
     return 0;
 }
 
+/* Guardar histórico de updates no runtime para gerar o ficheiro final. */
 static void free_runtimes(FlightRuntime *runtimes, int count) {
     for (int i = 0; i < count; ++i) free(runtimes[i].history);
 }
@@ -127,6 +132,7 @@ static void write_report(const FlightRuntime *runtimes, int count, const Simulat
     fclose(report);
 }
 
+/* Escrevo um relatório em texto. */
 int main(int argc, char **argv) {
     SimulationConfig config;
     if (parse_args(argc, argv, &config) != 0) {
