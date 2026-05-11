@@ -1,0 +1,17 @@
+US100 Simulation Report
+Area: lat [39.000000, 43.000000], lon [-9.000000, -3.000000]
+Time range: 0 to 600, step: 60 seconds
+Total flights: 1
+
+Flight 123456, PID 3206, updates 10
+  t=0 lat=41.262891 lon=-8.685220 alt=69.00 status=1
+  t=60 lat=41.631445 lon=-8.347610 alt=4659.00 status=1
+  t=120 lat=42.000000 lon=-8.010000 alt=9249.00 status=1
+  t=180 lat=42.000000 lon=-8.010000 alt=9249.00 status=1
+  t=240 lat=41.500000 lon=-6.155000 alt=9249.00 status=1
+  t=300 lat=41.000000 lon=-4.300000 alt=9249.00 status=1
+  t=360 lat=41.000000 lon=-4.300000 alt=9249.00 status=1
+  t=420 lat=40.744750 lon=-3.932150 alt=4929.50 status=1
+  t=480 lat=40.489500 lon=-3.564300 alt=610.00 status=1
+  t=540 lat=40.489500 lon=-3.564300 alt=610.00 status=2
+
