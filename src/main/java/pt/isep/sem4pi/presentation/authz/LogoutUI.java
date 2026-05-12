@@ -5,7 +5,9 @@ import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.presentation.console.AbstractUI;
 
 /**
- * Logout UI adapted from example project.
+ * UI de logout.
+ *
+ * Limpa a sessao atual e retorna sucesso. Usada quando o utilizador termina a sessao.
  */
 public class LogoutUI extends AbstractUI {
     private final AuthorizationService authz = AuthzRegistry.authorizationService();
@@ -21,4 +23,3 @@ public class LogoutUI extends AbstractUI {
         return true;
     }
 }
-

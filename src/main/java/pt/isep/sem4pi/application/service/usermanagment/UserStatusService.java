@@ -1,0 +1,99 @@
+package pt.isep.sem4pi.application.service.usermanagment;
+
+import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+import eapli.framework.infrastructure.authz.application.AuthorizationService;
+import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
+import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
+import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
+import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Serviço para gerir o estado (enable/disable) dos utilizadores do backoffice.
+ *
+ * Usado pela UI de gestão de utilizadores. Garante que apenas administradores podem
+ * listar ou alterar o estado dos utilizadores.
+ */
+public class UserStatusService {
+
+    private final BackofficeUserRepository boRepo;
+    private final AuthorizationService authz = AuthzRegistry.authorizationService();
+
+    public UserStatusService() {
+        final var repos = PersistenceContext.repositories();
+        this.boRepo = repos.backofficeUsers();
+    }
+
+    /**
+     * Verifica se a sessao atual pertence a um administrador.
+     * Lança IllegalStateException se a verificação falhar.
+     */
+    private void ensureAdmin() {
+        if (authz == null || authz.session().isEmpty() || !authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
+            throw new IllegalStateException("Access denied: ADMIN role required");
+        }
+    }
+
+    /**
+     * Lista todos os backoffice users.
+     * Requer sessão de administrador.
+     * @return lista de BackofficeUser
+     */
+    public List<BackofficeUser> listAll() {
+        ensureAdmin();
+        return boRepo.findAll();
+    }
+
+    /**
+     * Ativa um utilizador (marca como enabled) e persiste a alteração.
+     * Requer sessão de administrador.
+     * @param username nome do utilizador a ativar
+     * @throws IllegalArgumentException se username inválido ou utilizador não encontrado
+     */
+    public void enableUser(final String username) {
+        ensureAdmin();
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("username is required");
+        }
+        final Optional<BackofficeUser> opt = boRepo.ofIdentity(username.trim());
+        if (opt.isEmpty()) {
+            throw new IllegalArgumentException("User not found: " + username);
+        }
+        final BackofficeUser user = opt.get();
+        if (!user.isEnabled()) {
+            user.setEnabled(true);
+            boRepo.save(user);
+        }
+    }
+
+    /**
+     * Desativa um utilizador (marca como disabled) e persiste a alteração.
+     * Requer sessão de administrador. Não permite desativar o administrador atualmente autenticado.
+     * @param username nome do utilizador a desativar
+     * @throws IllegalArgumentException se username inválido ou utilizador não encontrado
+     * @throws IllegalStateException se se tentar desativar o administrador em sessão
+     */
+    public void disableUser(final String username) {
+        ensureAdmin();
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("username is required");
+        }
+        final Optional<BackofficeUser> opt = boRepo.ofIdentity(username.trim());
+        if (opt.isEmpty()) {
+            throw new IllegalArgumentException("User not found: " + username);
+        }
+        final BackofficeUser user = opt.get();
+
+        final String current = authz.session().map(s -> s.authenticatedUser().identity().toString()).orElse(null);
+        if (current != null && current.equals(user.username()) && authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
+            throw new IllegalStateException("Cannot disable the currently logged-in administrator");
+        }
+
+        if (user.isEnabled()) {
+            user.setEnabled(false);
+            boRepo.save(user);
+        }
+    }
+}

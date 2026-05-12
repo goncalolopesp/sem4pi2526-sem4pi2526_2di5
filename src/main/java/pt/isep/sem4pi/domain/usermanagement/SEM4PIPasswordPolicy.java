@@ -4,7 +4,9 @@ import eapli.framework.infrastructure.authz.domain.model.PasswordPolicy;
 import eapli.framework.strings.util.StringPredicates;
 
 /**
- * Password policy for the SEM4PI application.
+ * Politica de password da aplicacao SEM4PI.
+ *
+ * Define regras simples: minimo de 6 caracteres, obrigatorio um algarismo e uma letra maiuscula.
  */
 public class SEM4PIPasswordPolicy implements PasswordPolicy {
 
@@ -28,6 +30,12 @@ public class SEM4PIPasswordPolicy implements PasswordPolicy {
         WEAK, GOOD, EXCELLENT
     }
 
+    /**
+     * Avalia a forca da password de forma simples.
+     *
+     * @param rawPassword password em claro
+     * @return enum com a classificacao (WEAK, GOOD, EXCELLENT)
+     */
     public PasswordStrength strength(final String rawPassword) {
         if (StringPredicates.isNullOrEmpty(rawPassword)) {
             return PasswordStrength.WEAK;
@@ -41,4 +49,3 @@ public class SEM4PIPasswordPolicy implements PasswordPolicy {
         return PasswordStrength.WEAK;
     }
 }
-

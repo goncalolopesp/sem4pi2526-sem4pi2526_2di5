@@ -3,10 +3,18 @@ package pt.isep.sem4pi.infrastructure.persistence;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
+/**
+ * Repositório em memória para BackofficeUser.
+ *
+ * Implementa operações básicas usadas nas user stories de gestão de utilizadores.
+ * Não usa base de dados; adequado para testes e para a implementação padrão deste projecto.
+ */
 public class InMemoryBackofficeUserRepository implements BackofficeUserRepository {
 
     private final Map<String, BackofficeUser> byUsername = new ConcurrentHashMap<>();
@@ -38,5 +46,9 @@ public class InMemoryBackofficeUserRepository implements BackofficeUserRepositor
     public boolean existsByEmail(final String email) {
         return byEmail.containsKey(email == null ? null : email.toLowerCase());
     }
-}
 
+    @Override
+    public List<BackofficeUser> findAll() {
+        return byUsername.values().stream().collect(Collectors.toList());
+    }
+}
