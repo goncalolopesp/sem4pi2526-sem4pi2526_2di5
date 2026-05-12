@@ -43,6 +43,11 @@ public final class PersistenceContext {
         // ensure utility
     }
 
+    /**
+     * Retorna a fabrica de repositorios actual.
+     * Se ainda nao existir, inicializa a fabrica em memoria por omissao.
+     * @return RepositoryFactory usado pela aplicacao
+     */
     public static RepositoryFactory repositories() {
         if (theFactory == null) {
             final String factoryClassName = Application.settings().getRepositoryFactory();

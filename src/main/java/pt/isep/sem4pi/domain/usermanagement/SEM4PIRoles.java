@@ -3,7 +3,9 @@ package pt.isep.sem4pi.domain.usermanagement;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 
 /**
- * Project roles for the SEM4PI application.
+ * Roles do projeto SEM4PI.
+ *
+ * Define constantes para as roles usadas na aplicacao e utilitarios para validacao.
  */
 public final class SEM4PIRoles {
 
@@ -15,13 +17,19 @@ public final class SEM4PIRoles {
     public static final Role AIR_TRANSPORT_COMPANY_COLLABORATOR = Role.valueOf("AIR_TRANSPORT_COMPANY_COLLABORATOR");
 
     /**
-     * Roles that make sense to be available when adding new users (non-regular-user values).
+     * Roles que fazem sentido escolher ao criar utilizadores (valores nao "regular user").
+     * @return array de roles
      */
     public static Role[] nonUserValues() {
         return new Role[] { ADMIN, BACKOFFICE_OPERATOR, WEATHER_PERSON, PILOT, FLIGHT_CONTROL_OPERATOR,
                 AIR_TRANSPORT_COMPANY_COLLABORATOR };
     }
 
+    /**
+     * Verifica se a role e considerada colaboradora (tem poderes de backoffice/admin).
+     * @param role role a testar
+     * @return true se for uma role colaboradora
+     */
     public static boolean isCollaborator(final Role role) {
         if (role == null) {
             return false;
@@ -31,4 +39,3 @@ public final class SEM4PIRoles {
                 || role.equals(AIR_TRANSPORT_COMPANY_COLLABORATOR);
     }
 }
-
