@@ -1,7 +1,8 @@
-package pt.isep.sem4pi.application.engineModel;
+package pt.isep.sem4pi.application.controller.engineModel;
 
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;

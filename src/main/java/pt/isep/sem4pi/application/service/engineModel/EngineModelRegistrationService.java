@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.application.engineModel;
+package pt.isep.sem4pi.application.service.engineModel;
 
 import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;

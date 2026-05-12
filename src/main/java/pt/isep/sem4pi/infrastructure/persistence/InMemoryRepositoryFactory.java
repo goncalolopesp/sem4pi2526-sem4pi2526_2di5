@@ -1,13 +1,15 @@
 package pt.isep.sem4pi.infrastructure.persistence;
 
 import eapli.framework.domain.repositories.TransactionalContext;
-import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftModelRepository;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryEngineModelRepository;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryManufacturerRepository;
 
 public class InMemoryRepositoryFactory implements RepositoryFactory {
 

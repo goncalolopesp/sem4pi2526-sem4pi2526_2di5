@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.infrastructure.persistence;
+package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainRepository;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;

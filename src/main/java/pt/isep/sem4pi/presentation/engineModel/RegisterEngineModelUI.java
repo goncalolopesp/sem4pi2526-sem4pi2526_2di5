@@ -2,7 +2,7 @@ package pt.isep.sem4pi.presentation.engineModel;
 
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
-import pt.isep.sem4pi.application.engineModel.RegisterEngineModelController;
+import pt.isep.sem4pi.application.controller.engineModel.RegisterEngineModelController;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 
 import java.math.BigDecimal;

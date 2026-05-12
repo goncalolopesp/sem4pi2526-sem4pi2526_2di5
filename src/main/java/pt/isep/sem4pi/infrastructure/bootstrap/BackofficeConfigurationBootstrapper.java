@@ -1,6 +1,6 @@
 package pt.isep.sem4pi.infrastructure.bootstrap;
 
-import pt.isep.sem4pi.application.engineModel.EngineModelRegistrationService;
+import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
 import pt.isep.sem4pi.domain.model.Manufacture.Manufacturer;
 import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
