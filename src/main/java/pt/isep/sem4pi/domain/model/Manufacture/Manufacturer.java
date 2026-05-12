@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.model.Manufacture;
 
 import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -26,15 +27,11 @@ public class Manufacturer implements AggregateRoot<ManufacturerId> {
     }
 
     public Manufacturer(ManufacturerId id, String name, String country) {
-        if (id == null) {
-            throw new IllegalArgumentException("The Manufacturer ID cannot be null!");
-        }
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("The Manufacturer name cannot be null or empty!");
-        }
-        if (country == null || country.trim().isEmpty()) {
-            throw new IllegalArgumentException("The Manufacturer country cannot be null or empty!");
-        }
+        Preconditions.nonNull(id, "The Manufacturer ID cannot be null!");
+        Preconditions.ensure(name != null && !name.trim().isEmpty(),
+                "The Manufacturer name cannot be null or empty!");
+        Preconditions.ensure(country != null && !country.trim().isEmpty(),
+                "The Manufacturer country cannot be null or empty!");
         this.id = id;
         this.name = name;
         this.country = country;
@@ -51,5 +48,13 @@ public class Manufacturer implements AggregateRoot<ManufacturerId> {
     @Override
     public ManufacturerId identity() {
         return id;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public String country() {
+        return country;
     }
 }

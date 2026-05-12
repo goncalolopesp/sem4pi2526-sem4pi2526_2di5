@@ -9,6 +9,9 @@ import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 import java.math.BigDecimal;
 
+import pt.isep.sem4pi.domain.model.engineModel.EngineType;
+import pt.isep.sem4pi.domain.model.engineModel.FuelType;
+
 public class BackofficeConfigurationBootstrapper {
     private final ManufacturerRepository manufacturerRepository = PersistenceContext.repositories().manufacturers();
     private final EngineModelRepository engineModelRepository = PersistenceContext.repositories().engineModels();
@@ -20,12 +23,12 @@ public class BackofficeConfigurationBootstrapper {
         registerManufacturer("RR", "Rolls-Royce", "United Kingdom");
         registerManufacturer("GE", "General Electric", "United States");
 
-        registerEngineModel("CFM56-5B", "CFM", "CFM56-5B", "Turbofan",
-                new BigDecimal("120.00"), "Jet A-1", new BigDecimal("37.50"));
-        registerEngineModel("TRENT1000", "RR", "Trent 1000", "Turbofan",
-                new BigDecimal("330.00"), "Jet A-1", new BigDecimal("41.20"));
-        registerEngineModel("GENX-1B", "GE", "GEnx-1B", "Turbofan",
-                new BigDecimal("330.00"), "Jet A-1", new BigDecimal("40.80"));
+        registerEngineModel("CFM56-5B", "CFM", "CFM56-5B", EngineType.TURBOFAN,
+                new BigDecimal("120.00"), FuelType.JET_A1, new BigDecimal("37.50"));
+        registerEngineModel("TRENT1000", "RR", "Trent 1000", EngineType.TURBOFAN,
+                new BigDecimal("330.00"), FuelType.JET_A1, new BigDecimal("41.20"));
+        registerEngineModel("GENX-1B", "GE", "GEnx-1B", EngineType.TURBOFAN,
+                new BigDecimal("330.00"), FuelType.JET_A1, new BigDecimal("40.80"));
 
         return true;
     }
@@ -38,7 +41,7 @@ public class BackofficeConfigurationBootstrapper {
     }
 
     private void registerEngineModel(final String modelCode, final String manufacturerCode, final String name,
-                                     final String type, final BigDecimal power, final String fuelType,
+                                     final EngineType type, final BigDecimal power, final FuelType fuelType,
                                      final BigDecimal efficiency) {
         final ManufacturerId manufacturerId = new ManufacturerId(manufacturerCode);
         if (!engineModelRepository.containsOfIdentity(new pt.isep.sem4pi.domain.model.engineModel.EngineModelId(modelCode))
