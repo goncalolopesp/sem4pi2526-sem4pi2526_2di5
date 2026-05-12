@@ -1,5 +1,7 @@
 package pt.isep.sem4pi.infrastructure.persistence;
 
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
+
 /**
  * Contexto de persistencia do projeto.
  *

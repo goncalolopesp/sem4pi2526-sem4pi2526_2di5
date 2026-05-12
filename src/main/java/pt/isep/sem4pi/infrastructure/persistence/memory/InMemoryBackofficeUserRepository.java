@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.infrastructure.persistence;
+package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
