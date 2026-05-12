@@ -3,6 +3,7 @@ package pt.isep.sem4pi.infrastructure.persistence;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryBackofficeUserRepository;
 
 import java.time.LocalDate;
 
