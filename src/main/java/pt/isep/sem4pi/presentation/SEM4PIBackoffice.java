@@ -8,7 +8,9 @@ import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
 import pt.isep.sem4pi.presentation.authz.LoginUI;
 
 /**
- * Backoffice application launcher for SEM4PI using EAPLI framework authz.
+ * Launcher da aplicacao Backoffice SEM4PI.
+ *
+ * Configura o servico de autenticacao e inicia o menu principal apos login.
  */
 public final class SEM4PIBackoffice extends BaseApp {
 

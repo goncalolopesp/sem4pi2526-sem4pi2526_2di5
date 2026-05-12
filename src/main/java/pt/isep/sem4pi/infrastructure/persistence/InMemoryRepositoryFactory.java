@@ -7,13 +7,24 @@ import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
+import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
+import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftModelRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryEngineModelRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryManufacturerRepository;
 
+import java.time.LocalDate;
+
+/**
+ * Fábrica de repositórios em memória.
+ *
+ * Usada como implementação padrão para persistência nas user stories US30-32.
+ * Cria repositórios e semeia alguns utilizadores por omissão.
+ */
 public class InMemoryRepositoryFactory implements RepositoryFactory {
 
     private static eapli.framework.infrastructure.authz.domain.repositories.UserRepository userRepository;
+    private static BackofficeUserRepository backofficeUserRepository;
     private static AircraftModelRepository aircraftModelRepository;
     private static EngineModelRepository engineModelRepository;
     private static ManufacturerRepository manufacturerRepository;
@@ -36,6 +47,20 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
         }
 
         return userRepository;
+    }
+
+    @Override
+    public BackofficeUserRepository backofficeUsers(TransactionalContext tx) {
+        return backofficeUsers();
+    }
+
+    @Override
+    public BackofficeUserRepository backofficeUsers() {
+        if (backofficeUserRepository == null) {
+            backofficeUserRepository = new InMemoryBackofficeUserRepository();
+            seedDefaultBackofficeUsers(backofficeUserRepository);
+        }
+        return backofficeUserRepository;
     }
 
     @Override
@@ -82,5 +107,19 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
                 .withRoles(SEM4PIRoles.BACKOFFICE_OPERATOR);
 
         repo.save(boBuilder.build());
+    }
+
+    private void seedDefaultBackofficeUsers(final BackofficeUserRepository repo) {
+        if (!repo.existsByUsername("bo")) {
+            final BackofficeUser bo = new BackofficeUser(
+                    "bo",
+                    "Backoffice User",
+                    "bo@example.org",
+                    "+351000000000",
+                    LocalDate.now().plusYears(1),
+                    LocalDate.now()
+            );
+            repo.save(bo);
+        }
     }
 }

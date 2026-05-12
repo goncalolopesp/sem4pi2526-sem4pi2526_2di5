@@ -2,12 +2,15 @@ package pt.isep.sem4pi.infrastructure.persistence;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
+import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 
 /**
- * Minimal repository factory for SEM4PI — provides only user repositories for authz.
+ * Fábrica mínima de repositórios para o projeto SEM4PI.
+ *
+ * Expõe repositórios necessários para autenticação e gestão de BackofficeUser.
  */
 public interface RepositoryFactory {
 
@@ -17,10 +20,13 @@ public interface RepositoryFactory {
 
     UserRepository users();
 
+    BackofficeUserRepository backofficeUsers(TransactionalContext tx);
+
+    BackofficeUserRepository backofficeUsers();
+
     AircraftModelRepository aircraftModels();
 
     EngineModelRepository engineModels();
 
     ManufacturerRepository manufacturers();
 }
-
