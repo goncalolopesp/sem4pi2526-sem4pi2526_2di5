@@ -1,0 +1,93 @@
+@startuml US030_SD
+title US030 - Authentication and Authorization - Sequence Diagram
+
+actor "User" as User
+
+participant "LoginUI" as LoginUI
+participant "AuthenticationController" as AuthController
+participant "AuthenticationService\n(EAPLI Authz)" as AuthService
+participant "AuthorizationService\n(EAPLI Authz)" as AuthzService
+participant "UserAccessService" as AccessService
+participant "UserRepository" as UserRepo
+participant "MainMenu" as MainMenu
+
+== Login ==
+
+User -> LoginUI : enter username and password
+LoginUI -> AuthController : login(username, password, requiredRoles)
+
+AuthController -> AuthService : authenticate(username, password, requiredRoles)
+AuthService --> AuthController : Optional<UserSession>
+
+alt invalid credentials
+    AuthController --> LoginUI : INVALID_CREDENTIALS
+    LoginUI --> User : show error message
+
+else valid credentials
+    AuthController -> AccessService : canUserAccess(username)
+    AccessService -> UserRepo : ofIdentity(username)
+    UserRepo --> AccessService : Optional<SystemUser>
+    AccessService --> AuthController : accessAllowed
+
+    alt user disabled
+        AuthController -> AuthzService : clearSession()
+        AuthController --> LoginUI : ACCESS_DENIED
+        LoginUI --> User : show disabled account message
+
+    else user active
+        AuthController --> LoginUI : SUCCESS
+        LoginUI --> User : login successful
+        LoginUI -> MainMenu : show()
+        MainMenu -> AuthzService : isAuthenticatedUserAuthorizedTo(role)
+        AuthzService --> MainMenu : authorization result
+        MainMenu --> User : show menu according to role
+    end
+end
+
+== Change Password ==
+
+opt authenticated user changes password
+    User -> LoginUI : select "Change Password"
+    participant "ChangePasswordUI" as ChangePasswordUI
+
+    LoginUI -> ChangePasswordUI : show()
+    User -> ChangePasswordUI : enter old password and new password
+    ChangePasswordUI -> AuthController : changePassword(oldPassword, newPassword)
+
+    AuthController -> AuthzService : hasSession()
+    AuthzService --> AuthController : true
+
+    AuthController -> AuthController : validate new password policy
+
+    alt password violates policy
+        AuthController --> ChangePasswordUI : PASSWORD_POLICY_VIOLATION
+        ChangePasswordUI --> User : show invalid password message
+    else password valid
+        AuthController -> AuthService : changePassword(oldPassword, newPassword)
+        AuthService --> AuthController : result
+
+        alt old password invalid
+            AuthController --> ChangePasswordUI : INVALID_AUTHENTICATION
+            ChangePasswordUI --> User : show invalid authentication message
+        else password changed
+            AuthController --> ChangePasswordUI : SUCCESS
+            ChangePasswordUI --> User : show success message
+        end
+    end
+end
+
+== Logout ==
+
+opt authenticated user logs out
+    participant "LogoutUI" as LogoutUI
+
+    User -> LogoutUI : request logout
+    LogoutUI -> AuthController : logout()
+    AuthController -> AuthzService : hasSession()
+    AuthzService --> AuthController : true
+    AuthController -> AuthzService : clearSession()
+    AuthController --> LogoutUI : ok
+    LogoutUI --> User : logout successful
+end
+
+@enduml

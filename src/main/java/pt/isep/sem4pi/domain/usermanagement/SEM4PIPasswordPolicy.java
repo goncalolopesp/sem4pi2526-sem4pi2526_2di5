@@ -25,27 +25,4 @@ public class SEM4PIPasswordPolicy implements PasswordPolicy {
         // at least one capital letter
         return StringPredicates.containsCapital(rawPassword);
     }
-
-    public enum PasswordStrength {
-        WEAK, GOOD, EXCELLENT
-    }
-
-    /**
-     * Avalia a forca da password de forma simples.
-     *
-     * @param rawPassword password em claro
-     * @return enum com a classificacao (WEAK, GOOD, EXCELLENT)
-     */
-    public PasswordStrength strength(final String rawPassword) {
-        if (StringPredicates.isNullOrEmpty(rawPassword)) {
-            return PasswordStrength.WEAK;
-        }
-
-        if (rawPassword.length() >= 12 || (rawPassword.length() >= 8 && StringPredicates.containsAny(rawPassword, "$#!%&?"))) {
-            return PasswordStrength.EXCELLENT;
-        } else if (rawPassword.length() >= 8) {
-            return PasswordStrength.GOOD;
-        }
-        return PasswordStrength.WEAK;
-    }
 }

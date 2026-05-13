@@ -1,0 +1,125 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title SEM4PI - Component Diagram
+
+package "Presentation Layer\npt.isep.sem4pi.presentation" {
+
+  [SEM4PIBackoffice] as Backoffice
+  [MainMenu] as MainMenu
+  [Actions] as Actions
+
+  package "UI Components" {
+    [Authz UI] as AuthzUI
+    [EngineModel UI] as EngineModelUI
+  }
+}
+
+package "Application Layer\npt.isep.sem4pi.application" {
+
+  [Controllers] as Controllers
+  [Application Services] as AppServices
+  [Menu] as AppMenu
+}
+
+package "Domain Layer\npt.isep.sem4pi.domain" {
+
+  [Domain Model\nAggregates, Entities,\nValue Objects] as DomainModel
+
+  [Repository Interfaces] as RepositoryInterfaces
+
+  [User Management] as UserManagement
+}
+
+package "Infrastructure Layer\npt.isep.sem4pi.infrastructure" {
+
+  package "Bootstrap" {
+
+    [BackofficeConfigurationBootstrapper] as ConfigBootstrapper
+    [MasterUsersBootstrapper] as UsersBootstrapper
+  }
+
+  package "Persistence" {
+
+    [PersistenceContext] as PersistenceContext
+    [RepositoryFactory] as RepositoryFactory
+
+    package "Memory Persistence" {
+
+      [InMemoryRepositoryFactory] as InMemoryFactory
+      [InMemory Repositories] as InMemoryRepos
+    }
+
+    package "JPA Persistence" {
+
+      [JPA Repositories] as JpaRepos
+    }
+  }
+}
+
+package "EAPLI Framework" {
+
+  [Console Framework] as ConsoleFramework
+
+  [Authz Framework] as AuthzFramework
+
+  [DDD Support\nEntity, AggregateRoot,\nValueObject] as DDDFramework
+
+  [Repository Support] as RepoSupport
+
+  [Preconditions / Invariants] as Preconditions
+}
+
+file "application.properties" as Properties
+
+database "Relational Database" as Database
+
+collections "In-Memory Storage" as MemoryStorage
+
+[Main] --> Backoffice
+
+Backoffice --> MainMenu
+
+MainMenu --> Actions
+
+AuthzUI --> Controllers
+EngineModelUI --> Controllers
+Actions --> Controllers
+
+Controllers --> AppServices
+Controllers --> PersistenceContext
+Controllers --> UserManagement
+
+AppServices --> DomainModel
+AppServices --> RepositoryInterfaces
+
+DomainModel --> DDDFramework
+DomainModel --> Preconditions
+
+UserManagement --> AuthzFramework
+
+RepositoryInterfaces --> RepoSupport
+
+PersistenceContext --> Properties
+PersistenceContext --> RepositoryFactory
+
+RepositoryFactory <|.. InMemoryFactory
+RepositoryFactory <|.. JpaRepos
+
+RepositoryInterfaces <|.. InMemoryRepos
+RepositoryInterfaces <|.. JpaRepos
+
+InMemoryFactory --> InMemoryRepos
+
+InMemoryRepos --> MemoryStorage
+
+JpaRepos --> Database
+
+ConfigBootstrapper --> PersistenceContext
+UsersBootstrapper --> PersistenceContext
+
+Backoffice --> ConsoleFramework
+
+@enduml
