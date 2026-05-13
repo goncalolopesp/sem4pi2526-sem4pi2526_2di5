@@ -62,7 +62,6 @@ Main components:
 * `SEM4PIBackoffice`
 * `MainMenu`
 * `authz`
-* `engineModel`
 * UI Actions
 
 The presentation layer follows the EAPLI console framework structure.
@@ -74,11 +73,17 @@ Rules:
 * The UI delegates operations to controllers.
 * The UI may validate input format, but business validation belongs to the domain layer.
 
-Example flow:
+Expected flows:
 
-```text
-UI -> Action -> Controller
-```
+The following generic flows describe the expected interaction between the Presentation layer and the remaining application layers.
+
+These flows use generic names such as `X_UI`, `X_Controller`, `Y_Service` and `Z_Repository`, which must be replaced by the concrete classes of each user story.
+
+![Generic flow with service](ssd_generic.svg)
+
+---
+### Or without a service layer:
+![Generic flow without service](ssd_generic_without_service.svg)
 
 ---
 
