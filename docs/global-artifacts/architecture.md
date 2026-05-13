@@ -79,11 +79,11 @@ The following generic flows describe the expected interaction between the Presen
 
 These flows use generic names such as `X_UI`, `X_Controller`, `Y_Service` and `Z_Repository`, which must be replaced by the concrete classes of each user story.
 
-![Generic flow with service](ssd_generic.svg)
+![Generic flow with service](sd_generic.svg)
 
 ---
 ### Or without a service layer:
-![Generic flow without service](ssd_generic_without_service.svg)
+![Generic flow without service](sd_generic_without_service.svg)
 
 ---
 
