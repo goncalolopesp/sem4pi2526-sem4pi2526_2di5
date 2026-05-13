@@ -8,6 +8,7 @@
 #define MAX_SEGMENTS 128
 #define MAX_PATH 256
 #define FLIGHT_ID_SIZE 64
+#define MAX_TRACKED_FLIGHTS 64
 
 #define STATUS_RUNNING 1
 #define STATUS_FINISHED 2
@@ -45,6 +46,28 @@ typedef struct {
 } PositionUpdate;
 
 typedef struct {
+    int      time_step;
+    Position position;
+    int      status;
+} TrackPoint;
+
+typedef struct {
+    char      flight_id[FLIGHT_ID_SIZE];
+    pid_t     pid;
+    Position  current_position;
+    int       last_time_step;
+    int       status;
+    TrackPoint *history;
+    size_t      history_count;
+    size_t      history_capacity;
+} TrackEntry;
+
+typedef struct {
+    TrackEntry entries[MAX_TRACKED_FLIGHTS];
+    int        entry_count;
+} PositionTracker;
+
+typedef struct {
     int time_step;
     Position position;
     int status;
@@ -80,5 +103,11 @@ void run_flight_process(const char *flight_file, int write_fd, const SimulationC
 int append_history(FlightRuntime *runtime, const PositionUpdate *update);
 int position_inside_area(Position p, const SimulationConfig *config);
 void print_usage(const char *program);
+
+void tracker_init(PositionTracker *tracker);
+void tracker_destroy(PositionTracker *tracker);
+int tracker_update(PositionTracker *tracker, const PositionUpdate *update);
+const TrackEntry *tracker_get_current(const PositionTracker *tracker, const char *flight_id);
+void tracker_print_summary(const PositionTracker *tracker);
 
 #endif
