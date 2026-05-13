@@ -1,67 +1,97 @@
-# US030 - Authentication and Authorization
+# US030 — Authentication and Authorization
 
-## 1. Purpose
+## 1. Requirements Engineering
 
-US030 defines how authentication and authorization will be planned and implemented in the SEM4PI backoffice.
+### 1.1 User Story
 
-This user story is transversal because all protected functionalities depend on authenticated and authorized users.
-
-The solution will follow the project architecture:
-
-```text
-Presentation -> Application -> Domain
-Infrastructure -> Domain abstractions
-Persistence implementations -> Repository interfaces
-````
-
-The EAPLI framework will be used for authentication, authorization, repositories, console UI support, preconditions and invariants. The framework explicitly supports DDD, persistence, utilities, console presentation and Authz.
+As a Project Manager, I want the system to support and apply authentication and authorization for all its users and functionalities.
 
 ---
 
-## 2. Architectural Decision
+## 1.2 Context
 
-Authentication and authorization will not be implemented manually.
+The system contains multiple user roles and protected functionalities.
+Authentication and authorization are transversal concerns required by all remaining user stories involving protected access.
 
-The system will use:
-
-```text
-EAPLI Authz Framework
-```
-
-Main framework elements:
-
-```text
-AuthzRegistry
-AuthenticationService
-AuthorizationService
-SystemUser
-SystemUserBuilder
-PasswordPolicy
-```
-
-The project-specific domain model will still contain the domain `User` aggregate.
-
-Therefore:
-
-| Concept                    | Responsibility                                     |
-| -------------------------- | -------------------------------------------------- |
-| `SystemUser`               | Technical authentication user from EAPLI           |
-| `User` aggregate           | Business user identity, status and access rules    |
-| `SEM4PIPasswordPolicy`     | Project password policy                            |
-| `SEM4PIRoles`              | Project roles                                      |
-| `AuthenticationController` | Coordinates login/logout/change password use cases |
-| `UserAccessService`        | Validates domain access rules                      |
-| `UserRepository`           | Provides access to the domain `User` aggregate     |
-
-This keeps framework authentication separated from business user rules.
+The project requirements explicitly recommend the usage of existing frameworks for authentication and authorization, since these concerns are infrastructure-oriented and not the main business focus of the system.
 
 ---
 
-## 3. Layered Architecture for US030
+## 1.3 Acceptance Criteria
 
-The EAPLI sample project separates Presentation, Application, Domain and Persistence layers. Presentation is the UI layer, Application contains services/controllers, Domain contains business objects and Persistence contains repositories.
+* Users must authenticate before accessing protected functionalities.
+* The system must support login and logout operations.
+* Authentication must validate username and password.
+* Authorization must restrict functionalities according to user roles.
+* Invalid credentials must prevent access.
+* Disabled users must not authenticate.
+* Passwords must follow the project password policy.
+* The solution must integrate with the EAPLI authorization framework.
 
-### 3.1 Presentation Layer
+---
+
+## 1.4 Dependencies
+
+This user story depends on:
+
+* repository infrastructure;
+* persistence configuration;
+* bootstrap process;
+* EAPLI Authz framework integration.
+
+It also supports all remaining protected user stories.
+
+---
+
+# 2. Analysis
+
+Authentication and authorization are cross-cutting concerns required throughout the system.
+
+The implementation needed to:
+
+* support authenticated sessions;
+* support role-based authorization;
+* integrate with console menus;
+* remain independent from business use cases.
+
+Because authentication is not the main business focus of the project, the solution adopts the EAPLI Authz framework, as recommended in the requirements.
+
+The implementation separates:
+
+* infrastructure authentication concerns;
+* application orchestration;
+* business-specific validation.
+
+This separation improves maintainability and avoids spreading security logic across the system.
+
+---
+
+# 3. Design
+
+## 3.1 Architectural Approach
+
+The implementation follows the layered architecture adopted in the project:
+
+```text
+Presentation -> Application -> Domain -> Infrastructure
+```
+
+Responsibilities:
+
+| Layer          | Responsibility                        |
+| -------------- | ------------------------------------- |
+| Presentation   | User interaction                      |
+| Application    | Use case coordination                 |
+| Domain         | Business rules and policies           |
+| Infrastructure | Persistence and framework integration |
+
+This structure follows the architectural organization recommended in the EAPLI framework and DDD slides.
+
+---
+
+## 3.2 Main Components
+
+### Presentation Layer
 
 Package:
 
@@ -69,100 +99,51 @@ Package:
 pt.isep.sem4pi.presentation.authz
 ```
 
+Main components:
+
+* `LoginUI`
+* `LogoutUI`
+* `ChangePasswordUI`
+* `LoginAction`
+* `LogoutAction`
+
 Responsibilities:
 
-```text
-- Show login, logout and change password screens
-- Collect user input
-- Display operation results
-- Trigger use case execution through controllers
-```
+* collect user input;
+* present results;
+* delegate operations to controllers.
 
-Planned components:
-
-```text
-LoginUI
-LoginAction
-LogoutUI
-LogoutAction
-ChangePasswordUI
-MyUserMenu
-```
-
-Rules:
-
-```text
-- UI must not contain business rules
-- UI must not access repositories
-- UI must not validate business preconditions
-- UI delegates the operation to controllers
-```
-
-Valid UI responsibility:
-
-```text
-Read username
-Read password
-Show success/error message
-```
-
-Invalid UI responsibility:
-
-```text
-Check if user is disabled
-Check if user has permission
-Access UserRepository
-Validate domain invariants
-```
+The UI layer does not directly access repositories.
 
 ---
 
-### 3.2 Application Layer
+### Application Layer
 
 Package:
 
 ```text
-pt.isep.sem4pi.application.usermanagement
+pt.isep.sem4pi.application.controller.usermanagement
 ```
 
-Planned components:
+Main component:
 
 ```text
 AuthenticationController
-UserAccessService
 ```
 
 Responsibilities:
 
-```text
-- Coordinate login
-- Coordinate logout
-- Coordinate change password
-- Validate application-level preconditions
-- Use EAPLI AuthenticationService and AuthorizationService
-- Obtain repositories through PersistenceContext when domain user data is needed
-```
+* coordinate authentication;
+* coordinate logout;
+* coordinate password change;
+* validate access permissions;
+* enforce password policy integration.
 
-Rules:
-
-```text
-- Controllers coordinate use cases
-- Controllers validate preconditions using EAPLI Preconditions
-- Controllers may check authentication and authorization
-- Controllers do not contain core business rules
-- Controllers access repositories through interfaces
-```
-
-Example planned flow:
-
-```text
-LoginUI -> AuthenticationController -> AuthenticationService
-AuthenticationController -> UserAccessService -> UserRepository -> User aggregate
-```
+The controller follows the GRASP Controller principle by centralizing the use case orchestration.
 
 ---
 
-### 3.3 Domain Layer
+### Domain Layer
 
 Package:
 
@@ -170,639 +151,313 @@ Package:
 pt.isep.sem4pi.domain.usermanagement
 ```
 
-Planned concepts:
+Main components:
 
-```text
-User
-UserId
-Email
-PhoneNumber
-UserStatus
-Role
-SEM4PIRoles
-SEM4PIPasswordPolicy
-UserRepository
-```
+* `SEM4PIPasswordPolicy`
+* `SEM4PIRoles`
+* `UserBuilderHelper`
 
 Responsibilities:
 
-```text
-- Represent business user identity
-- Represent user access status
-- Protect user invariants
-- Define project roles
-- Define password policy
-```
+* define valid password rules;
+* define project roles;
+* configure user creation with the project policies.
 
-Rules:
+The password policy enforces:
 
-```text
-- User is an aggregate root
-- UserRepository retrieves User aggregates
-- Business rules belong to the User aggregate or domain services
-- User must expose intention-revealing methods
-```
-
-Preferred:
-
-```java
-user.disable();
-user.enable();
-user.canAuthenticate();
-```
-
-Avoid:
-
-```java
-user.setEnabled(false);
-```
-
-The slides reinforce that entities should be valid, have identity, implement business rules and avoid being just data structures.
+* minimum length;
+* uppercase character;
+* numeric character.
 
 ---
 
-### 3.4 Infrastructure Layer
+### Infrastructure Layer
 
-Package:
+Packages:
 
 ```text
 pt.isep.sem4pi.infrastructure.persistence
+pt.isep.sem4pi.infrastructure.bootstrap
 ```
 
 Responsibilities:
 
-```text
-- Provide repository implementations
-- Hide persistence details
-- Provide RepositoryFactory
-- Provide PersistenceContext
-- Support in-memory and JPA persistence
-```
-
-Rules:
-
-```text
-- Infrastructure depends on domain abstractions
-- Domain does not depend on infrastructure
-- Controllers depend on repository interfaces
-- Persistence implementation is selected through configuration
-```
-
-The EAPLI material explicitly separates repository definition from implementation and applies the Abstract Factory pattern to hide persistence details.
+* repository access;
+* persistence abstraction;
+* framework integration;
+* bootstrap users.
 
 ---
 
-## 4. Preconditions
+## 3.3 Authentication Flow
 
-Preconditions must be validated outside the UI.
-
-The EAPLI framework provides `Preconditions` to validate method parameters and `Invariants` to validate internal object consistency.
-
-### 4.1 Login Preconditions
-
-Validated in:
+General authentication flow:
 
 ```text
-AuthenticationController.login(...)
+LoginUI
+ -> AuthenticationController
+ -> AuthenticationService
+ -> AuthorizationService
+ -> UserAccessService
+ -> UserRepository
 ```
 
-Preconditions:
-
-```text
-- username must not be null or empty
-- password must not be null or empty
-- AuthenticationService must be configured
-```
-
-Example:
+Authentication is delegated to the EAPLI framework through:
 
 ```java
-Preconditions.nonEmpty(username, "Username must not be empty");
-Preconditions.nonEmpty(password, "Password must not be empty");
-Preconditions.nonNull(authenticationService, "Authentication service must be configured");
+authenticationService.authenticate(...)
 ```
 
----
 
-### 4.2 Logout Preconditions
 
-Validated in:
+If authentication succeeds:
+
+* the session is created;
+* authorization rules are applied;
+* user access validation is executed.
+
+Disabled users are denied access through:
 
 ```text
-AuthenticationController.logout()
+UserAccessService
 ```
 
-Preconditions:
+---
+
+## 3.4 Authorization
+
+Authorization is role-based.
+
+Roles implemented:
+
+* `ADMIN`
+* `BACKOFFICE_OPERATOR`
+
+Menus and actions are dynamically restricted according to authenticated roles.
+
+This approach ensures:
+
+* separation of permissions;
+* protection of administrative functionalities;
+* centralized authorization logic.
+
+---
+
+## 3.5 Session Management
+
+Session management is handled through:
+
+* `AuthenticationService`
+* `AuthorizationService`
+
+The implementation supports:
+
+* authenticated sessions;
+* logout;
+* session clearing;
+* authorization verification.
+
+Logout flow:
 
 ```text
-- AuthorizationService must be configured
-- there must be an active session
+LogoutUI
+ -> AuthenticationController
+ -> AuthorizationService.clearSession()
 ```
+
+
 
 ---
 
-### 4.3 Change Password Preconditions
+## 3.6 Password Management
 
-Validated in:
+Password management is integrated into the authentication infrastructure.
+
+The project implements:
+
+* password validation;
+* password change;
+* password policy enforcement.
+
+Password changes are coordinated through:
 
 ```text
-AuthenticationController.changePassword(...)
+ChangePasswordUI
+ -> AuthenticationController
+ -> AuthenticationService.changePassword(...)
 ```
 
-Preconditions:
+
+
+The controller validates:
+
+* authenticated session existence;
+* password policy compliance.
+
+---
+
+## 3.7 Design Decisions
+
+### Use of EAPLI Authz Framework
+
+The project requirements explicitly recommend existing authentication frameworks.
+
+The EAPLI Authz framework was adopted because:
+
+* it already provides session handling;
+* it supports role-based authorization;
+* it integrates with repositories;
+* it reduces infrastructure complexity;
+* it aligns with EAPLI architectural guidelines.
+
+---
+
+### Separation Between UI and Business Logic
+
+The UI layer only:
+
+* collects input;
+* presents results;
+* delegates operations.
+
+Business validation and orchestration are handled by controllers and services.
+
+This avoids coupling presentation with business rules.
+
+---
+
+### Controller-Centered Coordination
+
+The `AuthenticationController` centralizes:
+
+* login;
+* logout;
+* password changes.
+
+This reduces duplicated orchestration logic across UIs.
+
+---
+
+### Dedicated Password Policy
+
+A custom password policy was implemented instead of hardcoded validations in the UI.
+
+This ensures:
+
+* centralized validation;
+* reuse across the system;
+* easier maintenance.
+
+---
+
+# 4. Architecture
+
+## 4.1 Layered Architecture
+
+The implementation follows the layered architecture used throughout the project:
+
+* presentation;
+* application;
+* domain;
+* infrastructure.
+
+This separation improves:
+
+* maintainability;
+* modularity;
+* testability;
+* reuse.
+
+---
+
+## 4.2 Repository Integration
+
+Repositories are accessed through:
 
 ```text
-- user must be authenticated
-- old password must not be null or empty
-- new password must not be null or empty
-- new password must satisfy SEM4PIPasswordPolicy
+PersistenceContext
 ```
+
+This abstraction allows switching between:
+
+* in-memory repositories;
+* JPA repositories.
+
+without changing application logic.
 
 ---
 
-### 4.4 Access Preconditions
+## 4.3 Bootstrap Users
 
-Validated in:
+The bootstrap process automatically creates default users:
 
-```text
-UserAccessService.ensureUserCanAccess(...)
-```
+* `admin`
+* `backoffice`
 
-Preconditions:
 
-```text
-- user identity must not be null
-- User aggregate must exist
-```
 
-Business validation:
+This ensures:
 
-```text
-- User must be active
-- User must not be disabled
-```
+* immediate system access;
+* simplified testing;
+* consistent initialization.
+
+The bootstrap verifies if users already exist before insertion to avoid duplicates.
 
 ---
 
-## 5. Business Rules
+## 4.4 Concurrency
 
-| ID          | Business Rule                                                     | Owner              |
-| ----------- | ----------------------------------------------------------------- | ------------------ |
-| BR-US030-01 | User must authenticate before accessing protected functionalities | Application/Authz  |
-| BR-US030-02 | User must have the required role to access a functionality        | Application/Authz  |
-| BR-US030-03 | Disabled users cannot authenticate into the system                | Domain User        |
-| BR-US030-04 | Password must satisfy SEM4PIPasswordPolicy                        | Domain/Application |
-| BR-US030-05 | Logout clears the active session                                  | Application/Authz  |
-| BR-US030-06 | Change password requires an authenticated session                 | Application/Authz  |
+Concurrency support is handled through optimistic locking using JPA `@Version` fields in persistent entities.
 
-Important:
+This approach:
 
-```text
-The rule "disabled users cannot authenticate" is not a UI rule.
-It belongs to the User aggregate and is coordinated by UserAccessService.
-```
+* avoids pessimistic locking;
+* improves concurrency performance;
+* prevents conflicting updates.
+
+The solution aligns with the concurrency recommendations presented in the EAPLI DDD slides.
 
 ---
 
-## 6. Invariants
+# 5. Tests and Implementation
 
-Domain invariants:
+The implementation includes tests for:
 
-```text
-- User must have a valid business identity
-- User must have a valid email
-- User must have at least one role
-- User must have a status
-- Disabled users cannot access protected functionalities
-```
+* authentication;
+* invalid authentication;
+* disabled users;
+* password policy validation;
+* role validation;
+* repository behavior;
+* login UI;
+* logout flow;
+* password change flow.
 
-Framework-related invariants:
+Main tested scenarios:
 
-```text
-- SystemUser must respect the configured PasswordPolicy
-- AuthzRegistry must be configured before authentication is used
-```
+* valid credentials;
+* invalid credentials;
+* disabled user authentication;
+* password policy violations;
+* session management;
+* authorization checks.
 
----
+The tests use:
 
-## 7. Concurrency Strategy
-
-US030 can update user authentication data when changing passwords.
-
-When JPA persistence is used, aggregate roots must support optimistic locking.
-
-Planned domain entity field:
-
-```java
-@Version
-private Long version;
-```
-
-The EAPLI sample project explains concurrent access with optimistic locking, where one user saves successfully and the second update fails because the record was already changed.
-
-Strategy:
-
-```text
-- Use optimistic locking for persistent User aggregates
-- Catch ConcurrencyException in the application/presentation boundary
-- Show a safe error message to the user
-- Do not solve concurrency in the UI
-```
+* JUnit 4;
+* in-memory repositories;
+* isolated Authz configuration.
 
 ---
 
-## 8. SSD - Generic
+# 6. Conclusion
 
-```plantuml
-@startuml
-title US030 - Generic SSD - Protected Access
+The implementation successfully integrates authentication and authorization into the system while following:
 
-actor "User" as User
-participant "SEM4PI System" as System
+* EAPLI architectural recommendations;
+* layered architecture;
+* DDD principles;
+* repository abstraction.
 
-User -> System : requests protected functionality
-
-alt user is authenticated and authorized
-    System --> User : grants access
-else user is not authenticated
-    System --> User : requests authentication
-else user is not authorized
-    System --> User : denies access
-end
-
-@enduml
-```
-
----
-
-## 9. SSD - Login
-
-```plantuml
-@startuml
-title US030 - SSD - Login
-
-actor "User" as User
-participant "SEM4PI System" as System
-
-User -> System : selects login
-System --> User : asks username and password
-User -> System : provides username and password
-
-alt valid credentials and active user
-    System --> User : shows authorized menu
-else invalid credentials
-    System --> User : informs authentication failure
-else inactive or disabled user
-    System --> User : denies access
-end
-
-@enduml
-```
-
----
-
-## 10. SSD - Logout
-
-```plantuml
-@startuml
-title US030 - SSD - Logout
-
-actor "Authenticated User" as User
-participant "SEM4PI System" as System
-
-User -> System : selects logout
-System --> User : confirms logout
-
-@enduml
-```
-
----
-
-## 11. SSD - Change Password
-
-```plantuml
-@startuml
-title US030 - SSD - Change Password
-
-actor "Authenticated User" as User
-participant "SEM4PI System" as System
-
-User -> System : selects change password
-System --> User : asks old password and new password
-User -> System : provides old password and new password
-
-alt password changed successfully
-    System --> User : confirms password change
-else invalid old password
-    System --> User : informs invalid authentication
-else invalid new password
-    System --> User : informs password policy violation
-else concurrent update problem
-    System --> User : informs operation could not be completed
-end
-
-@enduml
-```
-
----
-
-## 12. SD - Login
-
-```plantuml
-@startuml
-title US030 - Sequence Diagram - Login
-
-actor "User" as User
-
-box "Presentation Layer"
-participant "LoginUI" as UI
-end box
-
-box "Application Layer"
-participant "AuthenticationController" as Controller
-participant "UserAccessService" as AccessService
-end box
-
-box "EAPLI Authz Framework"
-participant "AuthenticationService" as Authn
-participant "AuthorizationService" as Authz
-end box
-
-box "Domain Layer"
-participant "User" as DomainUser
-participant "UserRepository" as UserRepo
-end box
-
-box "Infrastructure Layer"
-participant "PersistenceContext" as PersistenceContext
-participant "RepositoryFactory" as RepositoryFactory
-end box
-
-User -> UI : selects login
-UI -> User : asks username and password
-User --> UI : provides username and password
-
-UI -> Controller : login(username, password)
-
-Controller -> Controller : validate Preconditions
-
-Controller -> Authn : authenticate(username, password)
-
-alt authentication fails
-    Authn --> Controller : empty result
-    Controller --> UI : authentication failed
-    UI --> User : informs authentication failure
-else authentication succeeds
-    Authn --> Controller : authenticated session
-
-    Controller -> AccessService : ensureUserCanAccess(username)
-
-    AccessService -> AccessService : validate Preconditions
-    AccessService -> PersistenceContext : repositories()
-    PersistenceContext --> AccessService : RepositoryFactory
-    AccessService -> RepositoryFactory : users()
-    RepositoryFactory --> AccessService : UserRepository
-
-    AccessService -> UserRepo : ofIdentity(username)
-    UserRepo --> AccessService : User
-
-    AccessService -> DomainUser : canAuthenticate()
-
-    alt user can authenticate
-        DomainUser --> AccessService : true
-        AccessService --> Controller : access granted
-
-        Controller -> Authz : session()
-        Authz --> Controller : current session and roles
-
-        Controller --> UI : login successful
-        UI --> User : shows authorized menu
-
-    else user cannot authenticate
-        DomainUser --> AccessService : false
-        AccessService --> Controller : access denied
-
-        Controller -> Authz : clearSession()
-        Controller --> UI : access denied
-        UI --> User : informs access denied
-    end
-end
-
-@enduml
-```
-
----
-
-## 13. SD - Logout
-
-```plantuml
-@startuml
-title US030 - Sequence Diagram - Logout
-
-actor "Authenticated User" as User
-
-box "Presentation Layer"
-participant "LogoutUI" as UI
-end box
-
-box "Application Layer"
-participant "AuthenticationController" as Controller
-end box
-
-box "EAPLI Authz Framework"
-participant "AuthorizationService" as Authz
-end box
-
-User -> UI : selects logout
-UI -> Controller : logout()
-
-Controller -> Controller : validate Preconditions
-Controller -> Authz : clearSession()
-Authz --> Controller : session cleared
-
-Controller --> UI : logout successful
-UI --> User : confirms logout
-
-@enduml
-```
-
----
-
-## 14. SD - Change Password
-
-```plantuml
-@startuml
-title US030 - Sequence Diagram - Change Password
-
-actor "Authenticated User" as User
-
-box "Presentation Layer"
-participant "ChangePasswordUI" as UI
-end box
-
-box "Application Layer"
-participant "AuthenticationController" as Controller
-end box
-
-box "EAPLI Authz Framework"
-participant "AuthenticationService" as Authn
-participant "AuthorizationService" as Authz
-end box
-
-box "Domain Layer"
-participant "SEM4PIPasswordPolicy" as Policy
-end box
-
-User -> UI : selects change password
-UI -> User : asks old password and new password
-User --> UI : provides old password and new password
-
-UI -> Controller : changePassword(oldPassword, newPassword)
-
-Controller -> Controller : validate Preconditions
-
-Controller -> Authz : hasSession()
-Authz --> Controller : session exists
-
-Controller -> Policy : isSatisfiedBy(newPassword)
-Policy --> Controller : validation result
-
-alt password policy fails
-    Controller --> UI : password policy violation
-    UI --> User : informs invalid new password
-else password policy succeeds
-    Controller -> Authn : changePassword(oldPassword, newPassword)
-
-    alt password changed
-        Authn --> Controller : true
-        Controller --> UI : password changed
-        UI --> User : confirms password change
-    else invalid old password
-        Authn --> Controller : false
-        Controller --> UI : invalid authentication
-        UI --> User : informs invalid authentication
-    else concurrency or integrity problem
-        Authn --> Controller : exception
-        Controller --> UI : operation failed
-        UI --> User : informs operation could not be completed
-    end
-end
-
-@enduml
-```
-
----
-
-## 15. Class Diagram - Planned Structure
-
-```plantuml
-@startuml
-title US030 - Class Diagram - Planned Authentication Architecture
-
-skinparam classAttributeIconSize 0
-skinparam packageStyle rectangle
-skinparam shadowing false
-
-package "presentation.authz" {
-    class LoginUI
-    class LoginAction
-    class LogoutUI
-    class LogoutAction
-    class ChangePasswordUI
-    class MyUserMenu
-}
-
-package "application.usermanagement" {
-    class AuthenticationController {
-        +login(username, password)
-        +logout()
-        +changePassword(oldPassword, newPassword)
-    }
-
-    class UserAccessService {
-        +ensureUserCanAccess(username)
-    }
-}
-
-package "domain.usermanagement" {
-    class User {
-        -UserId userId
-        -Email email
-        -PhoneNumber phoneNumber
-        -UserStatus status
-        -Long version
-        +canAuthenticate()
-        +enable()
-        +disable()
-    }
-
-    class SEM4PIPasswordPolicy {
-        +isSatisfiedBy(rawPassword)
-    }
-
-    class SEM4PIRoles
-
-    interface UserRepository {
-        +ofIdentity(userId)
-        +save(user)
-    }
-}
-
-package "infrastructure.persistence" {
-    class PersistenceContext
-    interface RepositoryFactory
-    class InMemoryRepositoryFactory
-    class JpaUserRepository
-}
-
-package "EAPLI Authz Framework" {
-    class AuthzRegistry
-    class AuthenticationService
-    class AuthorizationService
-    class SystemUser
-    class SystemUserBuilder
-    interface PasswordPolicy
-}
-
-LoginAction --> LoginUI
-LogoutAction --> LogoutUI
-
-LoginUI --> AuthenticationController
-LogoutUI --> AuthenticationController
-ChangePasswordUI --> AuthenticationController
-
-AuthenticationController --> AuthenticationService
-AuthenticationController --> AuthorizationService
-AuthenticationController --> UserAccessService
-AuthenticationController --> SEM4PIPasswordPolicy
-
-UserAccessService --> PersistenceContext
-UserAccessService --> UserRepository
-UserAccessService --> User
-
-SEM4PIPasswordPolicy ..|> PasswordPolicy
-
-PersistenceContext --> RepositoryFactory
-RepositoryFactory <|.. InMemoryRepositoryFactory
-RepositoryFactory <|.. JpaUserRepository
-
-UserRepository <|.. JpaUserRepository
-
-@enduml
-```
-
----
-
-## 16. What Must Be Corrected in Code Later
-
-```text
-1. Create AuthenticationController.
-2. Move login/logout/change password coordination out of UI.
-3. Move disabled-user access rule out of LoginUI.
-4. Create UserAccessService.
-5. Convert BackofficeUser into the domain User aggregate or clearly replace it with User.
-6. Replace setEnabled(boolean) with enable(), disable(), canAuthenticate().
-7. Use EAPLI Preconditions in controllers, services and constructors.
-8. Add @Version to persistent User aggregate for optimistic locking.
-9. Keep repositories behind RepositoryFactory and PersistenceContext.
-10. Keep UI as input/output only.
+The adoption of the EAPLI Authz framework reduced infrastructure complexity and provided a reusable security foundation for the remaining user stories.

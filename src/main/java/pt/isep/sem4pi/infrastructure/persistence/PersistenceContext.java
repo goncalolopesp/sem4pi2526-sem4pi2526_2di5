@@ -23,6 +23,18 @@ public final class PersistenceContext {
     }
 
     private static RepositoryFactory buildRepositoryFactory() {
+        // 1) Allow override from JVM/system properties (useful for tests)
+        final String overrideFactoryClassName = System.getProperty("persistence.repositoryFactory");
+        if (overrideFactoryClassName != null && !overrideFactoryClassName.trim().isEmpty()) {
+            try {
+                final Class<?> factoryClass = Class.forName(overrideFactoryClassName.trim());
+                return (RepositoryFactory) factoryClass.getDeclaredConstructor().newInstance();
+            } catch (final ReflectiveOperationException e) {
+                throw new IllegalStateException("Unable to load repository factory from system property", e);
+            }
+        }
+
+        // 2) application.properties (default)
         final Properties properties = new Properties();
 
         try (InputStream input = PersistenceContext.class
