@@ -17,6 +17,10 @@
 
         <!-- SEM4PI domain entities -->
         <class>pt.isep.sem4pi.domain.usermanagement.BackofficeUser</class>
+        <class>pt.isep.sem4pi.domain.model.Manufacture.Manufacturer</class>
+        <class>pt.isep.sem4pi.domain.model.engineModel.EngineModel</class>
+        <class>pt.isep.sem4pi.domain.model.engineModel.CertifiedEngine</class>
+        <class>pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>

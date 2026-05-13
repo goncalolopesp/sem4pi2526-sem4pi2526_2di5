@@ -17,10 +17,11 @@ import java.util.List;
 @Entity
 public class AircraftModel implements AggregateRoot<AircraftModelId> {
     @EmbeddedId
+    @AttributeOverride(name = "code", column = @Column(name = "aircraft_model_code"))
     private AircraftModelId id;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "manufacturer_id"))
+    @AttributeOverride(name = "code", column = @Column(name = "manufacturer_id"))
     private ManufacturerId manufacturerId;
 
     // Relationship with CertifiedEngine (Entities inside this Aggregate)
