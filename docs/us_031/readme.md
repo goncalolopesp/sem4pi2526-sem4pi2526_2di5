@@ -1,65 +1,467 @@
-# US-031: Register Backoffice Users
+# US031 — Register Backoffice Users
 
-## 1. Contexto
-Permitir que um utilizador com a role `ADMIN` registe novos utilizadores internos de backoffice, onde cada utilizador tem credenciais (para autenticação via EAPLI) e dados adicionais de domínio (nome, email único, telefone, security clearance expiration date e skills assessment date).
+## 1. Requirements Engineering
 
-## 2. Arquitectura / Organização
-- Domínio: `pt.isep.sem4pi.domain.usermanagement` — nova entidade `BackofficeUser` e interfaces de suporte.
-- Aplicação: `pt.isep.sem4pi.application.usermanagement` — `RegisterBackofficeUserController`.
-- Persistência: `pt.isep.sem4pi.infrastructure.persistence` — `InMemoryBackofficeUserRepository`, alterações em `RepositoryFactory` e seed em `InMemoryRepositoryFactory`.
-- Apresentação: `pt.isep.sem4pi.presentation.usermanagement` — `RegisterBackofficeUserUI`; menu em `pt.isep.sem4pi.presentation.MainMenu`.
-- Integração com EAPLI para autenticação: `SystemUser`, `UserBuilderHelper`, `AuthzRegistry`.
+### 1.1 User Story
 
-## 3. Ficheiros criados e responsabilidade
-- `src/main/java/pt/isep/sem4pi/domain/usermanagement/BackofficeUser.java` — entidade dos dados adicionais (username, name, email, phoneNumber, securityClearanceExpirationDate, skillsAssessmentDate).
-- `src/main/java/pt/isep/sem4pi/domain/usermanagement/BackofficeUserRepository.java` — interface do repositório.
-- `src/main/java/pt/isep/sem4pi/infrastructure/persistence/InMemoryBackofficeUserRepository.java` — implementação em memória (maps por username e email).
-- `src/main/java/pt/isep/sem4pi/infrastructure/persistence/RepositoryFactory.java` — adicionado `backofficeUsers()`.
-- `src/main/java/pt/isep/sem4pi/infrastructure/persistence/InMemoryRepositoryFactory.java` — implementação e seed/bootstrapping.
-- `src/main/java/pt/isep/sem4pi/application/usermanagement/RegisterBackofficeUserController.java` — validações, criação de `SystemUser` (via `UserBuilderHelper`) e de `BackofficeUser`.
-- `src/main/java/pt/isep/sem4pi/presentation/usermanagement/RegisterBackofficeUserUI.java` — prompts de consola; validação por campo e re-prompt.
-- `src/main/java/pt/isep/sem4pi/presentation/MainMenu.java` — adição da opção no bloco Admin.
+As Administrator, I want to be able to register users of the backoffice.
 
-## 4. Fluxo da funcionalidade
-1. Administrador faz login (US030).
-2. No `MainMenu` → Admin seleciona `Register Backoffice User`.
-3. A UI pede, um a um, os campos (username, password, first/last name, email, phone, security clearance date, skills assessment date), re-pedindo em caso de validação falhada.
-4. O controller valida (autorização, política de password, unicidade do email/username) e cria:
-   - `SystemUser` (guardado em `repositories().users()`) com role `BACKOFFICE_OPERATOR`;
-   - `BackofficeUser` (guardado em `repositories().backofficeUsers()`).
-5. O novo utilizador pode autenticar imediatamente com as credenciais criadas.
+The requirements also specify that this functionality must be supported through a bootstrap process.
 
-## 5. Registo de Backoffice Users
-- Autorização: só `ADMIN` pode executar a operação (verificação via `AuthzRegistry.authorizationService()`).
-- Validações principais:
-  - Password validada por `SEM4PIPasswordPolicy`.
-  - Email validado pelo formato (`EmailAddress.valueOf`) e verificado como único no repositório de backoffice.
-  - Username e email verificados para não duplicação no `BackofficeUserRepository`.
-  - Phone e ambas as datas são campos obrigatórios (validados no domínio e na UI).
-- Roles: o `SystemUser` recebe `SEM4PIRoles.BACKOFFICE_OPERATOR`.
+---
 
-## 6. Persistência (InMemory)
-- `InMemoryBackofficeUserRepository` armazena `BackofficeUser` em memória (mapas por username e email em lowercase).
-- `InMemoryRepositoryFactory` expõe `backofficeUsers()` e faz seed inicial:
-  - cria `admin` e um `SystemUser` de backoffice (`bo`) via `seedDefaultUsers`;
-  - cria um `BackofficeUser` associado a `bo` via `seedDefaultBackofficeUsers`, evitando duplicação.
-- A persistência do `SystemUser` usa o repositório do EAPLI (`repositories().users()`).
+## 1.2 Context
 
-## 7. Integração com US030
-- A autenticação mantém-se inalterada: `SEM4PIBackoffice` configura `AuthzRegistry` com `PersistenceContext.repositories().users()` e `SEM4PIPasswordPolicy`.
-- O `RegisterBackofficeUserController` cria o `SystemUser` (auth) e o `BackofficeUser` (domínio). O `LoginUI` existente autentica os `SystemUser` criados.
+The system requires internal backoffice users responsible for administrative and operational tasks.
 
-## 8. Utilizadores de teste / seed actual
-- Seed em `InMemoryRepositoryFactory`:
-  - `admin` / `Password1` — role `ADMIN`.
-  - `bo` / `Password1` — role `BACKOFFICE_OPERATOR` (SystemUser) + `BackofficeUser` com telefone e datas preenchidas.
-- O seed verifica existência antes de criar, evitando duplicações.
+These users must:
 
-## 9. Testes manuais possíveis
-- Run (IDE ou Maven): compilar e executar `pt.isep.sem4pi.Main`.
-- Login administrador: `admin` / `Password1`.
-- Registar novo backoffice user: `MainMenu` → Admin → Register Backoffice User; seguir prompts (UI re-pede campos inválidos).
-- Testar login com o novo utilizador: autenticar com o username/password criados; verificar role `BACKOFFICE_OPERATOR`.
+* authenticate into the system;
+* have authorization roles;
+* possess business profile information;
+* be manageable independently from framework infrastructure concerns.
 
-## 10. Conclusão
-US031 implementa o registo controlado de utilizadores de backoffice respeitando a autenticação EAPLI e persistência em memória. A solução separa credenciais (SystemUser) dos dados de domínio (BackofficeUser), inclui validações essenciais e uma seed para testes.
+The implementation therefore separates:
+
+* authentication users (`SystemUser`);
+* business profile users (`BackofficeUser`).
+
+This separation aligns the solution with DDD principles and improves modularity.
+
+---
+
+## 1.3 Acceptance Criteria
+
+* Only administrators can register backoffice users.
+* Usernames must be unique.
+* Emails must be unique.
+* Passwords must comply with the project password policy.
+* Registered users must receive the correct backoffice role.
+* Registration must create both authentication and business profile information.
+* The system must support bootstrap creation of default users.
+
+---
+
+## 1.4 Dependencies
+
+This user story depends on:
+
+* US030 Authentication and Authorization;
+* repository infrastructure;
+* persistence configuration;
+* EAPLI Authz framework.
+
+---
+
+# 2. Analysis
+
+The registration of backoffice users is an administrative operation that combines:
+
+* security concerns;
+* authentication infrastructure;
+* business profile management.
+
+The project uses:
+
+* `SystemUser` from the EAPLI Authz framework for authentication and authorization;
+* `BackofficeUser` as a business profile entity.
+
+This separation avoids mixing framework concerns with domain information.
+
+The registration process must:
+
+* validate uniqueness;
+* validate password policy;
+* create authentication credentials;
+* create the corresponding business profile.
+
+---
+
+# 3. Design
+
+## 3.1 Architectural Approach
+
+The implementation follows the project layered architecture:
+
+```text id="yo6s5u"
+Presentation -> Application -> Domain -> Infrastructure
+```
+
+Responsibilities:
+
+| Layer          | Responsibility                                 |
+| -------------- | ---------------------------------------------- |
+| Presentation   | Collect input and show results                 |
+| Application    | Coordinate registration                        |
+| Domain         | Business validation and profile representation |
+| Infrastructure | Persistence and bootstrap integration          |
+
+The implementation follows EAPLI architectural recommendations and repository abstraction principles.
+
+---
+
+## 3.2 Main Components
+
+### Presentation Layer
+
+Package:
+
+```text id="5m8g2v"
+pt.isep.sem4pi.presentation.usermanagement
+```
+
+Main component:
+
+```text id="z50g71"
+RegisterBackofficeUserUI
+```
+
+Responsibilities:
+
+* collect registration data;
+* validate basic input formatting;
+* delegate registration to the controller;
+* present operation results.
+
+The UI does not access repositories directly.
+
+---
+
+### Application Layer
+
+Package:
+
+```text id="mjlwm7"
+pt.isep.sem4pi.application.controller.usermanagement
+```
+
+Main component:
+
+```text id="8g1b7n"
+RegisterBackofficeUserController
+```
+
+Responsibilities:
+
+* coordinate registration;
+* validate application-level rules;
+* delegate persistence operations to services.
+
+The controller keeps the UI thin and centralizes use case orchestration.
+
+---
+
+### Application Service Layer
+
+Package:
+
+```text id="k5ibdb"
+pt.isep.sem4pi.application.service.usermanagment
+```
+
+Main component:
+
+```text id="n9xqwy"
+RegisterBackofficeUserService
+```
+
+Responsibilities:
+
+* validate uniqueness;
+* coordinate repositories;
+* create framework authentication users;
+* create business profile users.
+
+The service centralizes application coordination logic.
+
+---
+
+### Domain Layer
+
+Package:
+
+```text id="1dk2b4"
+pt.isep.sem4pi.domain.usermanagement
+```
+
+Main components:
+
+* `BackofficeUser`
+* `SEM4PIPasswordPolicy`
+* `SEM4PIRoles`
+* `UserBuilderHelper`
+
+Responsibilities:
+
+* represent business profile information;
+* define password policy;
+* define project roles;
+* configure framework user creation.
+
+---
+
+### Infrastructure Layer
+
+Packages:
+
+```text id="whf7nh"
+pt.isep.sem4pi.infrastructure.persistence
+pt.isep.sem4pi.infrastructure.bootstrap
+```
+
+Responsibilities:
+
+* repository access;
+* persistence abstraction;
+* bootstrap creation of default users.
+
+---
+
+## 3.3 Registration Flow
+
+General flow:
+
+```text id="zxxu2i"
+RegisterBackofficeUserUI
+ -> RegisterBackofficeUserController
+ -> RegisterBackofficeUserService
+ -> UserRepository
+ -> BackofficeUserRepository
+```
+
+The service coordinates:
+
+* authentication user creation;
+* business profile creation.
+
+---
+
+## 3.4 Separation Between SystemUser and BackofficeUser
+
+The implementation separates:
+
+* framework authentication entities;
+* business profile entities.
+
+### SystemUser
+
+Managed by the EAPLI framework.
+
+Responsibilities:
+
+* authentication;
+* authorization;
+* active/inactive status;
+* session integration.
+
+---
+
+### BackofficeUser
+
+Business profile entity.
+
+Responsibilities:
+
+* business-related user information;
+* contact information;
+* security clearance validity;
+* skills assessment date.
+
+This separation improves:
+
+* modularity;
+* reuse;
+* maintainability;
+* framework independence.
+
+---
+
+## 3.5 Validation Rules
+
+The implementation validates:
+
+* username uniqueness;
+* email uniqueness;
+* password policy;
+* required fields.
+
+Uniqueness is verified against:
+
+* `BackofficeUserRepository`;
+* `UserRepository`.
+
+This avoids inconsistent registration states.
+
+---
+
+## 3.6 Password Policy Integration
+
+Password validation is delegated to:
+
+```text id="jjlwmk"
+SEM4PIPasswordPolicy
+```
+
+The policy integrates directly with:
+
+```text id="bjpmdu"
+UserBuilderHelper
+```
+
+This guarantees centralized password validation during user creation.
+
+---
+
+## 3.7 Bootstrap Process
+
+The requirements specify that registration must also be supported through bootstrap.
+
+The implementation includes:
+
+```text id="u0l7yq"
+MasterUsersBootstrapper
+```
+
+Responsibilities:
+
+* create default administrator;
+* create default backoffice user;
+* avoid duplicate insertions.
+
+
+
+The bootstrap checks repository state before insertion:
+
+* preventing duplicate users;
+* supporting repeated application initialization.
+
+---
+
+## 3.8 Design Decisions
+
+### Use of Separate Business Profile Entity
+
+`BackofficeUser` was implemented separately from `SystemUser` because:
+
+* framework entities should not contain business-specific data;
+* business information may evolve independently;
+* it improves domain clarity.
+
+---
+
+### Application Service Coordination
+
+The registration logic was centralized in:
+
+```text id="r8wqhz"
+RegisterBackofficeUserService
+```
+
+This prevents:
+
+* duplicated orchestration logic;
+* repository access from the UI;
+* excessive controller responsibilities.
+
+---
+
+### Repository Abstraction
+
+Repositories are accessed through interfaces and `PersistenceContext`.
+
+This allows:
+
+* in-memory persistence;
+* JPA persistence.
+
+without changing business logic.
+
+---
+
+# 4. Architecture
+
+## 4.1 Repository Infrastructure
+
+The implementation uses:
+
+* repository interfaces;
+* repository factories;
+* persistence abstraction.
+
+Repositories are accessed through:
+
+```text id="dyyvms"
+PersistenceContext
+```
+
+This follows Dependency Inversion principles.
+
+---
+
+## 4.2 Persistence Strategy
+
+The project supports:
+
+* in-memory repositories;
+* JPA repositories.
+
+The default implementation for these user stories uses:
+
+```text id="n93ifj"
+InMemoryRepositoryFactory
+```
+
+
+
+This implementation also seeds default users for simplified initialization and testing.
+
+---
+
+## 4.3 Concurrency
+
+Concurrency support is handled through optimistic locking using JPA `@Version` fields.
+
+This avoids conflicting concurrent updates while preserving system performance.
+
+---
+
+# 5. Tests and Implementation
+
+The implementation includes tests for:
+
+* registration controller;
+* registration service;
+* password policy;
+* role validation;
+* repositories;
+* bootstrap users;
+* duplicate username validation;
+* duplicate email validation.
+
+Main tested scenarios:
+
+* successful registration;
+* duplicated usernames;
+* duplicated emails;
+* invalid passwords;
+* repository persistence behavior;
+* bootstrap initialization.
+
+The tests use:
+
+* JUnit 4;
+* in-memory repositories;
+* isolated Authz configuration.
+
+---
+
+# 6. Conclusion
+
+The implementation successfully supports the registration of backoffice users while maintaining:
+
+* separation between authentication and business concerns;
+* layered architecture;
+* repository abstraction;
+* centralized validation.
+
+The solution integrates naturally with the EAPLI Authz framework and provides reusable infrastructure for future user management functionalities.

@@ -1,20 +1,20 @@
 package pt.isep.sem4pi.presentation.usermanagement;
 
-import pt.isep.sem4pi.application.service.usermanagment.UserStatusService;
-import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
+import pt.isep.sem4pi.application.controller.usermanagement.ManageBackofficeUserStatusController;
+import pt.isep.sem4pi.application.service.usermanagment.UserStatusService;
 
 import java.util.List;
 
 public class ManageBackofficeUserStatusUI extends AbstractUI {
 
-    private final UserStatusService service = new UserStatusService();
+    private final ManageBackofficeUserStatusController controller = new ManageBackofficeUserStatusController();
 
     @Override
     protected boolean doShow() {
         try {
-            final List<BackofficeUser> users = service.listAll();
+            final List<UserStatusService.BackofficeUserStatus> users = controller.listAllWithStatus();
             if (users.isEmpty()) {
                 System.out.println("No backoffice users available.");
                 return true;
@@ -22,8 +22,8 @@ public class ManageBackofficeUserStatusUI extends AbstractUI {
 
             System.out.printf("%3s  %-15s  %-30s  %-8s%n", "#", "Username", "Email", "Status");
             int idx = 1;
-            for (final BackofficeUser u : users) {
-                System.out.printf("%3d) %-15s  %-30s  %-8s%n", idx++, u.username(), u.email(), u.isEnabled() ? "ENABLED" : "DISABLED");
+            for (final UserStatusService.BackofficeUserStatus u : users) {
+                System.out.printf("%3d) %-15s  %-30s  %-8s%n", idx++, u.username(), u.email(), u.isActive() ? "ENABLED" : "DISABLED");
             }
 
             final int choice = Console.readInteger("Select user by number (0 to cancel):");
@@ -32,8 +32,8 @@ public class ManageBackofficeUserStatusUI extends AbstractUI {
                 return true;
             }
 
-            final BackofficeUser selected = users.get(choice - 1);
-            System.out.println("Selected: " + selected.username() + " (" + (selected.isEnabled() ? "ENABLED" : "DISABLED") + ")");
+            final UserStatusService.BackofficeUserStatus selected = users.get(choice - 1);
+            System.out.println("Selected: " + selected.username() + " (" + (selected.isActive() ? "ENABLED" : "DISABLED") + ")");
             final String action = Console.readLine("Type 'enable' to enable, 'disable' to disable, or enter to cancel:");
             if (action == null || action.trim().isEmpty()) {
                 System.out.println("Operation cancelled.");
@@ -41,11 +41,11 @@ public class ManageBackofficeUserStatusUI extends AbstractUI {
             }
             final String a = action.trim().toLowerCase();
             if (a.equals("enable")) {
-                service.enableUser(selected.username());
+                controller.enableUser(selected.username());
                 System.out.println("User enabled.");
             } else if (a.equals("disable")) {
                 try {
-                    service.disableUser(selected.username());
+                    controller.disableUser(selected.username());
                     System.out.println("User disabled.");
                 } catch (final Exception e) {
                     System.out.println("Error: " + e.getMessage());
@@ -66,4 +66,3 @@ public class ManageBackofficeUserStatusUI extends AbstractUI {
         return "Manage Backoffice User Status";
     }
 }
-

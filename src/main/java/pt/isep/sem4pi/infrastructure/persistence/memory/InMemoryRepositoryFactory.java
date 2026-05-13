@@ -2,6 +2,8 @@ package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
+import pt.isep.sem4pi.domain.usermanagement.Email;
+import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
@@ -78,12 +80,24 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     }
 
     private void seedDefaultBackofficeUsers(final BackofficeUserRepository repo) {
+        if (!repo.existsByUsername("admin")) {
+            final BackofficeUser admin = new BackofficeUser(
+                    "admin",
+                    "Admin User",
+                    Email.valueOf("admin@example.org"),
+                    PhoneNumber.valueOf("+351000000001"),
+                    LocalDate.now().plusYears(1),
+                    LocalDate.now()
+            );
+            repo.save(admin);
+        }
+
         if (!repo.existsByUsername("bo")) {
             final BackofficeUser bo = new BackofficeUser(
                     "bo",
                     "Backoffice User",
-                    "bo@example.org",
-                    "+351000000000",
+                    Email.valueOf("bo@example.org"),
+                    PhoneNumber.valueOf("+351000000000"),
                     LocalDate.now().plusYears(1),
                     LocalDate.now()
             );
