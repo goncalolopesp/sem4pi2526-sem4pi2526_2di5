@@ -265,8 +265,6 @@ LogoutUI
  -> AuthorizationService.clearSession()
 ```
 
-
-
 ---
 
 ## 3.6 Password Management
@@ -415,8 +413,6 @@ This approach:
 * avoids pessimistic locking;
 * improves concurrency performance;
 * prevents conflicting updates.
-
-The solution aligns with the concurrency recommendations presented in the EAPLI DDD slides.
 
 ---
 
