@@ -1,0 +1,65 @@
+US100 Simulation Report
+Area: lat [39.000000, 43.000000], lon [-9.000000, -3.000000]
+Time range: 25 to 3600, step: 60 seconds
+Total flights: 1
+
+Flight 123456, PID 7279, updates 58
+  t=25 lat=41.262891 lon=-8.685220 alt=69.00 status=1
+  t=85 lat=41.303842 lon=-8.647708 alt=579.00 status=1
+  t=145 lat=41.344792 lon=-8.610196 alt=1089.00 status=1
+  t=205 lat=41.385743 lon=-8.572683 alt=1599.00 status=1
+  t=265 lat=41.426693 lon=-8.535171 alt=2109.00 status=1
+  t=325 lat=41.467644 lon=-8.497659 alt=2619.00 status=1
+  t=385 lat=41.508594 lon=-8.460147 alt=3129.00 status=1
+  t=445 lat=41.549545 lon=-8.422634 alt=3639.00 status=1
+  t=505 lat=41.590495 lon=-8.385122 alt=4149.00 status=1
+  t=565 lat=41.631445 lon=-8.347610 alt=4659.00 status=1
+  t=625 lat=41.672396 lon=-8.310098 alt=5169.00 status=1
+  t=685 lat=41.713347 lon=-8.272586 alt=5679.00 status=1
+  t=745 lat=41.754297 lon=-8.235073 alt=6189.00 status=1
+  t=805 lat=41.795248 lon=-8.197561 alt=6699.00 status=1
+  t=865 lat=41.836198 lon=-8.160049 alt=7209.00 status=1
+  t=925 lat=41.877149 lon=-8.122537 alt=7719.00 status=1
+  t=985 lat=41.918099 lon=-8.085024 alt=8229.00 status=1
+  t=1045 lat=41.959049 lon=-8.047512 alt=8739.00 status=1
+  t=1105 lat=42.000000 lon=-8.010000 alt=9249.00 status=1
+  t=1165 lat=42.000000 lon=-8.010000 alt=9249.00 status=1
+  t=1225 lat=41.944444 lon=-7.803889 alt=9249.00 status=1
+  t=1285 lat=41.888889 lon=-7.597778 alt=9249.00 status=1
+  t=1345 lat=41.833333 lon=-7.391667 alt=9249.00 status=1
+  t=1405 lat=41.777778 lon=-7.185556 alt=9249.00 status=1
+  t=1465 lat=41.722222 lon=-6.979444 alt=9249.00 status=1
+  t=1525 lat=41.666667 lon=-6.773333 alt=9249.00 status=1
+  t=1585 lat=41.611111 lon=-6.567222 alt=9249.00 status=1
+  t=1645 lat=41.555556 lon=-6.361111 alt=9249.00 status=1
+  t=1705 lat=41.500000 lon=-6.155000 alt=9249.00 status=1
+  t=1765 lat=41.444444 lon=-5.948889 alt=9249.00 status=1
+  t=1825 lat=41.388889 lon=-5.742778 alt=9249.00 status=1
+  t=1885 lat=41.333333 lon=-5.536667 alt=9249.00 status=1
+  t=1945 lat=41.277778 lon=-5.330556 alt=9249.00 status=1
+  t=2005 lat=41.222222 lon=-5.124444 alt=9249.00 status=1
+  t=2065 lat=41.166667 lon=-4.918333 alt=9249.00 status=1
+  t=2125 lat=41.111111 lon=-4.712222 alt=9249.00 status=1
+  t=2185 lat=41.055556 lon=-4.506111 alt=9249.00 status=1
+  t=2245 lat=41.000000 lon=-4.300000 alt=9249.00 status=1
+  t=2305 lat=41.000000 lon=-4.300000 alt=9249.00 status=1
+  t=2365 lat=40.971639 lon=-4.259128 alt=8769.06 status=1
+  t=2425 lat=40.943278 lon=-4.218256 alt=8289.11 status=1
+  t=2485 lat=40.914917 lon=-4.177383 alt=7809.17 status=1
+  t=2545 lat=40.886556 lon=-4.136511 alt=7329.22 status=1
+  t=2605 lat=40.858194 lon=-4.095639 alt=6849.28 status=1
+  t=2665 lat=40.829833 lon=-4.054767 alt=6369.33 status=1
+  t=2725 lat=40.801472 lon=-4.013894 alt=5889.39 status=1
+  t=2785 lat=40.773111 lon=-3.973022 alt=5409.44 status=1
+  t=2845 lat=40.744750 lon=-3.932150 alt=4929.50 status=1
+  t=2905 lat=40.716389 lon=-3.891278 alt=4449.56 status=1
+  t=2965 lat=40.688028 lon=-3.850406 alt=3969.61 status=1
+  t=3025 lat=40.659667 lon=-3.809533 alt=3489.67 status=1
+  t=3085 lat=40.631306 lon=-3.768661 alt=3009.72 status=1
+  t=3145 lat=40.602944 lon=-3.727789 alt=2529.78 status=1
+  t=3205 lat=40.574583 lon=-3.686917 alt=2049.83 status=1
+  t=3265 lat=40.546222 lon=-3.646044 alt=1569.89 status=1
+  t=3325 lat=40.517861 lon=-3.605172 alt=1089.94 status=1
+  t=3385 lat=40.489500 lon=-3.564300 alt=610.00 status=1
+  t=3445 lat=40.489500 lon=-3.564300 alt=610.00 status=2
+
