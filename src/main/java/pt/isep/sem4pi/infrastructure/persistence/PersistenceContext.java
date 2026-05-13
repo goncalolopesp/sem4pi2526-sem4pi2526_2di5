@@ -2,11 +2,10 @@ package pt.isep.sem4pi.infrastructure.persistence;
 
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
 
-/**
- * Contexto de persistencia do projeto.
- *
- * Exponha a fabrica de repositorios usada pela aplicacao. Por omissao usa a implementacao em memoria.
- */
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 public final class PersistenceContext {
 
     private static RepositoryFactory theFactory;
@@ -15,15 +14,35 @@ public final class PersistenceContext {
         // utility
     }
 
-    /**
-     * Retorna a fabrica de repositorios actual.
-     * Se ainda nao existir, inicializa a fabrica em memoria por omissao.
-     * @return RepositoryFactory usado pela aplicacao
-     */
     public static RepositoryFactory repositories() {
         if (theFactory == null) {
-            theFactory = new InMemoryRepositoryFactory();
+            theFactory = buildRepositoryFactory();
         }
+
         return theFactory;
+    }
+
+    private static RepositoryFactory buildRepositoryFactory() {
+        final Properties properties = new Properties();
+
+        try (InputStream input = PersistenceContext.class
+                .getClassLoader()
+                .getResourceAsStream("application.properties")) {
+
+            if (input != null) {
+                properties.load(input);
+            }
+
+            final String factoryClassName = properties.getProperty(
+                    "persistence.repositoryFactory",
+                    InMemoryRepositoryFactory.class.getName()
+            );
+
+            final Class<?> factoryClass = Class.forName(factoryClassName);
+            return (RepositoryFactory) factoryClass.getDeclaredConstructor().newInstance();
+
+        } catch (final IOException | ReflectiveOperationException e) {
+            throw new IllegalStateException("Unable to load repository factory", e);
+        }
     }
 }

@@ -63,7 +63,7 @@ public class UserStatusService {
         }
         final BackofficeUser user = opt.get();
         if (!user.isEnabled()) {
-            user.setEnabled(true);
+            user.enable();
             boRepo.save(user);
         }
     }
@@ -92,7 +92,7 @@ public class UserStatusService {
         }
 
         if (user.isEnabled()) {
-            user.setEnabled(false);
+            user.disable();
             boRepo.save(user);
         }
     }

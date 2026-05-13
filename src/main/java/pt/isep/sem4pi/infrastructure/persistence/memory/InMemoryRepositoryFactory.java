@@ -78,6 +78,18 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     }
 
     private void seedDefaultBackofficeUsers(final BackofficeUserRepository repo) {
+        if (!repo.existsByUsername("admin")) {
+            final BackofficeUser admin = new BackofficeUser(
+                    "admin",
+                    "Admin User",
+                    "admin@example.org",
+                    "+351000000001",
+                    LocalDate.now().plusYears(1),
+                    LocalDate.now()
+            );
+            repo.save(admin);
+        }
+
         if (!repo.existsByUsername("bo")) {
             final BackofficeUser bo = new BackofficeUser(
                     "bo",
