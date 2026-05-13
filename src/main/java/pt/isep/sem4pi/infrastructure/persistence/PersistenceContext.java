@@ -1,8 +1,11 @@
 package pt.isep.sem4pi.infrastructure.persistence;
 
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
+
 /**
- * Simple persistence context that exposes a RepositoryFactory.
- * For US030 we default to the in-memory factory.
+ * Contexto de persistencia do projeto.
+ *
+ * Exponha a fabrica de repositorios usada pela aplicacao. Por omissao usa a implementacao em memoria.
  */
 public final class PersistenceContext {
 
@@ -12,6 +15,11 @@ public final class PersistenceContext {
         // utility
     }
 
+    /**
+     * Retorna a fabrica de repositorios actual.
+     * Se ainda nao existir, inicializa a fabrica em memoria por omissao.
+     * @return RepositoryFactory usado pela aplicacao
+     */
     public static RepositoryFactory repositories() {
         if (theFactory == null) {
             theFactory = new InMemoryRepositoryFactory();
@@ -19,4 +27,3 @@ public final class PersistenceContext {
         return theFactory;
     }
 }
-

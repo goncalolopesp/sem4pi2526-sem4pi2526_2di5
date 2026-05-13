@@ -8,7 +8,10 @@ import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 
 /**
- * Change password UI adapted from example project but placed in local package.
+ * UI para alteração de password.
+ *
+ * Lê a password antiga e a nova da consola e pede ao serviço de autenticação para mudar a password.
+ * A UI trata mensagens de sucesso/erro. A lógica de negócio fica no AuthenticationService.
  */
 @SuppressWarnings("squid:S106")
 public class ChangePasswordUI extends AbstractUI {
@@ -39,4 +42,3 @@ public class ChangePasswordUI extends AbstractUI {
         return "Change Password";
     }
 }
-

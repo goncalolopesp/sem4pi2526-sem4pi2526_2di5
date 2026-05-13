@@ -12,9 +12,13 @@ import eapli.framework.presentation.console.ShowMessageAction;
 import eapli.framework.presentation.console.menu.MenuItemRenderer;
 import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
+import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
+import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 
 /**
- * Main menu with role-based protection using EAPLI AuthorizationService.
+ * Menu principal da aplicacao SEM4PI.
+ *
+ * Mostra opcoes com base nas roles do utilizador autenticado.
  */
 public class MainMenu extends AbstractUI {
 
@@ -54,7 +58,7 @@ public class MainMenu extends AbstractUI {
     }
 
     /**
-     * Run the menu loop until the user selects exit.
+     * Executa o ciclo do menu principal ate o utilizador escolher sair.
      */
     public void mainLoop() {
         var exit = false;
@@ -95,8 +99,8 @@ public class MainMenu extends AbstractUI {
         final var menu = new Menu("Users >");
 
         menu.addItem(ADD_USER_OPTION, "Add User", new ShowMessageAction("Add User - TODO"));
-        menu.addItem(LIST_USERS_OPTION, "List all Users", new ShowMessageAction("List Users - TODO"));
-        menu.addItem(DEACTIVATE_USER_OPTION, "Deactivate User", new ShowMessageAction("Deactivate User - TODO"));
+        menu.addItem(LIST_USERS_OPTION, "List all Users", new ListBackofficeUsersUI()::show);
+        menu.addItem(DEACTIVATE_USER_OPTION, "Manage User status", new ManageBackofficeUserStatusUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;

@@ -1,6 +1,6 @@
 package pt.isep.sem4pi.presentation.usermanagement;
 
-import pt.isep.sem4pi.application.usermanagement.RegisterBackofficeUserController;
+import pt.isep.sem4pi.application.controller.usermanagement.RegisterBackofficeUserController;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import eapli.framework.general.domain.model.EmailAddress;

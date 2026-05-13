@@ -3,7 +3,9 @@ package pt.isep.sem4pi.presentation.authz;
 import eapli.framework.actions.Action;
 
 /**
- * Menu action for user logout adapted from example project.
+ * Acao do menu para efectuar logout.
+ *
+ * Invoca a UI de logout que limpa a sessao actual.
  */
 public class LogoutAction implements Action {
 
@@ -12,4 +14,3 @@ public class LogoutAction implements Action {
         return new LogoutUI().show();
     }
 }
-

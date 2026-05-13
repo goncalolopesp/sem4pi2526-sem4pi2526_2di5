@@ -1,5 +1,6 @@
 package pt.isep.sem4pi.domain.usermanagement;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface BackofficeUserRepository {
@@ -13,5 +14,9 @@ public interface BackofficeUserRepository {
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
-}
 
+    /**
+     * Returns all backoffice users.
+     */
+    List<BackofficeUser> findAll();
+}
