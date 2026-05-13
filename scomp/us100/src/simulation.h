@@ -13,6 +13,11 @@
 #define STATUS_FINISHED 2
 #define STATUS_ABORTED 3
 
+#define WEATHER_CLEAR 1
+#define WEATHER_RAIN 2
+#define WEATHER_STORM 3
+#define WEATHER_FOG 4
+
 
 /* Estrutura  para armazenar uma posição (lat, lon, altitude). */
 typedef struct {
@@ -71,11 +76,17 @@ typedef struct {
     double max_lon;
     int flight_count;
     char flight_files[MAX_FLIGHTS][MAX_PATH];
+    int weather_code;
+    double safety_min_sep_nm;
+    double safety_min_alt_m;
+    int perf_max_flights;
+    int start_time_provided;
 } SimulationConfig;
 
 int parse_args(int argc, char **argv, SimulationConfig *config);
 int validate_config(const SimulationConfig *config);
 int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_size);
+int parse_departure_time_seconds(const char *path, int *out_seconds, char *err, size_t err_size);
 void run_flight_process(const char *flight_file, int write_fd, const SimulationConfig *config);
 int append_history(FlightRuntime *runtime, const PositionUpdate *update);
 int position_inside_area(Position p, const SimulationConfig *config);

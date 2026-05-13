@@ -161,3 +161,32 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
     }
     return 0;
 }
+
+int parse_departure_time_seconds(const char *path, int *out_seconds, char *err, size_t err_size) {
+    if (!path || !out_seconds) return -1;
+    long size = 0;
+    char *buffer = read_file(path, &size);
+    if (!buffer) {
+        snprintf(err, err_size, "Cannot read flight plan '%s'", path);
+        return -1;
+    }
+
+    char value[32];
+    if (extract_string_after_key(buffer, "DepartureTime", value, sizeof(value)) != 0) {
+        snprintf(err, err_size, "Flight plan '%s' has no DepartureTime", path);
+        free(buffer);
+        return -1;
+    }
+
+    int hours = 0;
+    int minutes = 0;
+    if (sscanf(value, "%d:%d", &hours, &minutes) != 2 || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        snprintf(err, err_size, "Flight plan '%s' has invalid DepartureTime '%s'", path, value);
+        free(buffer);
+        return -1;
+    }
+
+    *out_seconds = hours * 3600 + minutes * 60;
+    free(buffer);
+    return 0;
+}

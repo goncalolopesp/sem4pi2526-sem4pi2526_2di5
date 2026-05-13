@@ -14,7 +14,7 @@ Implementação em C da US100. O componente cria um processo filho por voo, usa 
   - `SIGTERM`/`SIGINT` pedem terminação limpa.
 - Cada processo de voo executa o seu plano de voo, calcula posições interpoladas nos segmentos e envia atualizações ao processo principal.
 - O processo principal mantém histórico de posições por voo numa estrutura dinâmica (`HistoryEntry`).
-- Os parâmetros obrigatórios são validados antes da execução.
+- Os parâmetros obrigatórios são validados antes da execução, incluindo weather, safety thresholds e performance settings.
 
 ## Dados usados
 
@@ -35,20 +35,29 @@ make run
 Ou manualmente:
 
 ```bash
-./us100_simulator --area 39 43 -9 -3 --start 0 --end 3600 --step 60 --flight data/Flight_Plan_v0a.json
+./us100_simulator --area 39 43 -9 -3 --start 0 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
+```
+
+Sem --start (usa DepartureTime do plano):
+```bash
+./us100_simulator --area 39 43 -9 -3 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
 ```
 
 ## Parâmetros
 
 ```bash
 --area <minLat> <maxLat> <minLon> <maxLon>
---start <segundos>
---end <segundos>
+--start <segundos>   (opcional se existir DepartureTime no plano)
+--end <segundos>     (se --start for omitido, é tratado como duração)
 --step <segundos>
+--weather <clear|rain|storm|fog>
+--safety-min-sep <nm>
+--safety-min-alt <m>
+--perf-max-flights <n>
 --flight <ficheiro>
 ```
 
-É possível indicar vários `--flight`, sendo criado um processo para cada ficheiro.
+É possível indicar vários `--flight`, sendo criado um processo para cada ficheiro (limitado por `--perf-max-flights`).
 
 ## Output
 
