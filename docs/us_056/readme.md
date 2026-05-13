@@ -182,7 +182,18 @@ Principais referencias de ficheiros:
 
 ---
 
-## 6. Conclusao
+## 6. Testes
+
+Testes adicionados para a US056:
+- Service: `src/test/java/pt/isep/sem4pi/application/service/engineModel/EngineModelRegistrationServiceTest.java`
+- Controller: `src/test/java/pt/isep/sem4pi/application/controller/engineModel/RegisterEngineModelControllerTest.java`
+- Dominio: `src/test/java/pt/isep/sem4pi/domain/model/engineModel/EngineModelTest.java`
+- Value Object: `src/test/java/pt/isep/sem4pi/domain/model/engineModel/EngineModelIdTest.java`
+- Persistencia (in-memory): `src/test/java/pt/isep/sem4pi/infrastructure/persistence/InMemoryEngineModelRepositoryTest.java`
+
+---
+
+## 7. Conclusao
 
 A implementacao da US056 regista modelos de motor numa arquitetura em camadas com um fluxo baseado
 em service, valida unicidade e restricoes tecnicas, e suporta inicializacao automatica via bootstrap.
