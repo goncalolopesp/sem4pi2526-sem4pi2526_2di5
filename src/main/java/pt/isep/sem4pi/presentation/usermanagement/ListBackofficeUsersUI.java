@@ -1,8 +1,7 @@
 package pt.isep.sem4pi.presentation.usermanagement;
 
-import pt.isep.sem4pi.application.service.usermanagment.UserStatusService;
-import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
 import eapli.framework.presentation.console.AbstractUI;
+import pt.isep.sem4pi.application.service.usermanagment.UserStatusService;
 
 import java.util.List;
 
@@ -13,15 +12,15 @@ public class ListBackofficeUsersUI extends AbstractUI {
     @Override
     protected boolean doShow() {
         try {
-            final List<BackofficeUser> users = service.listAll();
+            final List<UserStatusService.BackofficeUserStatus> users = service.listAllWithStatus();
             if (users.isEmpty()) {
                 System.out.println("No backoffice users available.");
                 return true;
             }
 
             System.out.printf("%-15s  %-30s  %-8s%n", "Username", "Email", "Status");
-            for (final BackofficeUser u : users) {
-                System.out.printf("%-15s  %-30s  %-8s%n", u.username(), u.email(), u.isEnabled() ? "ENABLED" : "DISABLED");
+            for (final UserStatusService.BackofficeUserStatus u : users) {
+                System.out.printf("%-15s  %-30s  %-8s%n", u.username(), u.email(), u.isActive() ? "ENABLED" : "DISABLED");
             }
             return true;
         } catch (final Exception e) {
@@ -35,4 +34,3 @@ public class ListBackofficeUsersUI extends AbstractUI {
         return "List Backoffice Users";
     }
 }
-

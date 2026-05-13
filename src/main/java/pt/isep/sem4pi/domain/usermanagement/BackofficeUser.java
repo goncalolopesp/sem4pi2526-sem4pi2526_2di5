@@ -32,9 +32,6 @@ public class BackofficeUser implements AggregateRoot<String> {
     @Column(nullable = false)
     private LocalDate skillsAssessmentDate;
 
-    @Column(nullable = false)
-    private boolean enabled;
-
     @Version
     private Long version;
 
@@ -60,7 +57,6 @@ public class BackofficeUser implements AggregateRoot<String> {
         this.phoneNumber = phoneNumber.trim();
         this.securityClearanceExpirationDate = securityClearanceExpirationDate;
         this.skillsAssessmentDate = skillsAssessmentDate;
-        this.enabled = true;
     }
 
     public String username() {
@@ -87,21 +83,6 @@ public class BackofficeUser implements AggregateRoot<String> {
         return skillsAssessmentDate;
     }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public boolean canAuthenticate() {
-        return enabled;
-    }
-
-    public void enable() {
-        this.enabled = true;
-    }
-
-    public void disable() {
-        this.enabled = false;
-    }
 
     public Long version() {
         return version;
