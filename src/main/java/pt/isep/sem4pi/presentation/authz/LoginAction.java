@@ -4,7 +4,9 @@ import eapli.framework.actions.Action;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 
 /**
- * Menu action for user login adapted from example project.
+ * Acao do menu para efectuar login.
+ *
+ * Simples invocador da UI de login. Usada nos menus para permitir que o utilizador inicie sessao.
  */
 public class LoginAction implements Action {
 

@@ -1,4 +1,5 @@
 #include "simulation.h"
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -18,19 +19,46 @@ static void handle_interrupt(int signo) {
     stop_requested = 1;
 }
 
+static int equals_ignore_case(const char *a, const char *b) {
+    if (!a || !b) return 0;
+    while (*a && *b) {
+        unsigned char ca = (unsigned char)*a;
+        unsigned char cb = (unsigned char)*b;
+        if (tolower(ca) != tolower(cb)) return 0;
+        ++a;
+        ++b;
+    }
+    return *a == '\0' && *b == '\0';
+}
+
+static int parse_weather_code(const char *value) {
+    if (equals_ignore_case(value, "clear")) return WEATHER_CLEAR;
+    if (equals_ignore_case(value, "rain")) return WEATHER_RAIN;
+    if (equals_ignore_case(value, "storm")) return WEATHER_STORM;
+    if (equals_ignore_case(value, "fog")) return WEATHER_FOG;
+    return 0;
+}
+
 /* Handler para ctrl-c, marco pedido de paragem para terminar filhos com SIGTERM. */
 void print_usage(const char *program) {
     fprintf(stderr,
-        "Usage: %s --area <minLat> <maxLat> <minLon> <maxLon> --start <sec> --end <sec> --step <sec> --flight <file> [--flight <file> ...]\n"
-        "Example: %s --area 39 43 -9 -3 --start 0 --end 3600 --step 60 --flight data/Flight_Plan_v0a.json\n",
+        "Usage: %s --area <minLat> <maxLat> <minLon> <maxLon> --start <sec> --end <sec> --step <sec> --weather <clear|rain|storm|fog> --safety-min-sep <nm> --safety-min-alt <m> --perf-max-flights <n> --flight <file> [--flight <file> ...]\n"
+        "Note: if --start is omitted, DepartureTime from the first flight plan is used.\n"
+        "Example: %s --area 39 43 -9 -3 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json\n",
         program, program);
 }
 
 /* Funções auxiliares para argumentos e validação. */
 int parse_args(int argc, char **argv, SimulationConfig *config) {
     memset(config, 0, sizeof(*config));
+    config->start_time = -1;
+    config->start_time_provided = 0;
     config->step_seconds = 60;
     config->end_time = -1;
+    config->weather_code = WEATHER_CLEAR;
+    config->safety_min_sep_nm = 3.0;
+    config->safety_min_alt_m = 300.0;
+    config->perf_max_flights = MAX_FLIGHTS;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--area") == 0 && i + 4 < argc) {
@@ -40,10 +68,19 @@ int parse_args(int argc, char **argv, SimulationConfig *config) {
             config->max_lon = atof(argv[++i]);
         } else if (strcmp(argv[i], "--start") == 0 && i + 1 < argc) {
             config->start_time = atoi(argv[++i]);
+            config->start_time_provided = 1;
         } else if (strcmp(argv[i], "--end") == 0 && i + 1 < argc) {
             config->end_time = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--step") == 0 && i + 1 < argc) {
             config->step_seconds = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "--weather") == 0 && i + 1 < argc) {
+            config->weather_code = parse_weather_code(argv[++i]);
+        } else if (strcmp(argv[i], "--safety-min-sep") == 0 && i + 1 < argc) {
+            config->safety_min_sep_nm = atof(argv[++i]);
+        } else if (strcmp(argv[i], "--safety-min-alt") == 0 && i + 1 < argc) {
+            config->safety_min_alt_m = atof(argv[++i]);
+        } else if (strcmp(argv[i], "--perf-max-flights") == 0 && i + 1 < argc) {
+            config->perf_max_flights = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--flight") == 0 && i + 1 < argc) {
             if (config->flight_count >= MAX_FLIGHTS) {
                 fprintf(stderr, "Too many flight files. Maximum: %d\n", MAX_FLIGHTS);
@@ -55,6 +92,20 @@ int parse_args(int argc, char **argv, SimulationConfig *config) {
             return -1;
         }
     }
+
+    if (!config->start_time_provided && config->flight_count > 0) {
+        char err[256];
+        int seconds = 0;
+        if (parse_departure_time_seconds(config->flight_files[0], &seconds, err, sizeof(err)) != 0) {
+            fprintf(stderr, "Validation error: %s\n", err);
+            return -1;
+        }
+        config->start_time = seconds;
+        if (config->end_time >= 0 && config->end_time <= config->start_time) {
+            config->end_time = config->start_time + config->end_time;
+        }
+    }
+
     return validate_config(config);
 }
 
@@ -63,12 +114,36 @@ int validate_config(const SimulationConfig *config) {
         fprintf(stderr, "Validation error: at least one --flight is required.\n");
         return -1;
     }
+    if (config->start_time < 0) {
+        fprintf(stderr, "Validation error: missing --start or DepartureTime in flight plan.\n");
+        return -1;
+    }
     if (config->end_time <= config->start_time) {
         fprintf(stderr, "Validation error: --end must be greater than --start.\n");
         return -1;
     }
     if (config->step_seconds <= 0) {
         fprintf(stderr, "Validation error: --step must be positive.\n");
+        return -1;
+    }
+    if (config->weather_code == 0) {
+        fprintf(stderr, "Validation error: --weather must be clear, rain, storm, or fog.\n");
+        return -1;
+    }
+    if (config->safety_min_sep_nm <= 0.0) {
+        fprintf(stderr, "Validation error: --safety-min-sep must be positive.\n");
+        return -1;
+    }
+    if (config->safety_min_alt_m <= 0.0) {
+        fprintf(stderr, "Validation error: --safety-min-alt must be positive.\n");
+        return -1;
+    }
+    if (config->perf_max_flights <= 0 || config->perf_max_flights > MAX_FLIGHTS) {
+        fprintf(stderr, "Validation error: --perf-max-flights must be between 1 and %d.\n", MAX_FLIGHTS);
+        return -1;
+    }
+    if (config->flight_count > config->perf_max_flights) {
+        fprintf(stderr, "Validation error: number of flights exceeds --perf-max-flights.\n");
         return -1;
     }
     if (config->min_lat < -90 || config->max_lat > 90 || config->min_lat >= config->max_lat) {

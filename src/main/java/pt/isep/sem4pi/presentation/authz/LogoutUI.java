@@ -1,24 +1,26 @@
 package pt.isep.sem4pi.presentation.authz;
 
-import eapli.framework.infrastructure.authz.application.AuthorizationService;
-import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.presentation.console.AbstractUI;
+import pt.isep.sem4pi.application.controller.usermanagement.AuthenticationController;
 
 /**
- * Logout UI adapted from example project.
+ * UI de logout.
+ *
+ * Apenas chama o controller e apresenta o resultado.
  */
 public class LogoutUI extends AbstractUI {
-    private final AuthorizationService authz = AuthzRegistry.authorizationService();
+
+    private final AuthenticationController controller = new AuthenticationController();
 
     @Override
     public String headline() {
-        return "Logout successful!!\n Make a new Login";
+        return "Logout";
     }
 
     @Override
     protected boolean doShow() {
-        authz.clearSession();
+        controller.logout();
+        System.out.println("Logout successful.");
         return true;
     }
 }
-

@@ -1,45 +1,64 @@
 package pt.isep.sem4pi.domain.usermanagement;
 
+import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Version;
+
 import java.time.LocalDate;
 import java.util.Objects;
 
-/**
- * Simple domain entity to hold additional backoffice user data.
- */
-public class BackofficeUser {
+@Entity
+public class BackofficeUser implements AggregateRoot<String> {
 
-    private final String username;
-    private final String name;
-    private final String email;
-    private final String phoneNumber;
-    private final LocalDate securityClearanceExpirationDate;
-    private final LocalDate skillsAssessmentDate;
+    @Id
+    @Column(nullable = false, unique = true)
+    private String username;
 
-    public BackofficeUser(final String username, final String name, final String email,
-                          final String phoneNumber, final LocalDate securityClearanceExpirationDate,
+    @Column(nullable = false)
+    private String name;
+
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "email", nullable = false, unique = true))
+    private Email email;
+
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "phoneNumber", nullable = false))
+    private PhoneNumber phoneNumber;
+
+    @Column(nullable = false)
+    private LocalDate securityClearanceExpirationDate;
+
+    @Column(nullable = false)
+    private LocalDate skillsAssessmentDate;
+
+    @Version
+    private Long version;
+
+    protected BackofficeUser() {
+        // for ORM
+    }
+
+    public BackofficeUser(final String username, final String name, final Email email,
+                          final PhoneNumber phoneNumber,
+                          final LocalDate securityClearanceExpirationDate,
                           final LocalDate skillsAssessmentDate) {
-        if (username == null || username.trim().isEmpty()) {
-            throw new IllegalArgumentException("username is required");
-        }
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("name is required");
-        }
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("email is required");
-        }
-        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("phone number is required");
-        }
-        if (securityClearanceExpirationDate == null) {
-            throw new IllegalArgumentException("security clearance expiration date is required");
-        }
-        if (skillsAssessmentDate == null) {
-            throw new IllegalArgumentException("skills assessment date is required");
-        }
+
+        Preconditions.nonEmpty(username, "Username is required");
+        Preconditions.nonEmpty(name, "Name is required");
+        Preconditions.nonNull(email, "Email is required");
+        Preconditions.nonNull(phoneNumber, "Phone number is required");
+        Preconditions.nonNull(securityClearanceExpirationDate, "Security clearance expiration date is required");
+        Preconditions.nonNull(skillsAssessmentDate, "Skills assessment date is required");
+
         this.username = username.trim();
         this.name = name.trim();
-        this.email = email.trim().toLowerCase();
-        this.phoneNumber = phoneNumber.trim();
+        this.email = email;
+        this.phoneNumber = phoneNumber;
         this.securityClearanceExpirationDate = securityClearanceExpirationDate;
         this.skillsAssessmentDate = skillsAssessmentDate;
     }
@@ -52,11 +71,11 @@ public class BackofficeUser {
         return name;
     }
 
-    public String email() {
+    public Email email() {
         return email;
     }
 
-    public String phoneNumber() {
+    public PhoneNumber phoneNumber() {
         return phoneNumber;
     }
 
@@ -68,25 +87,38 @@ public class BackofficeUser {
         return skillsAssessmentDate;
     }
 
+
+    public Long version() {
+        return version;
+    }
+
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BackofficeUser)) return false;
-        final BackofficeUser that = (BackofficeUser) o;
-        return Objects.equals(username, that.username) || Objects.equals(email, that.email);
+    public String identity() {
+        return username;
+    }
+
+    @Override
+    public boolean hasIdentity(final String id) {
+        return username.equals(id);
+    }
+
+    @Override
+    public boolean sameAs(final Object other) {
+        if (!(other instanceof BackofficeUser)) {
+            return false;
+        }
+
+        final BackofficeUser that = (BackofficeUser) other;
+        return this.username.equals(that.username);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return sameAs(other);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, email);
-    }
-
-    @Override
-    public String toString() {
-        return "BackofficeUser{" +
-                "username='" + username + '\'' +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                '}';
+        return Objects.hash(username);
     }
 }
