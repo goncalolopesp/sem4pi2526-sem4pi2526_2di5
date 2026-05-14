@@ -313,43 +313,74 @@ int main(int argc, char **argv) {
     sigprocmask(SIG_UNBLOCK, &startup_mask, NULL);
 
     int active = config.flight_count;
-    while (active > 0 && !stop_requested) {
-        int ready = poll(poll_fds, (nfds_t)config.flight_count, 1000);
-        if (ready < 0) {
-            if (errno == EINTR) continue;
-            perror("poll");
-            break;
-        }
-        if (ready == 0) continue;
 
-        for (int i = 0; i < config.flight_count; ++i) {
-            if (!runtimes[i].active) continue;
-            if (poll_fds[i].revents & POLLIN) {
-                PositionUpdate update;
-                ssize_t n = read(runtimes[i].pipe_fd, &update, sizeof(update));
-                if (n == (ssize_t)sizeof(update)) {
-                    if (strcmp(runtimes[i].flight_id, "flight-1") == 0 || strncmp(runtimes[i].flight_id, "flight-", 7) == 0) {
-                        snprintf(runtimes[i].flight_id, sizeof(runtimes[i].flight_id), "%s", update.flight_id);
+    for (int current_step = config.start_time;
+         current_step <= config.end_time &&
+         active > 0 &&
+         !stop_requested;
+         current_step += config.step_seconds) {
+
+        int expected = active;
+        int received = 0;
+
+        while (received < expected && !stop_requested) {
+            int ready = poll(poll_fds, (nfds_t)config.flight_count, -1);
+            if (ready < 0) {
+                if (errno == EINTR) continue;
+                perror("poll");
+                break;
+            }
+
+            for (int i = 0; i < config.flight_count; ++i) {
+                if (!runtimes[i].active) continue;
+
+                if (poll_fds[i].revents & POLLIN) {
+                    PositionUpdate update;
+                    ssize_t n = read(runtimes[i].pipe_fd, &update, sizeof(update));
+                    if (n == (ssize_t)sizeof(update)) {
+                        if (strcmp(runtimes[i].flight_id, "flight-1") == 0 || strncmp(runtimes[i].flight_id, "flight-", 7) == 0) {
+                            snprintf(runtimes[i].flight_id, sizeof(runtimes[i].flight_id), "%s", update.flight_id);
+                        }
+                        append_history(&runtimes[i], &update);
+                        tracker_update(&tracker, &update);
+                        const char *scope = position_inside_area(update.position, &config) ? "inside" : "outside";
+                        printf("[%s] step=%d pid=%d lat=%.6f lon=%.6f alt=%.1f status=%d (%s area)\n",
+                               update.flight_id, update.time_step, update.pid,
+                               update.position.latitude, update.position.longitude,
+                               update.position.altitude_m, update.status, scope);
+
+                        received++;
+
+                        if (update.status == STATUS_FINISHED || update.status == STATUS_ABORTED) {
+                            close(runtimes[i].pipe_fd);
+                            runtimes[i].active = 0;
+                            poll_fds[i].fd = -1;
+                            active--;
+                            if (expected > 0) expected--;
+                        }
+                    } else if (n == 0) {
+                        close(runtimes[i].pipe_fd);
+                        runtimes[i].active = 0;
+                        poll_fds[i].fd = -1;
+                        active--;
+                        if (expected > 0) expected--;
                     }
-                    append_history(&runtimes[i], &update);
-                    tracker_update(&tracker, &update);
-                    const char *scope = position_inside_area(update.position, &config) ? "inside" : "outside";
-                    printf("[%s] t=%d pid=%d lat=%.6f lon=%.6f alt=%.1f status=%d (%s area)\n",
-                           update.flight_id, update.time_step, update.pid,
-                           update.position.latitude, update.position.longitude,
-                           update.position.altitude_m, update.status, scope);
-                } else if (n == 0) {
+                }
+
+                if (poll_fds[i].revents & POLLHUP) {
                     close(runtimes[i].pipe_fd);
                     runtimes[i].active = 0;
                     poll_fds[i].fd = -1;
                     active--;
+                    if (expected > 0) expected--;
                 }
             }
-            if (poll_fds[i].revents & POLLHUP) {
-                close(runtimes[i].pipe_fd);
-                runtimes[i].active = 0;
-                poll_fds[i].fd = -1;
-                active--;
+        }
+
+        // US103: liberar o próximo passo
+        for (int i = 0; i < config.flight_count; ++i) {
+            if (runtimes[i].active) {
+                kill(runtimes[i].pid, SIGUSR2);
             }
         }
     }

@@ -19,6 +19,14 @@ static void handle_term(int signo) {
     terminate_requested = 1;
 }
 
+// US103: avancar um passo quando o processo pai autoriza
+static volatile sig_atomic_t next_step_requested = 0;
+
+static void handle_next_step(int signo) {
+    (void)signo;
+    next_step_requested = 1;
+}
+
 /* Handlers mínimos: inicio e termo. Uso sig_atomic_t para segurança em sinais. */
 static Position interpolate(Position a, Position b, double ratio) {
     Position p;
@@ -57,6 +65,14 @@ void run_flight_process(const char *flight_file, int write_fd, const SimulationC
     sigaction(SIGTERM, &term_action, NULL);
     sigaction(SIGINT, &term_action, NULL);
 
+    // US103: sinal de avanco de passo
+    struct sigaction next_action;
+    memset(&next_action, 0, sizeof(next_action));
+    next_action.sa_handler = handle_next_step;
+    sigemptyset(&next_action.sa_mask);
+    next_action.sa_flags = SA_RESTART;
+    sigaction(SIGUSR2, &next_action, NULL);
+
     sigset_t startup_mask;
     sigemptyset(&startup_mask);
     sigaddset(&startup_mask, SIGUSR1);
@@ -88,9 +104,19 @@ void run_flight_process(const char *flight_file, int write_fd, const SimulationC
         for (int s = 0; s < steps_per_segment && current_time <= config->end_time && !terminate_requested; ++s) {
             double ratio = steps_per_segment == 1 ? 1.0 : (double)s / (double)(steps_per_segment - 1);
             Position p = interpolate(seg->start, seg->end, ratio);
+
+            next_step_requested = 0;
             send_update(write_fd, &plan, current_time, p, STATUS_RUNNING);
+
+            // US103: aguarda autorizacao do processo pai
+            sigset_t empty_mask;
+            sigemptyset(&empty_mask);
+            while (!next_step_requested && !terminate_requested) {
+                sigsuspend(&empty_mask);
+            }
+
             current_time += config->step_seconds;
-            usleep(50000);
+//            usleep(50000);
         }
     }
 
