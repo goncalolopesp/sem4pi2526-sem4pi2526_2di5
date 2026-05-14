@@ -7,6 +7,12 @@ import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 
+/**
+ * Menu "My account" do utilizador.
+ *
+ * Mostra opcoes relacionadas com a conta do utilizador: login, logout e alterar password.
+ * O menu adapta as opcoes consoante exista sessao activa.
+ */
 public class MyUserMenu extends Menu {
 
     private static final String MENU_TITLE = "My account >";

@@ -2,18 +2,19 @@ package pt.isep.sem4pi.presentation.authz;
 
 import eapli.framework.domain.repositories.ConcurrencyException;
 import eapli.framework.domain.repositories.IntegrityViolationException;
-import eapli.framework.infrastructure.authz.application.AuthenticationService;
-import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
+import pt.isep.sem4pi.application.controller.usermanagement.AuthenticationController;
 
 /**
- * Change password UI adapted from example project but placed in local package.
+ * UI para alteração de password.
+ *
+ * A UI recolhe dados e delega a operação no controller.
  */
 @SuppressWarnings("squid:S106")
 public class ChangePasswordUI extends AbstractUI {
 
-    private final AuthenticationService authenticationService = AuthzRegistry.authenticationService();
+    private final AuthenticationController controller = new AuthenticationController();
 
     @Override
     protected boolean doShow() {
@@ -21,15 +22,24 @@ public class ChangePasswordUI extends AbstractUI {
         final String newPassword = Console.readLine("New Password:");
 
         try {
-            if (this.authenticationService.changePassword(oldPassword, newPassword)) {
-                System.out.println("Password Successfully changed");
+            final AuthenticationController.ChangePasswordResult result =
+                    controller.changePassword(oldPassword, newPassword);
+
+            if (result == AuthenticationController.ChangePasswordResult.SUCCESS) {
+                System.out.println("Password successfully changed.");
                 return true;
-            } else {
-                System.out.println("Invalid authentication");
+            }
+
+            if (result == AuthenticationController.ChangePasswordResult.PASSWORD_POLICY_VIOLATION) {
+                System.out.println("Invalid password. It must have at least 6 characters, one digit and one uppercase letter.");
                 return false;
             }
-        } catch (ConcurrencyException | IntegrityViolationException e) {
-            System.out.println("An error has occurred> " + e.getLocalizedMessage());
+
+            System.out.println("Invalid authentication.");
+            return false;
+
+        } catch (final ConcurrencyException | IntegrityViolationException e) {
+            System.out.println("The operation could not be completed: " + e.getLocalizedMessage());
             return false;
         }
     }
@@ -39,4 +49,3 @@ public class ChangePasswordUI extends AbstractUI {
         return "Change Password";
     }
 }
-

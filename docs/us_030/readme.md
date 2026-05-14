@@ -1,86 +1,459 @@
-# US-030: Authentication and authorization
+# US030 — Authentication and Authorization
 
-## 1. Contexto
-Implementação da autenticação e autorização do backoffice SEM4PI com EAPLI: login/logout, política de passwords, mudança de password e controlo de opções de menu por roles (`ADMIN`, `BACKOFFICE_OPERATOR`).
+## 1. Requirements Engineering
 
-## 2. Arquitectura / Organização
-- `domain.usermanagement`: `SEM4PIPasswordPolicy`, `SEM4PIRoles`, `UserBuilderHelper`.  
-- `infrastructure.bootstrap`: `MasterUsersBootstrapper` (bootstrap comentado).  
-- `infrastructure.persistence`: `PersistenceContext`, `InMemoryRepositoryFactory`.  
-- `presentation/authz`: `LoginUI`, `LoginAction`, `LogoutUI`, `LogoutAction`, `ChangePasswordUI`, `MyUserMenu`.  
-- `presentation`: `MainMenu`, `SEM4PIBackoffice`, `Main`.
+### 1.1 User Story
 
-## 3. Ficheiros criados e responsabilidade (essencial)
-- `src/main/java/pt/isep/sem4pi/domain/usermanagement/SEM4PIPasswordPolicy.java`  
-  - Valida passwords (>=6, contém dígito e maiúscula) e classifica força (`WEAK`, `GOOD`, `EXCELLENT`). Usada por builders e `AuthzRegistry`.
+As a Project Manager, I want the system to support and apply authentication and authorization for all its users and functionalities.
 
-- `src/main/java/pt/isep/sem4pi/domain/usermanagement/SEM4PIRoles.java`  
-  - Define roles do projecto (`ADMIN`, `BACKOFFICE_OPERATOR`, etc.). Usada para autorizações e seed.
+---
 
-- `src/main/java/pt/isep/sem4pi/domain/usermanagement/UserBuilderHelper.java`  
-  - Fornece `SystemUserBuilder` configurado com `SEM4PIPasswordPolicy` e `PlainTextEncoder`. Usada no seed e bootstrap.
+## 1.2 Context
 
-- `src/main/java/pt/isep/sem4pi/infrastructure/bootstrap/MasterUsersBootstrapper.java`  
-  - Cria utilizadores "master" (`admin`, `backoffice`) — existe mas a chamada está comentada.
+The system contains multiple user roles and protected functionalities.
+Authentication and authorization are transversal concerns required by all remaining user stories involving protected access.
 
-- `src/main/java/pt/isep/sem4pi/infrastructure/persistence/InMemoryRepositoryFactory.java`  
-  - Factory em memória; cria `InMemoryUserRepository` e faz seed de `admin` e `bo`.
+The project requirements explicitly recommend the usage of existing frameworks for authentication and authorization, since these concerns are infrastructure-oriented and not the main business focus of the system.
 
-- `src/main/java/pt/isep/sem4pi/infrastructure/persistence/PersistenceContext.java`  
-  - Ponto de acesso à `RepositoryFactory`. Por defeito devolve a factory em memória.
+---
 
-- `src/main/java/pt/isep/sem4pi/presentation/authz/LoginUI.java` / `LoginAction.java`  
-  - UI e acção de login (até 3 tentativas). Usa `AuthzRegistry.authenticationService().authenticate(...)`.
+## 1.3 Acceptance Criteria
 
-- `src/main/java/pt/isep/sem4pi/presentation/authz/LogoutUI.java` / `LogoutAction.java`  
-  - Limpa sessão via `AuthzRegistry.authorizationService().clearSession()`.
+* Users must authenticate before accessing protected functionalities.
+* The system must support login and logout operations.
+* Authentication must validate username and password.
+* Authorization must restrict functionalities according to user roles.
+* Invalid credentials must prevent access.
+* Disabled users must not authenticate.
+* Passwords must follow the project password policy.
+* The solution must integrate with the EAPLI authorization framework.
 
-- `src/main/java/pt/isep/sem4pi/presentation/authz/ChangePasswordUI.java`  
-  - UI para alteração de password. Lê `Old Password` e `New Password` via `Console` e chama `AuthzRegistry.authenticationService().changePassword(old, new)`. Trata `ConcurrencyException` e `IntegrityViolationException`. Retorna sucesso/falha. É chamada apenas a partir de `MyUserMenu` (que só a expõe quando há sessão).
+---
 
-- `src/main/java/pt/isep/sem4pi/presentation/authz/MyUserMenu.java`  
-  - Submenu "My account >": mostra `Login` quando anónimo ou `Change password`, `Change user`, `Logout` quando autenticado.
+## 1.4 Dependencies
 
-- `src/main/java/pt/isep/sem4pi/presentation/MainMenu.java`  
-  - Menu principal; headline mostra utilizador autenticado. Mostra submenu `Users` se `BACKOFFICE_OPERATOR` ou `ADMIN`; blocos admin apenas para `ADMIN`.
+This user story depends on:
 
-- `src/main/java/pt/isep/sem4pi/presentation/SEM4PIBackoffice.java`  
-  - Configura `AuthzRegistry` com o repositório de utilizadores, `SEM4PIPasswordPolicy` e `PlainTextEncoder`. Inicia `LoginUI` → `MainMenu`.
+* repository infrastructure;
+* persistence configuration;
+* bootstrap process;
+* EAPLI Authz framework integration.
 
-- `src/main/java/pt/isep/sem4pi/Main.java`  
-  - Delegate para `SEM4PIBackoffice`.
+It also supports all remaining protected user stories.
 
-## 4. Fluxo da aplicação
-`Main` → `SEM4PIBackoffice.main()` configura `AuthzRegistry` (users repo, policy, encoder) → `PersistenceContext` devolve factory em memória (seed) → `LoginUI.show()` autentica → em sucesso `MainMenu.mainLoop()` → através de `MyUserMenu` usa-se `ChangePasswordUI` ou `LogoutUI` → logout limpa sessão e volta ao estado anónimo.
+---
 
-## 5. Autenticação
-- `SEM4PIBackoffice` chama `AuthzRegistry.configure(PersistenceContext.repositories().users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder())`.  
-- `LoginUI` pede credenciais e usa `authenticationService.authenticate(username, password, onlyWithThis)`.  
-- `PlainTextEncoder` é usado (sem hashing a nível do encoder passado).  
-- `ChangePasswordUI` usa `authenticationService.changePassword(old, new)` para alterar a password da sessão autenticada.
+# 2. Analysis
 
-## 6. Autorização
-- Roles em `SEM4PIRoles`.  
-- `MainMenu` usa `authz.isAuthenticatedUserAuthorizedTo(...)` para condicionar entrada `Users` (BACKOFFICE_OPERATOR ou ADMIN) e blocos admin (`ADMIN`).  
-- `LoginUI` suporta `onlyWithThis` para exigir role específica no processo de autenticação.
+Authentication and authorization are cross-cutting concerns required throughout the system.
 
-## 7. Persistência (InMemory)
-- `PersistenceContext` retorna `InMemoryRepositoryFactory` (comentário explícito no código: default para US030).  
-- Seed de utilizadores realizado em `InMemoryRepositoryFactory.seedDefaultUsers(...)`. `MasterUsersBootstrapper` existe mas não é invocado por defeito.
+The implementation needed to:
 
-## 8. Utilizadores de teste (seed actual)
-- `admin` / `Password1` — role: `ADMIN`.  
-- `bo` / `Password1` — role: `BACKOFFICE_OPERATOR`.  
-(Nota: `MasterUsersBootstrapper` define `backoffice` em vez de `bo`, mas não é executado por defeito.)
+* support authenticated sessions;
+* support role-based authorization;
+* integrate with console menus;
+* remain independent from business use cases.
 
-## 9. Testes manuais possíveis (rápidos)
-- Login válido: `admin`/`Password1` → acesso admin; `bo`/`Password1` → vê submenu `Users`.  
-- Login inválido: credenciais erradas até 3 tentativas → `LoginUI` falha.  
-- Change password:
-  - Autenticar; selecionar `My account > Change password`; inserir password antiga correta e nova válida → deve retornar sucesso.  
-  - Tentar com password antiga errada → operação falha.  
-  - Exceções de concorrência/integridade são capturadas e impressas pela UI.  
-- Logout: executar `Logout` → sessão limpa; `headline` passa a `==Anonymous==`.
+Because authentication is not the main business focus of the project, the solution adopts the EAPLI Authz framework, as recommended in the requirements.
 
-## 10. Conclusão
-US030 está implementada de forma funcional e auto‑contida: autenticação/configuração via `AuthzRegistry` com persistência em memória, política de passwords (`SEM4PIPasswordPolicy`), UI para login/logout e alteração de password (`ChangePasswordUI`), e autorização por roles que condiciona entradas do menu.
+The implementation separates:
+
+* infrastructure authentication concerns;
+* application orchestration;
+* business-specific validation.
+
+This separation improves maintainability and avoids spreading security logic across the system.
+
+---
+
+# 3. Design
+
+## 3.1 Architectural Approach
+
+The implementation follows the layered architecture adopted in the project:
+
+```text
+Presentation -> Application -> Domain -> Infrastructure
+```
+
+Responsibilities:
+
+| Layer          | Responsibility                        |
+| -------------- | ------------------------------------- |
+| Presentation   | User interaction                      |
+| Application    | Use case coordination                 |
+| Domain         | Business rules and policies           |
+| Infrastructure | Persistence and framework integration |
+
+This structure follows the architectural organization recommended in the EAPLI framework and DDD slides.
+
+---
+
+## 3.2 Main Components
+
+### Presentation Layer
+
+Package:
+
+```text
+pt.isep.sem4pi.presentation.authz
+```
+
+Main components:
+
+* `LoginUI`
+* `LogoutUI`
+* `ChangePasswordUI`
+* `LoginAction`
+* `LogoutAction`
+
+Responsibilities:
+
+* collect user input;
+* present results;
+* delegate operations to controllers.
+
+The UI layer does not directly access repositories.
+
+---
+
+### Application Layer
+
+Package:
+
+```text
+pt.isep.sem4pi.application.controller.usermanagement
+```
+
+Main component:
+
+```text
+AuthenticationController
+```
+
+Responsibilities:
+
+* coordinate authentication;
+* coordinate logout;
+* coordinate password change;
+* validate access permissions;
+* enforce password policy integration.
+
+The controller follows the GRASP Controller principle by centralizing the use case orchestration.
+
+---
+
+### Domain Layer
+
+Package:
+
+```text
+pt.isep.sem4pi.domain.usermanagement
+```
+
+Main components:
+
+* `SEM4PIPasswordPolicy`
+* `SEM4PIRoles`
+* `UserBuilderHelper`
+
+Responsibilities:
+
+* define valid password rules;
+* define project roles;
+* configure user creation with the project policies.
+
+The password policy enforces:
+
+* minimum length;
+* uppercase character;
+* numeric character.
+
+---
+
+### Infrastructure Layer
+
+Packages:
+
+```text
+pt.isep.sem4pi.infrastructure.persistence
+pt.isep.sem4pi.infrastructure.bootstrap
+```
+
+Responsibilities:
+
+* repository access;
+* persistence abstraction;
+* framework integration;
+* bootstrap users.
+
+---
+
+## 3.3 Authentication Flow
+
+General authentication flow:
+
+```text
+LoginUI
+ -> AuthenticationController
+ -> AuthenticationService
+ -> AuthorizationService
+ -> UserAccessService
+ -> UserRepository
+```
+
+Authentication is delegated to the EAPLI framework through:
+
+```java
+authenticationService.authenticate(...)
+```
+
+
+
+If authentication succeeds:
+
+* the session is created;
+* authorization rules are applied;
+* user access validation is executed.
+
+Disabled users are denied access through:
+
+```text
+UserAccessService
+```
+
+---
+
+## 3.4 Authorization
+
+Authorization is role-based.
+
+Roles implemented:
+
+* `ADMIN`
+* `BACKOFFICE_OPERATOR`
+
+Menus and actions are dynamically restricted according to authenticated roles.
+
+This approach ensures:
+
+* separation of permissions;
+* protection of administrative functionalities;
+* centralized authorization logic.
+
+---
+
+## 3.5 Session Management
+
+Session management is handled through:
+
+* `AuthenticationService`
+* `AuthorizationService`
+
+The implementation supports:
+
+* authenticated sessions;
+* logout;
+* session clearing;
+* authorization verification.
+
+Logout flow:
+
+```text
+LogoutUI
+ -> AuthenticationController
+ -> AuthorizationService.clearSession()
+```
+
+---
+
+## 3.6 Password Management
+
+Password management is integrated into the authentication infrastructure.
+
+The project implements:
+
+* password validation;
+* password change;
+* password policy enforcement.
+
+Password changes are coordinated through:
+
+```text
+ChangePasswordUI
+ -> AuthenticationController
+ -> AuthenticationService.changePassword(...)
+```
+
+
+
+The controller validates:
+
+* authenticated session existence;
+* password policy compliance.
+
+---
+
+## 3.7 Design Decisions
+
+### Use of EAPLI Authz Framework
+
+The project requirements explicitly recommend existing authentication frameworks.
+
+The EAPLI Authz framework was adopted because:
+
+* it already provides session handling;
+* it supports role-based authorization;
+* it integrates with repositories;
+* it reduces infrastructure complexity;
+* it aligns with EAPLI architectural guidelines.
+
+---
+
+### Separation Between UI and Business Logic
+
+The UI layer only:
+
+* collects input;
+* presents results;
+* delegates operations.
+
+Business validation and orchestration are handled by controllers and services.
+
+This avoids coupling presentation with business rules.
+
+---
+
+### Controller-Centered Coordination
+
+The `AuthenticationController` centralizes:
+
+* login;
+* logout;
+* password changes.
+
+This reduces duplicated orchestration logic across UIs.
+
+---
+
+### Dedicated Password Policy
+
+A custom password policy was implemented instead of hardcoded validations in the UI.
+
+This ensures:
+
+* centralized validation;
+* reuse across the system;
+* easier maintenance.
+
+---
+
+# 4. Architecture
+
+## 4.1 Layered Architecture
+
+The implementation follows the layered architecture used throughout the project:
+
+* presentation;
+* application;
+* domain;
+* infrastructure.
+
+This separation improves:
+
+* maintainability;
+* modularity;
+* testability;
+* reuse.
+
+---
+
+## 4.2 Repository Integration
+
+Repositories are accessed through:
+
+```text
+PersistenceContext
+```
+
+This abstraction allows switching between:
+
+* in-memory repositories;
+* JPA repositories.
+
+without changing application logic.
+
+---
+
+## 4.3 Bootstrap Users
+
+The bootstrap process automatically creates default users:
+
+* `admin`
+* `backoffice`
+
+
+
+This ensures:
+
+* immediate system access;
+* simplified testing;
+* consistent initialization.
+
+The bootstrap verifies if users already exist before insertion to avoid duplicates.
+
+---
+
+## 4.4 Concurrency
+
+Concurrency support is handled through optimistic locking using JPA `@Version` fields in persistent entities.
+
+This approach:
+
+* avoids pessimistic locking;
+* improves concurrency performance;
+* prevents conflicting updates.
+
+---
+
+# 5. Tests and Implementation
+
+The implementation includes tests for:
+
+* authentication;
+* invalid authentication;
+* disabled users;
+* password policy validation;
+* role validation;
+* repository behavior;
+* login UI;
+* logout flow;
+* password change flow.
+
+Main tested scenarios:
+
+* valid credentials;
+* invalid credentials;
+* disabled user authentication;
+* password policy violations;
+* session management;
+* authorization checks.
+
+The tests use:
+
+* JUnit 4;
+* in-memory repositories;
+* isolated Authz configuration.
+
+---
+
+# 6. Conclusion
+
+The implementation successfully integrates authentication and authorization into the system while following:
+
+* EAPLI architectural recommendations;
+* layered architecture;
+* DDD principles;
+* repository abstraction.
+
+The adoption of the EAPLI Authz framework reduced infrastructure complexity and provided a reusable security foundation for the remaining user stories.
