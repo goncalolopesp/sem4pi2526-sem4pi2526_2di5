@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.model.Manufacture;
+package pt.isep.sem4pi.domain.model.manufacture;
 
 import eapli.framework.domain.model.ValueObject;
 import eapli.framework.validations.Preconditions;

@@ -2,7 +2,7 @@ package pt.isep.sem4pi.domain.model.aircraftModel;
 
 import eapli.framework.domain.model.AggregateRoot;
 import jakarta.persistence.*;
-import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.CertifiedEngine;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 

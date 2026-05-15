@@ -1,8 +1,8 @@
 package pt.isep.sem4pi.infrastructure.persistence.JPA;
 
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
-import pt.isep.sem4pi.domain.model.Manufacture.Manufacturer;
-import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 
 public class JpaManufacturerRepository extends JpaAutoTxRepository<Manufacturer, ManufacturerId, ManufacturerId> implements ManufacturerRepository {

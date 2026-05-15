@@ -2,8 +2,8 @@ package pt.isep.sem4pi.infrastructure.persistence;
 
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.Manufacture.Manufacturer;
-import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;

@@ -3,7 +3,7 @@ package pt.isep.sem4pi.application.controller.engineModel;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
-import pt.isep.sem4pi.domain.model.Manufacture.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.FuelType;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;

@@ -12,8 +12,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
-import pt.isep.sem4pi.domain.model.Manufacture.Manufacturer;
-import pt.isep.sem4pi.domain.model.Manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
