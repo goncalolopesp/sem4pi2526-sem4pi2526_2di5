@@ -12,6 +12,7 @@ import eapli.framework.presentation.console.ShowMessageAction;
 import eapli.framework.presentation.console.menu.MenuItemRenderer;
 import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
+import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 
@@ -31,9 +32,13 @@ public class MainMenu extends AbstractUI {
     private static final int LIST_USERS_OPTION = 2;
     private static final int DEACTIVATE_USER_OPTION = 3;
 
+    // AirTransportCompany
+    private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 1;
+
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
     private static final int USERS_OPTION = 2;
+    private static final int AIR_TRANSPORT_COMPANY_OPTIONS = 3;
 
     private static final String SEPARATOR_LABEL = "--------------";
 
@@ -78,7 +83,10 @@ public class MainMenu extends AbstractUI {
         if (authz.hasSession()) {
             if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN)) {
                 final var usersMenu = buildUsersMenu();
+                final var airTransportCompanyMenu = buildAirTransportCompanyMenu();
+
                 mainMenu.addSubMenu(USERS_OPTION, usersMenu);
+                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, airTransportCompanyMenu);
             }
 
             if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
@@ -101,6 +109,16 @@ public class MainMenu extends AbstractUI {
         menu.addItem(ADD_USER_OPTION, "Add User", new ShowMessageAction("Add User - TODO"));
         menu.addItem(LIST_USERS_OPTION, "List all Users", new ListBackofficeUsersUI()::show);
         menu.addItem(DEACTIVATE_USER_OPTION, "Manage User status", new ManageBackofficeUserStatusUI()::show);
+        menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
+
+        return menu;
+    }
+
+    private Menu buildAirTransportCompanyMenu()
+    {
+        final var menu = new Menu("AirTransportCompany >");
+
+        menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Trasnport Company", new RegisterAirTransportCompanyUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;
