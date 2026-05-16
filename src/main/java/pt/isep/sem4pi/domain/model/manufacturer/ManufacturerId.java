@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:src/main/java/pt/isep/sem4pi/domain/model/Manufacturer/ManufacturerId.java
-package pt.isep.sem4pi.domain.model.Manufacturer;
-========
-package pt.isep.sem4pi.domain.model.manufacture;
->>>>>>>> development:src/main/java/pt/isep/sem4pi/domain/model/manufacture/ManufacturerId.java
+package pt.isep.sem4pi.domain.model.manufacturer;
 
 import eapli.framework.domain.model.ValueObject;
 import eapli.framework.validations.Preconditions;

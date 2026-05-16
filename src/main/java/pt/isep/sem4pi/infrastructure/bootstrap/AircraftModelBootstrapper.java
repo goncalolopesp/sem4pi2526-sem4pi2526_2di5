@@ -2,11 +2,8 @@ package pt.isep.sem4pi.infrastructure.bootstrap;
 
 import eapli.framework.actions.Action;
 import pt.isep.sem4pi.application.AddAircraftModelController;
-import pt.isep.sem4pi.domain.model.Manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * Bootstrapper class for initializing AircraftModel data.

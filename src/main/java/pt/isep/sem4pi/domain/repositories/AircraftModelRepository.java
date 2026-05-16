@@ -1,7 +1,7 @@
 package pt.isep.sem4pi.domain.repositories;
 
 import eapli.framework.domain.repositories.DomainRepository;
-import pt.isep.sem4pi.domain.model.Manufacturer.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
 

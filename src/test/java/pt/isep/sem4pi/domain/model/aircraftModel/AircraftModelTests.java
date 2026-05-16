@@ -2,7 +2,7 @@ package pt.isep.sem4pi.domain.model.aircraftModel;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pt.isep.sem4pi.domain.model.Manufacturer.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 
 import java.math.BigDecimal;

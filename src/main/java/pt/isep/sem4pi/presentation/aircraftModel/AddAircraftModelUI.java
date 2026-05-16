@@ -4,7 +4,7 @@ import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import eapli.framework.presentation.console.SelectWidget;
 import pt.isep.sem4pi.application.AddAircraftModelController;
-import pt.isep.sem4pi.domain.model.Manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.aircraftModel.MotorizationType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
