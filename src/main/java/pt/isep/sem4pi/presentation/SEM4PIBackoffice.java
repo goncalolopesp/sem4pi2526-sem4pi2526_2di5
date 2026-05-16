@@ -25,7 +25,7 @@ public final class SEM4PIBackoffice extends BaseApp {
                 new SEM4PIPasswordPolicy(),
                 new PlainTextEncoder()
         );
-//        new MasterUsersBootstrapper().execute();
+        new MasterUsersBootstrapper().execute();
         new BackofficeConfigurationBootstrapper().execute();
 
         new SEM4PIBackoffice().run(args);
