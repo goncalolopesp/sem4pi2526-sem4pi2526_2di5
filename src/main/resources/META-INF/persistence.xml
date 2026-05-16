@@ -21,6 +21,7 @@
         <class>pt.isep.sem4pi.domain.model.engineModel.EngineModel</class>
         <class>pt.isep.sem4pi.domain.model.engineModel.CertifiedEngine</class>
         <class>pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel</class>
+        <class>pt.isep.sem4pi.domain.aircontrolarea.AirControlArea</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>

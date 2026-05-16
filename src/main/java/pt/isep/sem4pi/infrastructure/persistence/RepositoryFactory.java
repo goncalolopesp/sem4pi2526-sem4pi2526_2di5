@@ -2,6 +2,7 @@ package pt.isep.sem4pi.infrastructure.persistence;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
+import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
@@ -29,4 +30,8 @@ public interface RepositoryFactory {
     EngineModelRepository engineModels();
 
     ManufacturerRepository manufacturers();
+
+    AirControlAreaRepository airControlAreas();
+
+    AirControlAreaRepository airControlAreas(TransactionalContext tx);
 }
