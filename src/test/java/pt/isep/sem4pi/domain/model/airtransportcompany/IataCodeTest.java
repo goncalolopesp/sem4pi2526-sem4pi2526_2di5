@@ -1,7 +1,6 @@
 package pt.isep.sem4pi.domain.model.airtransportcompany;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.shared.IataCode;
 
 import static org.junit.Assert.*;
 
@@ -19,13 +18,11 @@ public class IataCodeTest {
         assertEquals("TP", code.code());
     }
 
-    // JUnit 4 way to assert an exception is thrown
     @Test(expected = IllegalArgumentException.class)
     public void ensureIataCodeFailsIfNull() {
         new IataCode(null);
     }
 
-    // JUnit 4 way to check the EXACT exception message
     @Test
     public void ensureIataCodeFailsIfThreeLetters() {
         try {

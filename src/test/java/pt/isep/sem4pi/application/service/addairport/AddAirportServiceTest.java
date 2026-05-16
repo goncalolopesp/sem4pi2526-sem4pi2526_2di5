@@ -5,8 +5,8 @@ import org.junit.Test;
 import pt.isep.sem4pi.domain.model.airport.Airport;
 import pt.isep.sem4pi.domain.model.airport.Coordinates;
 import pt.isep.sem4pi.domain.model.airport.Elevation;
-import pt.isep.sem4pi.domain.model.shared.IataCode;
-import pt.isep.sem4pi.domain.model.shared.IcaoCode;
+import pt.isep.sem4pi.domain.model.airport.IataCodeTest;
+import pt.isep.sem4pi.domain.model.airport.IcaoCode;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class AddAirportServiceTest {
         }
 
         @Override
-        public Optional<Airport> findByIataCode(IataCode iataCode) {
+        public Optional<Airport> findByIataCode(IataCodeTest iataCode) {
             return fakeDatabase.stream().filter(a -> a.identityIata().equals(iataCode)).findFirst();
         }
 
@@ -58,7 +58,7 @@ public class AddAirportServiceTest {
 
     @Test
     public void ensureRegistrationFailsIfIataCodeAlreadyExists() {
-        Airport existing = new Airport("Existing", "Town", "Country", new IataCode("OPO"),
+        Airport existing = new Airport("Existing", "Town", "Country", new IataCodeTest("OPO"),
                 new IcaoCode("ZZZZ"), new Coordinates(0,0), new Elevation(0), "AREA1");
         fakeRepo.save(existing);
 

@@ -1,8 +1,6 @@
 package pt.isep.sem4pi.domain.model.airport;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.shared.IataCode;
-import pt.isep.sem4pi.domain.model.shared.IcaoCode;
 
 import static org.junit.Assert.*;
 
@@ -23,19 +21,19 @@ public class AirportTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureAirportFailsIfNameIsNull() {
-        new Airport(null, "Porto", "Portugal", new IataCode("OP"), new IcaoCode("LPP"),
+        new Airport(null, "Porto", "Portugal", new IataCode("OPO"), new IcaoCode("LPPT"),
                 new Coordinates(0,0), new Elevation(0), "AREA1");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureAirportFailsIfTownIsNull() {
-        new Airport("Sa Carneiro", null, "Portugal", new IataCode("OP"), new IcaoCode("LPP"),
+        new Airport("Sa Carneiro", null, "Portugal", new IataCode("OPO"), new IcaoCode("LPPT"),
                 new Coordinates(0,0), new Elevation(0), "AREA1");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureAirportFailsIfAreaIdIsNull() {
-        new Airport("Sa Carneiro", "Porto", "Portugal", new IataCode("OP"), new IcaoCode("LPP"),
+        new Airport("Sa Carneiro", "Porto", "Portugal", new IataCode("OPO"), new IcaoCode("LPPT"),
                 new Coordinates(0,0), new Elevation(0), null);
     }
 }

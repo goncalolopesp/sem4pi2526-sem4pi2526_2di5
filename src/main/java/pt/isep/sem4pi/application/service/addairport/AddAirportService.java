@@ -4,8 +4,8 @@ package pt.isep.sem4pi.application.service.addairport;
 import pt.isep.sem4pi.domain.model.airport.Airport;
 import pt.isep.sem4pi.domain.model.airport.Coordinates;
 import pt.isep.sem4pi.domain.model.airport.Elevation;
-import pt.isep.sem4pi.domain.model.shared.IataCode;
-import pt.isep.sem4pi.domain.model.shared.IcaoCode;
+import pt.isep.sem4pi.domain.model.airport.IataCode;
+import pt.isep.sem4pi.domain.model.airport.IcaoCode;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 
 public class AddAirportService {
