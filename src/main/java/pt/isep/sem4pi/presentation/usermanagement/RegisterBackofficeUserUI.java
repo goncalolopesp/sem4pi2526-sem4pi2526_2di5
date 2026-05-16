@@ -1,9 +1,9 @@
 package pt.isep.sem4pi.presentation.usermanagement;
 
-import pt.isep.sem4pi.application.controller.usermanagement.RegisterBackofficeUserController;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
-import eapli.framework.general.domain.model.EmailAddress;
+import pt.isep.sem4pi.application.controller.usermanagement.RegisterBackofficeUserController;
+import pt.isep.sem4pi.application.service.usermanagment.PasswordStrengthService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -11,6 +11,7 @@ import java.time.format.DateTimeParseException;
 public class RegisterBackofficeUserUI extends AbstractUI {
 
     private final RegisterBackofficeUserController controller = new RegisterBackofficeUserController();
+    private final PasswordStrengthService passwordStrengthService = new PasswordStrengthService();
 
     @Override
     protected boolean doShow() {
@@ -27,10 +28,16 @@ public class RegisterBackofficeUserUI extends AbstractUI {
                 }
             }
 
-            System.out.println("Password rules: at least 6 characters, include at least one digit and one uppercase letter.");
+            System.out.println(
+                    "Password rules: at least 6 characters, include at least one digit and one uppercase letter.");
             String password;
             while (true) {
                 password = Console.readNonEmptyLine("Password:", "Password required");
+
+                // UX feedback only (não é regra formal)
+                final var strength = passwordStrengthService.strength(password);
+                System.out.println("Password strength: " + strength);
+
                 if (!controller.isPasswordValid(password)) {
                     System.out.println("Invalid password. Please try again.");
                 } else {
@@ -39,18 +46,18 @@ public class RegisterBackofficeUserUI extends AbstractUI {
             }
 
             final String firstName = Console.readNonEmptyLine("First name:", "First name required");
-
             final String lastName = Console.readNonEmptyLine("Last name:", "Last name required");
 
             String email;
             while (true) {
                 email = Console.readNonEmptyLine("Email:", "Email required");
-                try {
-                    EmailAddress.valueOf(email.trim());
-                } catch (final Exception ex) {
+
+                // UI valida apenas formato de forma leve; regra final é no controller/serviço
+                if (!controller.isEmailFormatValid(email)) {
                     System.out.println("Invalid email format. Please enter an email like user@domain.");
                     continue;
                 }
+
                 if (!controller.isEmailAvailable(email)) {
                     System.out.println("Email invalid or already exists. Please provide another.");
                 } else {
@@ -60,9 +67,11 @@ public class RegisterBackofficeUserUI extends AbstractUI {
 
             final String phone = Console.readNonEmptyLine("Phone number:", "Phone number required");
 
-            LocalDate secDate = null;
+            LocalDate secDate;
             while (true) {
-                final String secDateStr = Console.readNonEmptyLine("Security clearance expiration date (YYYY-MM-DD):", "Security clearance expiration date required");
+                final String secDateStr = Console.readNonEmptyLine(
+                        "Security clearance expiration date (YYYY-MM-DD):",
+                        "Security clearance expiration date required");
                 try {
                     secDate = LocalDate.parse(secDateStr.trim());
                     break;
@@ -71,9 +80,11 @@ public class RegisterBackofficeUserUI extends AbstractUI {
                 }
             }
 
-            LocalDate skillsDate = null;
+            LocalDate skillsDate;
             while (true) {
-                final String skillsDateStr = Console.readNonEmptyLine("Skills assessment date (YYYY-MM-DD):", "Skills assessment date required");
+                final String skillsDateStr = Console.readNonEmptyLine(
+                        "Skills assessment date (YYYY-MM-DD):",
+                        "Skills assessment date required");
                 try {
                     skillsDate = LocalDate.parse(skillsDateStr.trim());
                     break;
@@ -84,12 +95,12 @@ public class RegisterBackofficeUserUI extends AbstractUI {
 
             final String normalizedEmail = email.trim().toLowerCase();
 
-            controller.register(username.trim(), password, firstName.trim(), lastName.trim(), normalizedEmail, phone.trim(), secDate, skillsDate);
+            controller.register(username.trim(), password, firstName.trim(), lastName.trim(), normalizedEmail,
+                    phone.trim(), secDate, skillsDate);
             System.out.println("Backoffice user successfully registered.");
             return true;
         } catch (final Exception e) {
             System.out.println("Error registering user: " + e.getClass().getName() + " - " + e.getMessage());
-            e.printStackTrace(System.out);
             return false;
         }
     }

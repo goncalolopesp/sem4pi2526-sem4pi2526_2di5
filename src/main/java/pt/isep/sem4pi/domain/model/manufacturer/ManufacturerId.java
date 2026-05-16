@@ -1,6 +1,11 @@
+<<<<<<<< HEAD:src/main/java/pt/isep/sem4pi/domain/model/Manufacturer/ManufacturerId.java
 package pt.isep.sem4pi.domain.model.Manufacturer;
+========
+package pt.isep.sem4pi.domain.model.manufacture;
+>>>>>>>> development:src/main/java/pt/isep/sem4pi/domain/model/manufacture/ManufacturerId.java
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
@@ -15,9 +20,8 @@ public class ManufacturerId implements ValueObject, Comparable<ManufacturerId>, 
     }
 
     public ManufacturerId(String code) {
-        if (code == null || code.trim().isEmpty()) {
-            throw new IllegalArgumentException("The Manufacturer code cannot be null or empty!");
-        }
+        Preconditions.ensure(code != null && !code.trim().isEmpty(),
+                "The Manufacturer code cannot be null or empty!");
         this.code = code;
     }
 

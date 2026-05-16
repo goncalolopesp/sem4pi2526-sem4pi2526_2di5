@@ -1,0 +1,97 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title Generic SSD - Use Case Without Service
+
+autonumber
+
+actor "User" as Actor
+
+participant ":X_UI" as UI
+participant ":X_Controller" as Controller
+
+participant "repositories:\nPersistenceContext" as PersistenceContext
+participant "zRepository:\nZ_Repository" as ZRepo
+
+participant "z:\nZ" as Z
+
+note right of ZRepo
+Repository interface from
+the Domain layer.
+
+The concrete implementation
+may be JPA or In-Memory,
+selected by the
+Infrastructure layer.
+end note
+
+Actor -> UI : requests X operation
+activate UI
+
+UI -> Controller ++ : create()
+Controller --> UI : controller
+
+UI -> Controller : getRequiredData()
+activate Controller
+
+Controller -> PersistenceContext : repositories()
+activate PersistenceContext
+PersistenceContext --> Controller : repositories
+deactivate PersistenceContext
+
+Controller -> PersistenceContext : zRepository()
+activate PersistenceContext
+PersistenceContext --> Controller : zRepository
+deactivate PersistenceContext
+
+Controller -> ZRepo : findAll()
+activate ZRepo
+ZRepo --> Controller : zList
+deactivate ZRepo
+
+Controller --> UI : zList
+deactivate Controller
+
+UI --> Actor : shows required data
+
+Actor -> UI : provides inputData
+
+UI -> Controller : executeX(inputData)
+activate Controller
+
+Controller -> Controller : validateInput(inputData)
+
+Controller -> PersistenceContext : repositories()
+activate PersistenceContext
+PersistenceContext --> Controller : repositories
+deactivate PersistenceContext
+
+Controller -> PersistenceContext : zRepository()
+activate PersistenceContext
+PersistenceContext --> Controller : zRepository
+deactivate PersistenceContext
+
+Controller -> ZRepo : findById(zId)
+activate ZRepo
+ZRepo --> Controller : z
+deactivate ZRepo
+
+Controller -> Z : applyBusinessRules(inputData)
+activate Z
+Z --> Controller : result
+deactivate Z
+
+Controller -> ZRepo : save(z)
+activate ZRepo
+ZRepo --> Controller : savedZ
+deactivate ZRepo
+
+Controller --> UI : operationResult
+deactivate Controller
+
+UI --> Actor : displays operation result
+deactivate UI
+
+@enduml

@@ -3,15 +3,18 @@ package pt.isep.sem4pi.infrastructure.persistence;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
+import pt.isep.sem4pi.domain.usermanagement.Email;
+import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryBackofficeUserRepository;
 
 import java.time.LocalDate;
 
 import static org.junit.Assert.*;
 
 /**
- * Testes para o repositório em memória de BackofficeUser (US32).
+ * Testes para o repositório em memória de BackofficeUser.
  *
- * Verifica salvar, procurar e actualizar o estado enabled.
+ * A entidade BackofficeUser é apenas perfil; o estado ativo/inativo é do SystemUser.
  */
 public class InMemoryBackofficeUserRepositoryTest {
 
@@ -27,14 +30,14 @@ public class InMemoryBackofficeUserRepositoryTest {
      */
     @Test
     public void saveAndFind_returnsSavedUser() {
-        BackofficeUser u = new BackofficeUser("joe", "Joe", "joe@example.org",
-                "+351999999999", LocalDate.now().plusYears(1), LocalDate.now());
+        final BackofficeUser u = new BackofficeUser("joe", "Joe", Email.valueOf("joe@example.org"),
+                PhoneNumber.valueOf("+351999999999"), LocalDate.now().plusYears(1), LocalDate.now());
         repo.save(u);
 
         final var stored = repo.ofIdentity("joe");
         assertTrue(stored.isPresent());
         assertEquals("joe", stored.get().username());
-        assertTrue(stored.get().isEnabled());
+        assertEquals("joe@example.org", stored.get().email().toString());
     }
 
     /**
@@ -42,17 +45,19 @@ public class InMemoryBackofficeUserRepositoryTest {
      */
     @Test
     public void save_overwritesExistingUser() {
-        BackofficeUser u = new BackofficeUser("amy", "Amy", "amy@example.org",
-                "+351111111111", LocalDate.now().plusYears(1), LocalDate.now());
+        final BackofficeUser u = new BackofficeUser("amy", "Amy", Email.valueOf("amy@example.org"),
+                PhoneNumber.valueOf("+351111111111"), LocalDate.now().plusYears(1), LocalDate.now());
         repo.save(u);
+
         final var opt = repo.ofIdentity("amy");
         assertTrue(opt.isPresent());
-        final BackofficeUser found = opt.get();
-        found.setEnabled(false);
-        repo.save(found);
+
+        final BackofficeUser updated = new BackofficeUser("amy", "Amy Updated", Email.valueOf("amy@example.org"),
+                PhoneNumber.valueOf("+351111111111"), LocalDate.now().plusYears(1), LocalDate.now());
+        repo.save(updated);
 
         final var opt2 = repo.ofIdentity("amy");
         assertTrue(opt2.isPresent());
-        assertFalse(opt2.get().isEnabled());
+        assertEquals("Amy Updated", opt2.get().name());
     }
 }

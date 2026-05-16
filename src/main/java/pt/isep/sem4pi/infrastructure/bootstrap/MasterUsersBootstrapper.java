@@ -1,42 +1,91 @@
 package pt.isep.sem4pi.infrastructure.bootstrap;
 
+import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
+import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
+import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
+import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
+import pt.isep.sem4pi.domain.usermanagement.Email;
+import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
-import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
-import eapli.framework.infrastructure.authz.domain.model.SystemUser;
-import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
 
-// NOT IN USE, FOR NOW USE ../persistence/InMemoryRepositoryFactory.java
+import java.time.LocalDate;
 
-/**
- * Bootstrapper para registar utilizadores mestres (admin, backoffice operator).
- *
- * Pode ser usado para inicializar o sistema com contas por omissao. Atualmente nao e invocado por omissao.
- */
 public class MasterUsersBootstrapper {
 
     public boolean execute() {
         final UserRepository users = PersistenceContext.repositories().users();
+        final BackofficeUserRepository backofficeUsers = PersistenceContext.repositories().backofficeUsers();
 
-        // ADMIN user
-        final SystemUserBuilder adminBuilder = UserBuilderHelper.builder();
-        adminBuilder.withUsername("admin").withPassword("Password1").withName("Admin", "User")
-                .withEmail("admin@example.org").withRoles(SEM4PIRoles.ADMIN);
-        final SystemUser admin = adminBuilder.build();
-        users.save(admin);
+        registerAdmin(users, backofficeUsers);
+        registerBackoffice(users, backofficeUsers);
 
-        // BACKOFFICE_OPERATOR user
-        final SystemUserBuilder boBuilder = UserBuilderHelper.builder();
-        boBuilder.withUsername("backoffice").withPassword("Password1").withName("Back", "Office")
-                .withEmail("backoffice@example.org").withRoles(SEM4PIRoles.BACKOFFICE_OPERATOR);
-        final SystemUser boUser = boBuilder.build();
-        users.save(boUser);
+//        DEBUG
+//        System.out.println("BOOTSTRAP USERS:");
+//        System.out.println("admin exists? " + users.ofIdentity(
+//                eapli.framework.infrastructure.authz.domain.model.Username.valueOf("admin")
+//        ).isPresent());
+//
+//        System.out.println("backoffice exists? " + users.ofIdentity(
+//                eapli.framework.infrastructure.authz.domain.model.Username.valueOf("backoffice")
+//        ).isPresent());
+//
+//        System.out.println("admin backoffice user exists? " + backofficeUsers.existsByUsername("admin"));
+//        System.out.println("backoffice backoffice user exists? " + backofficeUsers.existsByUsername("backoffice"));
 
         //Add US056 bootstrappers
 
         new AircraftModelBootstrapper().execute();
 
         return true;
+    }
+
+    private void registerAdmin(final UserRepository users, final BackofficeUserRepository backofficeUsers) {
+        if (users.ofIdentity(eapli.framework.infrastructure.authz.domain.model.Username.valueOf("admin")).isEmpty()) {
+            final SystemUserBuilder builder = UserBuilderHelper.builder();
+            builder.withUsername("admin")
+                    .withPassword("Password1")
+                    .withName("Admin", "User")
+                    .withEmail("admin@example.org")
+                    .withRoles(SEM4PIRoles.ADMIN);
+
+            users.save(builder.build());
+        }
+
+        if (!backofficeUsers.existsByUsername("admin")) {
+            backofficeUsers.save(new BackofficeUser(
+                    "admin",
+                    "Admin User",
+                    Email.valueOf("admin@example.org"),
+                    PhoneNumber.valueOf("+351000000001"),
+                    LocalDate.now().plusYears(1),
+                    LocalDate.now()
+            ));
+        }
+    }
+
+    private void registerBackoffice(final UserRepository users, final BackofficeUserRepository backofficeUsers) {
+        if (users.ofIdentity(eapli.framework.infrastructure.authz.domain.model.Username.valueOf("backoffice")).isEmpty()) {
+            final SystemUserBuilder builder = UserBuilderHelper.builder();
+            builder.withUsername("backoffice")
+                    .withPassword("Password1")
+                    .withName("Backoffice", "User")
+                    .withEmail("backoffice@example.org")
+                    .withRoles(SEM4PIRoles.BACKOFFICE_OPERATOR);
+
+            users.save(builder.build());
+        }
+
+        if (!backofficeUsers.existsByUsername("backoffice")) {
+            backofficeUsers.save(new BackofficeUser(
+                    "backoffice",
+                    "Backoffice User",
+                    Email.valueOf("backoffice@example.org"),
+                    PhoneNumber.valueOf("+351000000000"),
+                    LocalDate.now().plusYears(1),
+                    LocalDate.now()
+            ));
+        }
     }
 }

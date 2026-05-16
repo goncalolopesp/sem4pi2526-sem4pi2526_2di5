@@ -7,30 +7,31 @@ import java.time.LocalDate;
 import static org.junit.Assert.*;
 
 /**
- * Testes para a entidade BackofficeUser (US32 - enable/disable users).
+ * Testes para a entidade BackofficeUser.
  *
- * Verifica getters, estado ativo e validacao do construtor.
+ * Como o estado ativo/inativo passou para o SystemUser (framework), esta entidade
+ * é apenas o perfil de negócio.
  */
 public class BackofficeUserTest {
 
-    /**
-     * Verifica construtor, getters e o toggle do campo enabled.
-     */
     @Test
-    public void constructorAndGetters_andEnableToggle() {
-        final BackofficeUser u = new BackofficeUser("joe", "Joe Bloggs", "joe@example.org", "+351900000000", LocalDate.now().plusYears(1), LocalDate.now());
+    public void constructorAndGetters() {
+        final BackofficeUser u = new BackofficeUser(
+                "joe",
+                "Joe Bloggs",
+                Email.valueOf("joe@example.org"),
+                PhoneNumber.valueOf("+351900000000"),
+                LocalDate.now().plusYears(1),
+                LocalDate.now()
+        );
         assertEquals("joe", u.username());
-        assertEquals("joe@example.org", u.email());
-        assertTrue(u.isEnabled());
-        u.setEnabled(false);
-        assertFalse(u.isEnabled());
+        assertEquals("Joe Bloggs", u.name());
+        assertEquals("joe@example.org", u.email().toString());
+        assertEquals("+351900000000", u.phoneNumber().toString());
     }
 
-    /**
-     * Verifica que inputs invalidos no construtor lançam IllegalArgumentException.
-     */
     @Test(expected = IllegalArgumentException.class)
     public void constructor_invalidInputs_throw() {
-        new BackofficeUser(null, "", "a@b.c", "123", LocalDate.now(), LocalDate.now());
+        new BackofficeUser("x", "", Email.valueOf("a@b.c"), PhoneNumber.valueOf("123"), LocalDate.now(), LocalDate.now());
     }
 }

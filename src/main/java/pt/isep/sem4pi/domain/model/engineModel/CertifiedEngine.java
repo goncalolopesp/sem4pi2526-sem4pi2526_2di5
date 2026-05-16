@@ -1,44 +1,30 @@
 package pt.isep.sem4pi.domain.model.engineModel;
 
-import eapli.framework.domain.model.DomainEntity;
-import jakarta.persistence.*;
+import eapli.framework.validations.Preconditions;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
 
 @Entity
 public class CertifiedEngine implements DomainEntity<Long> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long pk; // Chave primária gerada automaticamente para a base de dados
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "engine_model_id", nullable = false)
+    private EngineModel engineModel;
 
-    // Esta é a referência segura ao trabalho do teu colega!
-    @Embedded
-    @AttributeOverride(name = "engineCode", column = @Column(name = "engine_model_id"))
-    private EngineModelId engineModelId;
+    @Version
+    private Long version;
 
     protected CertifiedEngine() {
         // for ORM
     }
 
-    public CertifiedEngine(EngineModelId engineModelId) {
-        if (engineModelId == null) {
-            throw new IllegalArgumentException("A Certified Engine must reference a valid EngineModelId.");
-        }
-        this.engineModelId = engineModelId;
-    }
-
-    public EngineModelId engineModelId() {
-        return this.engineModelId;
-    }
-
-    @Override
-    public boolean sameAs(Object other) {
-        if (!(other instanceof CertifiedEngine)) return false;
-        final CertifiedEngine that = (CertifiedEngine) other;
-        return this.engineModelId.equals(that.engineModelId());
-    }
-
-    @Override
-    public Long identity() {
-        return pk;
+    public CertifiedEngine(final EngineModel engineModel) {
+        Preconditions.nonNull(engineModel, "Engine Model cannot be null.");
+        this.engineModel = engineModel;
     }
 }

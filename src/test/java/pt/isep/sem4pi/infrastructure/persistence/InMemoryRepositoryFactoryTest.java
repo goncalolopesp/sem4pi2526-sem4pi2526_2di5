@@ -1,13 +1,12 @@
 package pt.isep.sem4pi.infrastructure.persistence;
 
 import org.junit.Test;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
 
 import static org.junit.Assert.*;
 
 /**
  * Testes para a fábrica de repositórios em memória.
- *
- * Garante que o PersistenceContext devolve a fábrica e que os repositórios estão semeados.
  */
 public class InMemoryRepositoryFactoryTest {
 
@@ -15,8 +14,8 @@ public class InMemoryRepositoryFactoryTest {
      * Verifica obtenção da fábrica e dos repositórios e existência do utilizador 'bo' semeado.
      */
     @Test
-    public void persistenceContextProvidesFactoryAndRepositories() {
-        final RepositoryFactory f = PersistenceContext.repositories();
+    public void providesRepositoriesAndSeedsDefaultUsers() {
+        final RepositoryFactory f = new InMemoryRepositoryFactory();
         assertNotNull(f);
 
         final var users = f.users();
@@ -26,5 +25,6 @@ public class InMemoryRepositoryFactoryTest {
         assertNotNull(bos);
 
         assertTrue(bos.existsByUsername("bo"));
+        assertTrue(bos.existsByUsername("admin"));
     }
 }

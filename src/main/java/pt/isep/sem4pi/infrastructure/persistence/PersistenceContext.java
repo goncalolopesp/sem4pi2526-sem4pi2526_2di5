@@ -43,11 +43,6 @@ public final class PersistenceContext {
         // ensure utility
     }
 
-    /**
-     * Retorna a fabrica de repositorios actual.
-     * Se ainda nao existir, inicializa a fabrica em memoria por omissao.
-     * @return RepositoryFactory usado pela aplicacao
-     */
     public static RepositoryFactory repositories() {
         if (theFactory == null) {
             final String factoryClassName = Application.settings().getRepositoryFactory();
@@ -60,6 +55,43 @@ public final class PersistenceContext {
                         "Unable to dynamically load the Repository Factory: " + factoryClassName, ex);
             }
         }
+
         return theFactory;
+    }
+
+    private static RepositoryFactory buildRepositoryFactory() {
+        // 1) Allow override from JVM/system properties (useful for tests)
+        final String overrideFactoryClassName = System.getProperty("persistence.repositoryFactory");
+        if (overrideFactoryClassName != null && !overrideFactoryClassName.trim().isEmpty()) {
+            try {
+                final Class<?> factoryClass = Class.forName(overrideFactoryClassName.trim());
+                return (RepositoryFactory) factoryClass.getDeclaredConstructor().newInstance();
+            } catch (final ReflectiveOperationException e) {
+                throw new IllegalStateException("Unable to load repository factory from system property", e);
+            }
+        }
+
+        // 2) application.properties (default)
+        final Properties properties = new Properties();
+
+        try (InputStream input = PersistenceContext.class
+                .getClassLoader()
+                .getResourceAsStream("application.properties")) {
+
+            if (input != null) {
+                properties.load(input);
+            }
+
+            final String factoryClassName = properties.getProperty(
+                    "persistence.repositoryFactory",
+                    InMemoryRepositoryFactory.class.getName()
+            );
+
+            final Class<?> factoryClass = Class.forName(factoryClassName);
+            return (RepositoryFactory) factoryClass.getDeclaredConstructor().newInstance();
+
+        } catch (final IOException | ReflectiveOperationException e) {
+            throw new IllegalStateException("Unable to load repository factory", e);
+        }
     }
 }

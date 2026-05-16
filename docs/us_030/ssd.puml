@@ -1,0 +1,28 @@
+@startuml US030_SSD
+title US030 - Authentication and Authorization - SSD
+
+actor "User" as User
+participant "SEM4PI Backoffice System" as System
+
+User -> System : enter username and password
+System --> User : authentication result
+
+alt authentication successful
+    System --> User : show menu according to role
+else invalid credentials
+    System --> User : show authentication error
+else disabled user
+    System --> User : show access denied message
+end
+
+opt authenticated user changes password
+    User -> System : enter old password and new password
+    System --> User : password change result
+end
+
+opt authenticated user logs out
+    User -> System : request logout
+    System --> User : logout confirmation
+end
+
+@enduml

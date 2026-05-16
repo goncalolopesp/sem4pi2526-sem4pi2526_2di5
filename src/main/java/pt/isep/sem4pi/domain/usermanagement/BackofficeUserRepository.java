@@ -9,11 +9,11 @@ public interface BackofficeUserRepository {
 
     Optional<BackofficeUser> ofIdentity(String username);
 
-    Optional<BackofficeUser> findByEmail(String email);
+    Optional<BackofficeUser> findByEmail(Email email);
 
     boolean existsByUsername(String username);
 
-    boolean existsByEmail(String email);
+    boolean existsByEmail(Email email);
 
     /**
      * Returns all backoffice users.

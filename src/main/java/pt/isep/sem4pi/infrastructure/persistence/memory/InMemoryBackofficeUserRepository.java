@@ -1,7 +1,8 @@
-package pt.isep.sem4pi.infrastructure.persistence;
+package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
+import pt.isep.sem4pi.domain.usermanagement.Email;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class InMemoryBackofficeUserRepository implements BackofficeUserRepositor
     @Override
     public BackofficeUser save(final BackofficeUser user) {
         byUsername.put(user.username(), user);
-        byEmail.put(user.email(), user);
+        byEmail.put(user.email().toString(), user);
         return user;
     }
 
@@ -33,8 +34,8 @@ public class InMemoryBackofficeUserRepository implements BackofficeUserRepositor
     }
 
     @Override
-    public Optional<BackofficeUser> findByEmail(final String email) {
-        return Optional.ofNullable(byEmail.get(email == null ? null : email.toLowerCase()));
+    public Optional<BackofficeUser> findByEmail(final Email email) {
+        return Optional.ofNullable(byEmail.get(email == null ? null : email.toString()));
     }
 
     @Override
@@ -43,8 +44,8 @@ public class InMemoryBackofficeUserRepository implements BackofficeUserRepositor
     }
 
     @Override
-    public boolean existsByEmail(final String email) {
-        return byEmail.containsKey(email == null ? null : email.toLowerCase());
+    public boolean existsByEmail(final Email email) {
+        return byEmail.containsKey(email == null ? null : email.toString());
     }
 
     @Override

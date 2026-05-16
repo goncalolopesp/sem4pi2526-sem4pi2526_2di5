@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.model.engineModel;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
@@ -14,9 +15,8 @@ public class EngineModelId implements ValueObject, Comparable<EngineModelId>, Se
     public EngineModelId() {}
 
     public EngineModelId(String code) {
-        if (code == null || code.trim().isEmpty()) {
-            throw new IllegalArgumentException("The Engine Model code cannot be null or empty!");
-        }
+        Preconditions.ensure(code != null && !code.trim().isEmpty(),
+                "The Engine Model code cannot be null or empty!");
         this.code = code;
     }
 

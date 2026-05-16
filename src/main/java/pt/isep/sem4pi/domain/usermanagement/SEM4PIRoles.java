@@ -2,12 +2,20 @@ package pt.isep.sem4pi.domain.usermanagement;
 
 import eapli.framework.infrastructure.authz.domain.model.Role;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 /**
  * Roles do projeto SEM4PI.
  *
  * Define constantes para as roles usadas na aplicacao e utilitarios para validacao.
  */
 public final class SEM4PIRoles {
+
+    private SEM4PIRoles() {
+        // utility
+    }
 
     public static final Role ADMIN = Role.valueOf("ADMIN");
     public static final Role BACKOFFICE_OPERATOR = Role.valueOf("BACKOFFICE_OPERATOR");
@@ -17,25 +25,37 @@ public final class SEM4PIRoles {
     public static final Role AIR_TRANSPORT_COMPANY_COLLABORATOR = Role.valueOf("AIR_TRANSPORT_COMPANY_COLLABORATOR");
 
     /**
+     * Conjunto imutável de roles de colaborador (com acesso ao sistema de backoffice).
+     */
+    private static final Set<Role> COLLABORATOR_ROLES = Collections.unmodifiableSet(new LinkedHashSet<>(Set.of(
+            ADMIN,
+            BACKOFFICE_OPERATOR,
+            WEATHER_PERSON,
+            PILOT,
+            FLIGHT_CONTROL_OPERATOR,
+            AIR_TRANSPORT_COMPANY_COLLABORATOR
+    )));
+
+    /**
      * Roles que fazem sentido escolher ao criar utilizadores (valores nao "regular user").
-     * @return array de roles
+     *
+     * Nota: devolve uma cópia para evitar alterações externas.
      */
     public static Role[] nonUserValues() {
-        return new Role[] { ADMIN, BACKOFFICE_OPERATOR, WEATHER_PERSON, PILOT, FLIGHT_CONTROL_OPERATOR,
-                AIR_TRANSPORT_COMPANY_COLLABORATOR };
+        return COLLABORATOR_ROLES.toArray(new Role[0]);
+    }
+
+    /**
+     * Devolve o conjunto de roles colaboradoras.
+     */
+    public static Set<Role> collaboratorRoles() {
+        return COLLABORATOR_ROLES;
     }
 
     /**
      * Verifica se a role e considerada colaboradora (tem poderes de backoffice/admin).
-     * @param role role a testar
-     * @return true se for uma role colaboradora
      */
     public static boolean isCollaborator(final Role role) {
-        if (role == null) {
-            return false;
-        }
-        return role.equals(ADMIN) || role.equals(BACKOFFICE_OPERATOR) || role.equals(WEATHER_PERSON)
-                || role.equals(PILOT) || role.equals(FLIGHT_CONTROL_OPERATOR)
-                || role.equals(AIR_TRANSPORT_COMPANY_COLLABORATOR);
+        return role != null && COLLABORATOR_ROLES.contains(role);
     }
 }
