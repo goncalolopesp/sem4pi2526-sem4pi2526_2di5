@@ -14,13 +14,4 @@ import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
  * </p>
  */
 public interface AircraftModelRepository extends DomainRepository<AircraftModelId, AircraftModel> {
-
-    /**
-     * Checks if an aircraft model with the given manufacturer ID and model name already exists.
-     *
-     * @param manufacturerId the ID of the manufacturer
-     * @param modelName      the name of the aircraft model
-     * @return true if a model with the specified manufacturer and name exists, false otherwise
-     */
-    boolean containsOfManufacturerAndName(ManufacturerId manufacturerId, String modelName);
 }

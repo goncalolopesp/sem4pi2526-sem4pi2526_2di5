@@ -66,7 +66,7 @@ class AddAircraftModelControllerTests {
 
         // Act
         AircraftModel result = controller.addAircraftModel(
-                "B737-ID1", dummyManufacturer, "PASSENGER", "737", MotorizationType.TURBOFAN,
+                dummyManufacturer, "PASSENGER", "B737", MotorizationType.TURBOFAN,
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"), new BigDecimal("12000"),
                 new BigDecimal("12000"), new BigDecimal("800"), new BigDecimal("120"),
                 new BigDecimal("0.02"), new BigDecimal("0.5"), new BigDecimal("5000"),
@@ -84,7 +84,7 @@ class AddAircraftModelControllerTests {
         long initialCount = ((InMemoryAircraftModelRepository) aircraftRepo).count();
 
         controller.addAircraftModel(
-                "A320-ID1", dummyManufacturer, "PASSENGER", "A320", MotorizationType.TURBOFAN,
+                dummyManufacturer, "PASSENGER", "A320-ID1", MotorizationType.TURBOFAN,
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"), new BigDecimal("12000"),
                 new BigDecimal("12000"), new BigDecimal("800"), new BigDecimal("120"),
                 new BigDecimal("0.02"), new BigDecimal("0.5"), new BigDecimal("5000"),
@@ -94,7 +94,7 @@ class AddAircraftModelControllerTests {
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             controller.addAircraftModel(
-                    "A320-ID2", dummyManufacturer, "PASSENGER", "A320", MotorizationType.TURBOFAN,
+                    dummyManufacturer, "PASSENGER", "A320-ID2", MotorizationType.TURBOFAN,
                     new BigDecimal("40000"), new BigDecimal("70000"), new BigDecimal("80000"), new BigDecimal("12000"),
                     new BigDecimal("12000"), new BigDecimal("800"), new BigDecimal("120"),
                     new BigDecimal("0.02"), new BigDecimal("0.5"), new BigDecimal("5000"),

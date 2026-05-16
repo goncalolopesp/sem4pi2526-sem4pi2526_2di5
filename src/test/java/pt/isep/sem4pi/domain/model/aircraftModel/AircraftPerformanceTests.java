@@ -18,9 +18,10 @@ class AircraftPerformanceTests {
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
         BigDecimal maximumRange = new BigDecimal("5000.00");
         AircraftPerformance ap = new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
-        assertEquals(serviceCeiling, ap.serviceCeiling());
-        assertEquals(cruiseSpeed, ap.cruiseSpeed());
-        assertEquals(maximumRange, ap.maximumRange());
+        AircraftPerformance expectedAp = new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
+
+        assertEquals(expectedAp, ap);
+        assertEquals("serviceCeiling: 35000.00, cruiseSpeed: 5000.00, maximumRange: 5000.00", ap.toString());
     }
 
     @Test

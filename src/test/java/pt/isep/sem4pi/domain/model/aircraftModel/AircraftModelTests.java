@@ -33,8 +33,8 @@ class AircraftModelTests {
 
     @BeforeEach
     void setUp() {
-        aircraftModelId = new AircraftModelId("A320");
         manufacturerId = new ManufacturerId("AIRBUS");
+        aircraftModelId = new AircraftModelId(manufacturerId, "A320");
         aircraftType = AircraftType.PASSENGER;
         modelName = "Airbus A320";
         motorization = MotorizationType.TURBOFAN;
@@ -66,7 +66,7 @@ class AircraftModelTests {
     @Test
     void testConstructorValidValues() {
         AircraftModel am = new AircraftModel(
-                aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
@@ -77,15 +77,7 @@ class AircraftModelTests {
     @Test
     void testConstructorNullAircraftModelId() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(null, manufacturerId, aircraftType, modelName, motorization,
-                        weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
-        );
-    }
-
-    @Test
-    void testConstructorNullManufacturerId() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, null, aircraftType, modelName, motorization,
+                new AircraftModel(null, aircraftType, motorization,
                         weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
         );
     }
@@ -93,31 +85,7 @@ class AircraftModelTests {
     @Test
     void testConstructorNullAircraftType() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, null, modelName, motorization,
-                        weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
-        );
-    }
-
-    @Test
-    void testConstructorNullModelName() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, null, motorization,
-                        weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
-        );
-    }
-
-    @Test
-    void testConstructorEmptyModelName() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, "", motorization,
-                        weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
-        );
-    }
-
-    @Test
-    void testConstructorBlankModelName() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, "   ", motorization,
+                new AircraftModel(aircraftModelId, null, motorization,
                         weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
         );
     }
@@ -125,7 +93,7 @@ class AircraftModelTests {
     @Test
     void testConstructorNullMotorization() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, modelName, null,
+                new AircraftModel(aircraftModelId, aircraftType, null,
                         weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
         );
     }
@@ -133,7 +101,7 @@ class AircraftModelTests {
     @Test
     void testConstructorNullWeightLimits() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                new AircraftModel(aircraftModelId, aircraftType, motorization,
                         null, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
         );
     }
@@ -141,7 +109,7 @@ class AircraftModelTests {
     @Test
     void testConstructorNullAerodynamics() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                new AircraftModel(aircraftModelId, aircraftType, motorization,
                         weightLimits, null, performance, fuel, wingGeometry, engineModelIds)
         );
     }
@@ -149,7 +117,7 @@ class AircraftModelTests {
     @Test
     void testConstructorNullPerformance() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                new AircraftModel(aircraftModelId, aircraftType, motorization,
                         weightLimits, aerodynamics, null, fuel, wingGeometry, engineModelIds)
         );
     }
@@ -157,7 +125,7 @@ class AircraftModelTests {
     @Test
     void testConstructorNullFuel() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                new AircraftModel(aircraftModelId, aircraftType, motorization,
                         weightLimits, aerodynamics, performance, null, wingGeometry, engineModelIds)
         );
     }
@@ -165,7 +133,7 @@ class AircraftModelTests {
     @Test
     void testConstructorNullWingGeometry() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                new AircraftModel(aircraftModelId, aircraftType, motorization,
                         weightLimits, aerodynamics, performance, fuel, null, engineModelIds)
         );
     }
@@ -173,7 +141,7 @@ class AircraftModelTests {
     @Test
     void testConstructorNullEngineModelIds() {
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                new AircraftModel(aircraftModelId, aircraftType, motorization,
                         weightLimits, aerodynamics, performance, fuel, wingGeometry, null)
         );
     }
@@ -182,7 +150,7 @@ class AircraftModelTests {
     void testConstructorEmptyEngineModelIds() {
         List<EngineModelId> emptyEngines = new ArrayList<>();
         assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                new AircraftModel(aircraftModelId, aircraftType, motorization,
                         weightLimits, aerodynamics, performance, fuel, wingGeometry, emptyEngines)
         );
     }
@@ -190,7 +158,7 @@ class AircraftModelTests {
     @Test
     void testCertifyEngineNullEngineId() {
         AircraftModel am = new AircraftModel(
-                aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
@@ -200,7 +168,7 @@ class AircraftModelTests {
     @Test
     void testCertifyEngineDuplicateEngine() {
         AircraftModel am = new AircraftModel(
-                aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
@@ -211,7 +179,7 @@ class AircraftModelTests {
     @Test
     void testCertifyEngineNewEngine() {
         AircraftModel am = new AircraftModel(
-                aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
@@ -222,12 +190,12 @@ class AircraftModelTests {
     @Test
     void testSameAsIdentity() {
         AircraftModel am1 = new AircraftModel(
-                aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
         AircraftModel am2 = new AircraftModel(
-                aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
@@ -237,13 +205,13 @@ class AircraftModelTests {
     @Test
     void testSameAsNotIdentity() {
         AircraftModel am1 = new AircraftModel(
-                aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
-        AircraftModelId differentId = new AircraftModelId("B737");
+        AircraftModelId differentId = new AircraftModelId(manufacturerId, "B737");
         AircraftModel am2 = new AircraftModel(
-                differentId, manufacturerId, aircraftType, modelName, motorization,
+                differentId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
@@ -253,7 +221,7 @@ class AircraftModelTests {
     @Test
     void testSameAsNotAircraftModel() {
         AircraftModel am = new AircraftModel(
-                aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
@@ -263,7 +231,7 @@ class AircraftModelTests {
     @Test
     void testIdentity() {
         AircraftModel am = new AircraftModel(
-                aircraftModelId, manufacturerId, aircraftType, modelName, motorization,
+                aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 

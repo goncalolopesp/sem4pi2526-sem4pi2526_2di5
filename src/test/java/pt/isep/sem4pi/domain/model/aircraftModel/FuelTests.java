@@ -16,7 +16,10 @@ class FuelTests {
     void testConstructorValidValues() {
         BigDecimal maxFuelCapacity = new BigDecimal("100.00");
         Fuel fuel = new Fuel(maxFuelCapacity);
-        assertEquals(maxFuelCapacity, fuel.maxFuelCapacity());
+        Fuel expected = new Fuel(maxFuelCapacity);
+
+        assertEquals(expected, fuel);
+        assertEquals("Fuel{maxFuelCapacity=100.00}", fuel.toString());
     }
 
     @Test

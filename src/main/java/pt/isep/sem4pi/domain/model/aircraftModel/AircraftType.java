@@ -9,3 +9,4 @@ public enum AircraftType {
     CARGO,
     MIXED
 }
+

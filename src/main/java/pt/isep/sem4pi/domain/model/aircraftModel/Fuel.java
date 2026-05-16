@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
@@ -23,17 +24,11 @@ public class Fuel implements ValueObject {
     }
 
     private void validateMfc(BigDecimal cd) {
-        if (cd == null) {
-            throw new IllegalArgumentException("Max fuel capacity cannot be null.");
-        }
+       Preconditions.nonNull(cd, "Max fuel capacity cannot be null.");
 
         if (cd.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Max fuel capacity must be strictly greater than zero.");
         }
-    }
-
-    public BigDecimal maxFuelCapacity() {
-        return maxFuelCapacity;
     }
 
     @Override
@@ -41,11 +36,18 @@ public class Fuel implements ValueObject {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Fuel that = (Fuel) o;
-        return this.maxFuelCapacity.compareTo(that.maxFuelCapacity()) == 0;
+        return this.maxFuelCapacity.compareTo(that.maxFuelCapacity) == 0;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(maxFuelCapacity.doubleValue());
+    }
+
+    @Override
+    public String toString() {
+        return "Fuel{" +
+                "maxFuelCapacity=" + maxFuelCapacity +
+                '}';
     }
 }

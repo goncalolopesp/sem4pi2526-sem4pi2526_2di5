@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
@@ -34,9 +35,7 @@ public class Coefficient implements ValueObject {
     }
 
     private void validateDrag(BigDecimal cd) {
-        if (cd == null) {
-            throw new IllegalArgumentException("Drag Coefficient cannot be null.");
-        }
+        Preconditions.nonNull(cd, "Drag Coefficient cannot be null.");
 
         if (cd.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Drag Coefficient must be strictly greater than zero.");
@@ -48,9 +47,7 @@ public class Coefficient implements ValueObject {
     }
 
     private void validateLift(BigDecimal cl) {
-        if (cl == null) {
-            throw new IllegalArgumentException("Lift Coefficient cannot be null.");
-        }
+        Preconditions.nonNull(cl, "Lift Coefficient cannot be null.");
 
         if (cl.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Lift Coefficient must be strictly greater than zero.");
@@ -61,25 +58,25 @@ public class Coefficient implements ValueObject {
         }
     }
 
-    public BigDecimal dragCoefficient() {
-        return dragCoefficient;
-    }
-
-    public BigDecimal liftCoefficient() {
-        return this.liftCoefficient;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Coefficient that = (Coefficient) o;
-        return this.dragCoefficient.compareTo(that.dragCoefficient()) == 0 &&
-                this.liftCoefficient.compareTo(that.liftCoefficient()) == 0;
+        return this.dragCoefficient.compareTo(that.dragCoefficient) == 0 &&
+                this.liftCoefficient.compareTo(that.liftCoefficient) == 0;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(dragCoefficient.doubleValue(), liftCoefficient.doubleValue());
+    }
+
+    @Override
+    public String toString() {
+        return "Coefficient{" +
+                "dragCoefficient=" + dragCoefficient +
+                ", liftCoefficient=" + liftCoefficient +
+                '}';
     }
 }

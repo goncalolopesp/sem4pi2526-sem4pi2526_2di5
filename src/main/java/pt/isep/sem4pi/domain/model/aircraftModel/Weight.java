@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -58,6 +59,7 @@ public class Weight implements ValueObject {
         if (maxZeroFuelWeight.compareTo(emptyWeight) <= 0) {
             throw new IllegalArgumentException("MZFW must be strictly greater than Empty Weight.");
         }
+
         if (maxTakeOffWeight.compareTo(maxZeroFuelWeight) <= 0) {
             throw new IllegalArgumentException("MTOW must be strictly greater than MZFW.");
         }
@@ -74,7 +76,8 @@ public class Weight implements ValueObject {
      * @throws IllegalArgumentException if the weight is null or non-positive
      */
     private void validateMzfw(BigDecimal mzfw) {
-        if (mzfw == null) throw new IllegalArgumentException("Max zero fuel weight cannot be null.");
+        Preconditions.nonNull(mzfw, "Max zero fuel weight cannot be null.");
+
         if (mzfw.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Max zero fuel weight must be strictly greater than zero.");
     }
@@ -86,7 +89,7 @@ public class Weight implements ValueObject {
      * @throws IllegalArgumentException if the weight is null or non-positive
      */
     private void validateEmptyWeight(BigDecimal ew) {
-        if (ew == null) throw new IllegalArgumentException("Empty weight cannot be null.");
+        Preconditions.nonNull(ew, "Empty weight cannot be null.");
         if (ew.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Empty weight must be strictly greater than zero.");
     }
@@ -98,36 +101,9 @@ public class Weight implements ValueObject {
      * @throws IllegalArgumentException if the weight is null or non-positive
      */
     private void validateMtow(BigDecimal mtow) {
-        if (mtow == null) throw new IllegalArgumentException("Max take off weight cannot be null.");
+        Preconditions.nonNull(mtow, "Max take off weight cannot be null.");
         if (mtow.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Max take off weight must be strictly greater than zero.");
-    }
-
-    /**
-     * Returns the empty weight of the aircraft.
-     *
-     * @return the empty weight in kilograms
-     */
-    public BigDecimal emptyWeight() {
-        return this.emptyWeight;
-    }
-
-    /**
-     * Returns the maximum zero fuel weight of the aircraft.
-     *
-     * @return the maximum zero fuel weight in kilograms
-     */
-    public BigDecimal maximumZeroFuelWeight() {
-        return this.maxZeroFuelWeight;
-    }
-
-    /**
-     * Returns the maximum takeoff weight of the aircraft.
-     *
-     * @return the maximum takeoff weight in kilograms
-     */
-    public BigDecimal maximumTakeOffWeight() {
-        return this.maxTakeOffWeight;
     }
 
     /**
@@ -144,9 +120,9 @@ public class Weight implements ValueObject {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Weight weight = (Weight) o;
-        return this.emptyWeight.compareTo(weight.emptyWeight()) == 0 &&
-                this.maxZeroFuelWeight.compareTo(weight.maximumZeroFuelWeight()) == 0 &&
-                this.maxTakeOffWeight.compareTo(weight.maximumTakeOffWeight()) == 0;
+        return this.emptyWeight.compareTo(weight.emptyWeight) == 0 &&
+                this.maxZeroFuelWeight.compareTo(weight.maxZeroFuelWeight) == 0 &&
+                this.maxTakeOffWeight.compareTo(weight.maxTakeOffWeight) == 0;
     }
 
     /**
@@ -158,5 +134,14 @@ public class Weight implements ValueObject {
     @Override
     public int hashCode() {
         return Objects.hash(this.emptyWeight.doubleValue(), this.maxZeroFuelWeight.doubleValue(), this.maxTakeOffWeight.doubleValue());
+    }
+
+    @Override
+    public String toString() {
+        return "Weight{" +
+                "emptyWeight=" + emptyWeight +
+                ", maxZeroFuelWeight=" + maxZeroFuelWeight +
+                ", maxTakeOffWeight=" + maxTakeOffWeight +
+                '}';
     }
 }

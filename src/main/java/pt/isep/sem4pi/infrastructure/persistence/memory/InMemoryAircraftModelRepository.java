@@ -15,18 +15,4 @@ import java.util.stream.StreamSupport;
  * checking uniqueness based on manufacturer and model name.</p>
  */
 public class InMemoryAircraftModelRepository extends InMemoryDomainRepository<AircraftModel, AircraftModelId> implements AircraftModelRepository {
-
-    /**
-     * Checks if an aircraft model with the given manufacturer ID and model name already exists.
-     * <p>This implementation iterates through all stored aircraft models to find a match.</p>
-     *
-     * @param manufacturerId the ID of the manufacturer
-     * @param modelName the name of the aircraft model
-     * @return true if a model with the specified manufacturer and name exists, false otherwise
-     */
-    @Override
-    public boolean containsOfManufacturerAndName(ManufacturerId manufacturerId, String modelName) {
-        return StreamSupport.stream(this.findAll().spliterator(), false)
-                .anyMatch(a -> a.manufacturerId().equals(manufacturerId) && a.modelName().equals(modelName));
-    }
 }

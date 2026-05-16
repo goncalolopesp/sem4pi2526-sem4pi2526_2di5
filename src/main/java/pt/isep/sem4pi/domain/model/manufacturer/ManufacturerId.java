@@ -18,6 +18,9 @@ public class ManufacturerId implements ValueObject, Comparable<ManufacturerId>, 
     public ManufacturerId(String code) {
         Preconditions.ensure(code != null && !code.trim().isEmpty(),
                 "The Manufacturer code cannot be null or empty!");
+        if (code == null || code.trim().isEmpty()) {
+            throw new IllegalArgumentException("The Manufacturer code cannot be null or empty!");
+        }
         this.code = code;
     }
 
@@ -45,6 +48,8 @@ public class ManufacturerId implements ValueObject, Comparable<ManufacturerId>, 
 
     @Override
     public String toString() {
-        return this.code;
+        return "ManufacturerId{" +
+                "code='" + code + '\'' +
+                '}';
     }
 }

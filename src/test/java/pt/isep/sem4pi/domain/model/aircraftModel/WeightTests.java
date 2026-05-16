@@ -25,10 +25,10 @@ public class WeightTests {
         BigDecimal mtow = new BigDecimal("70000");
 
         Weight weight = new Weight(ew, mzfw, mtow);
+        Weight expectedWeight = new Weight(ew, mzfw, mtow);
 
-        assertEquals(ew, weight.emptyWeight());
-        assertEquals(mzfw, weight.maximumZeroFuelWeight());
-        assertEquals(mtow, weight.maximumTakeOffWeight());
+        assertEquals(expectedWeight, weight);
+        assertEquals("Empty Weight: 50000, Max Zero Fuel Weight: 60000, Max Takeoff Weight: 70000", weight.toString());
     }
 
     @Test

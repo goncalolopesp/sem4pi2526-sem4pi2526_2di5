@@ -24,8 +24,11 @@ public class CoefficientTests {
 
         Coefficient coefficient = new Coefficient(drag, lift);
 
-        assertEquals(drag, coefficient.dragCoefficient());
-        assertEquals(lift, coefficient.liftCoefficient());
+        Coefficient expectedCoefficient = new Coefficient(drag, lift);
+
+        assertEquals(expectedCoefficient, coefficient);
+
+        assertEquals("Drag: 0.5, Lift: 2.0", coefficient.toString());
     }
 
     @Test

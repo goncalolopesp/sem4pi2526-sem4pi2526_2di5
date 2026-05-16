@@ -17,8 +17,10 @@ class WingGeometryTests {
         BigDecimal wingArea = new BigDecimal("50.00");
         BigDecimal aspectRatio = new BigDecimal("7.5000");
         WingGeometry wg = new WingGeometry(wingArea, aspectRatio);
-        assertEquals(wingArea, wg.wingArea());
-        assertEquals(aspectRatio, wg.aspectRatio());
+        WingGeometry expectedWg = new WingGeometry(wingArea, aspectRatio);
+
+        assertEquals(expectedWg, wg);
+        assertEquals("wingArea: 50.00, aspectRatio: 7.5000", wg.toString());
     }
 
     @Test

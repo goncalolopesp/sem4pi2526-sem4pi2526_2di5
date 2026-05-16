@@ -114,7 +114,7 @@ public class AddAircraftModelUI extends AbstractUI {
 
         /// 5. Send to the Controller
         try {
-            controller.addAircraftModel(id, selectedMan, selectedType, name, motorization,
+            controller.addAircraftModel(selectedMan, selectedType, name, motorization,
                     emptyWeight, mzfw, mtow, fuelCap, ceiling, speed, wingArea, drag, lift, range, aspectRatio, selectedEngines);
 
             System.out.println("\nAircraft Model successfully created and saved!");

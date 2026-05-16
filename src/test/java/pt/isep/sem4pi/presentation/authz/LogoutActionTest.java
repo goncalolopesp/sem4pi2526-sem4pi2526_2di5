@@ -1,9 +1,10 @@
 package pt.isep.sem4pi.presentation.authz;
 
 import eapli.framework.actions.Action;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LogoutActionTest {
 

@@ -2,7 +2,7 @@ package pt.isep.sem4pi.presentation.authz;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Testes básicos para a UI de login.

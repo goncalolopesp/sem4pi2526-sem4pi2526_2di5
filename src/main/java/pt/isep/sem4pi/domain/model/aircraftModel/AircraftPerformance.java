@@ -67,24 +67,27 @@ public class AircraftPerformance implements ValueObject {
         }
     }
 
-    public BigDecimal serviceCeiling() {
-        return serviceCeiling;
-    }
-    public BigDecimal cruiseSpeed() {return cruiseSpeed;}
-    public BigDecimal maximumRange() {return maximumRangeKm;}
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AircraftPerformance that = (AircraftPerformance) o;
-        return this.serviceCeiling.compareTo(that.serviceCeiling()) == 0 &&
-                this.cruiseSpeed.compareTo(that.cruiseSpeed()) == 0 &&
-                this.maximumRangeKm.compareTo(that.maximumRange()) == 0;
+        return this.serviceCeiling.compareTo(that.serviceCeiling) == 0 &&
+                this.cruiseSpeed.compareTo(that.cruiseSpeed) == 0 &&
+                this.maximumRangeKm.compareTo(that.maximumRangeKm) == 0;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(this.serviceCeiling.doubleValue(), this.cruiseSpeed.doubleValue(), this.maximumRangeKm.doubleValue());
+    }
+
+    @Override
+    public String toString() {
+        return "AircraftPerformance{" +
+                "serviceCeiling=" + serviceCeiling +
+                ", cruiseSpeed=" + cruiseSpeed +
+                ", maximumRangeKm=" + maximumRangeKm +
+                '}';
     }
 }

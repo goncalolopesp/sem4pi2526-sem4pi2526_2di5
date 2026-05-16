@@ -84,7 +84,7 @@ public class AddAircraftModelController {
         // --- When US056 is completed, delete this method and leave method above
     }
 
-    public AircraftModel addAircraftModel(String id, Manufacturer manufacturer, String type, String name,
+    public AircraftModel addAircraftModel(Manufacturer manufacturer, String type, String name,
                                           MotorizationType motorization, BigDecimal emptyWeight, BigDecimal mzfw, BigDecimal mtow,
                                           BigDecimal fuelCap, BigDecimal ceiling, BigDecimal speed,
                                           BigDecimal wingArea, BigDecimal drag, BigDecimal lift,
@@ -92,12 +92,8 @@ public class AddAircraftModelController {
 
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR);
 
-        if (aircraftRepo.containsOfManufacturerAndName(manufacturer.identity(), name)) {
-            throw new IllegalArgumentException("This Manufacturer already has an Aircraft Model with the name: " + name);
-        }
-
-        AircraftModelId modelId = new AircraftModelId(id);
         ManufacturerId manId = manufacturer.identity();
+        AircraftModelId modelId = new AircraftModelId(manId, name);
         AircraftType aircraftType = AircraftType.valueOf(type.toUpperCase());
 
         Weight weight = new Weight(emptyWeight, mzfw, mtow);
@@ -106,7 +102,7 @@ public class AddAircraftModelController {
         WingGeometry geometry = new WingGeometry(wingArea, aspectRatio);
         Coefficient aerodynamics = new Coefficient(drag, lift);
 
-        AircraftModel newAircraft = new AircraftModel(modelId, manId, aircraftType, name, motorization,
+        AircraftModel newAircraft = new AircraftModel(modelId, aircraftType, motorization,
                 weight, aerodynamics, performance, fuel, geometry, engineIds);
 
         return aircraftRepo.save(newAircraft);

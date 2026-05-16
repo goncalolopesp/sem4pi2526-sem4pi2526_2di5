@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
@@ -55,6 +56,7 @@ public class WingGeometry implements ValueObject {
      * @throws IllegalArgumentException if the area is null or non-positive
      */
     private void validateWingArea(BigDecimal area) {
+        Preconditions.nonNull(area, "Area cannot be null.");
         if (area == null || area.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Wing Area must be strictly greater than zero.");
         }
@@ -67,24 +69,11 @@ public class WingGeometry implements ValueObject {
      * @throws IllegalArgumentException if the aspect ratio is null or non-positive
      */
     private void validateAspectRatio(BigDecimal ar) {
+        Preconditions.nonNull(ar, "Aspect Ratio cannot be null.");
         if (ar == null || ar.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Aspect Ratio must be strictly greater than zero.");
         }
     }
-
-    /**
-     * Returns the wing area.
-     *
-     * @return the wing area in square meters
-     */
-    public BigDecimal wingArea() {return this.wingArea;}
-
-    /**
-     * Returns the aspect ratio.
-     *
-     * @return the aspect ratio
-     */
-    public BigDecimal aspectRatio() {return this.aspectRatio;}
 
     /**
      * Compares this WingGeometry object with another object for equality.
@@ -99,8 +88,8 @@ public class WingGeometry implements ValueObject {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         WingGeometry wingGeometry = (WingGeometry) o;
-        return this.aspectRatio.compareTo(wingGeometry.aspectRatio()) == 0 &&
-                this.wingArea.compareTo(wingGeometry.wingArea()) == 0;
+        return this.aspectRatio.compareTo(wingGeometry.aspectRatio) == 0 &&
+                this.wingArea.compareTo(wingGeometry.wingArea) == 0;
     }
 
     /**
@@ -112,5 +101,13 @@ public class WingGeometry implements ValueObject {
     @Override
     public int hashCode() {
         return Objects.hash(this.aspectRatio.doubleValue(), this.wingArea.doubleValue());
+    }
+
+    @Override
+    public String toString() {
+        return "WingGeometry{" +
+                "wingArea=" + wingArea +
+                ", aspectRatio=" + aspectRatio +
+                '}';
     }
 }
