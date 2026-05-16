@@ -1,40 +1,31 @@
 package pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany;
 
 import pt.isep.sem4pi.application.controller.airtransportcompany.RegisterAirTransportCompanyController;
-import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirTransportCompanyRepository;
+import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 
-import java.util.Scanner;
+public class AirTransportCompanyBootstrapper {
 
-public class RegisterAirTransportCompanyUI {
+    private final RegisterAirTransportCompanyController controller;
 
-    // We instantiate the controller and pass the persistent JPA repository.
-    // In a real app, you might use a RepositoryFactory so you can easily swap between InMemory and JPA.
-    private final RegisterAirTransportCompanyController controller = new RegisterAirTransportCompanyController(new JpaAirTransportCompanyRepository());
-    private final Scanner scanner = new Scanner(System.in);
+    public AirTransportCompanyBootstrapper(AirTransportCompanyRepository repository) {
+        this.controller = new RegisterAirTransportCompanyController(repository);
+    }
 
-    public void run() {
-        System.out.println("=== Register Air Transport Company ===");
+    public void execute() {
+        System.out.println("Bootstrapping Air Transport Companies...");
 
-        System.out.print("Enter Company Name: ");
-        String name = scanner.nextLine();
+        registerSafely("TAP Air Portugal", "TP", "TAP");
+        registerSafely("American Airlines", "AA", "AAL");
+        registerSafely("Ryanair", "FR", "RYR");
+        registerSafely("Emirates", "EK", "UAE");
+    }
 
-        System.out.print("Enter IATA Code (2 letters): ");
-        String iata = scanner.nextLine();
-
-        System.out.print("Enter ICAO Code (2-3 letters): ");
-        String icao = scanner.nextLine();
-
+    private void registerSafely(String name, String iata, String icao) {
         try {
-            // Call the controller. If anything breaks our Domain rules, it throws an exception.
             controller.registerAirTransportCompany(name, iata, icao);
-            System.out.println("\n[SUCCESS] Company registered successfully!");
-
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            // We catch the domain validation errors (e.g., "IATA code must be exactly 2 letters")
-            // and the service errors (e.g., "Company already exists")
-            System.err.println("\n[ERROR] Failed to register company: " + e.getMessage());
+            System.out.println("   -> Bootstrapped: " + name);
         } catch (Exception e) {
-            System.err.println("\n[CRITICAL ERROR] An unexpected error occurred: " + e.getMessage());
+            System.out.println("   -> Skipped " + name + " (Already exists or invalid)");
         }
     }
 }
