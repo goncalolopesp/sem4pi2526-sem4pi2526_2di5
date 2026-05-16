@@ -4,11 +4,17 @@ import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
 import pt.isep.sem4pi.domain.usermanagement.Email;
 import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
+import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
+import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
+import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
 import pt.isep.sem4pi.infrastructure.persistence.RepositoryFactory;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftModelRepository;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryEngineModelRepository;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryManufacturerRepository;
 
 import java.time.LocalDate;
 
@@ -22,6 +28,9 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
 
     private static eapli.framework.infrastructure.authz.domain.repositories.UserRepository userRepository;
     private static BackofficeUserRepository backofficeUserRepository;
+    private static AircraftModelRepository aircraftModelRepository;
+    private static EngineModelRepository engineModelRepository;
+    private static ManufacturerRepository manufacturerRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -55,6 +64,30 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
             seedDefaultBackofficeUsers(backofficeUserRepository);
         }
         return backofficeUserRepository;
+    }
+
+    @Override
+    public AircraftModelRepository aircraftModels() {
+        if (aircraftModelRepository == null) {
+            aircraftModelRepository = new InMemoryAircraftModelRepository();
+        }
+        return aircraftModelRepository;
+    }
+
+    @Override
+    public EngineModelRepository engineModels() {
+        if (engineModelRepository == null) {
+            engineModelRepository = new InMemoryEngineModelRepository();
+        }
+        return engineModelRepository;
+    }
+
+    @Override
+    public ManufacturerRepository manufacturers() {
+        if (manufacturerRepository == null) {
+            manufacturerRepository = new InMemoryManufacturerRepository();
+        }
+        return manufacturerRepository;
     }
 
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {
