@@ -4,8 +4,14 @@ import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
 import eapli.framework.infrastructure.authz.repositories.impl.jpa.JpaAutoTxUserRepository;
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
+import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
+import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
+import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
+import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAircraftModelRepository;
 import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaBackofficeUserRepository;
+import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaEngineModelRepository;
+import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaManufacturerRepository;
 
 public class JpaRepositoryFactory implements RepositoryFactory {
 
@@ -34,5 +40,20 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     @Override
     public BackofficeUserRepository backofficeUsers() {
         return new JpaBackofficeUserRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public AircraftModelRepository aircraftModels() {
+        return new JpaAircraftModelRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public EngineModelRepository engineModels() {
+        return new JpaEngineModelRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public ManufacturerRepository manufacturers() {
+        return new JpaManufacturerRepository(PERSISTENCE_UNIT_NAME);
     }
 }

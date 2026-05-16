@@ -14,6 +14,7 @@ import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
+import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 
 /**
  * Menu principal da aplicacao SEM4PI.
@@ -31,9 +32,13 @@ public class MainMenu extends AbstractUI {
     private static final int LIST_USERS_OPTION = 2;
     private static final int DEACTIVATE_USER_OPTION = 3;
 
+    // BACKOFFICE CONFIGURATION
+    private static final int REGISTER_ENGINE_MODEL_OPTION = 1;
+
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
     private static final int USERS_OPTION = 2;
+    private static final int BACKOFFICE_CONFIGURATION_OPTION = 3;
 
     private static final String SEPARATOR_LABEL = "--------------";
 
@@ -79,6 +84,9 @@ public class MainMenu extends AbstractUI {
             if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN)) {
                 final var usersMenu = buildUsersMenu();
                 mainMenu.addSubMenu(USERS_OPTION, usersMenu);
+
+                final var backofficeConfigurationMenu = buildBackofficeConfigurationMenu();
+                mainMenu.addSubMenu(BACKOFFICE_CONFIGURATION_OPTION, backofficeConfigurationMenu);
             }
 
             if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
@@ -86,7 +94,7 @@ public class MainMenu extends AbstractUI {
                 adminMenu.addItem(1, "Admin Task (TODO)", new ShowMessageAction("Admin task not implemented yet"));
                 adminMenu.addItem(2, "Register Backoffice User", new pt.isep.sem4pi.presentation.usermanagement.RegisterBackofficeUserUI()::show);
                 adminMenu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
-                mainMenu.addSubMenu(3, adminMenu);
+                mainMenu.addSubMenu(4, adminMenu);
             }
         }
 
@@ -103,6 +111,13 @@ public class MainMenu extends AbstractUI {
         menu.addItem(DEACTIVATE_USER_OPTION, "Manage User status", new ManageBackofficeUserStatusUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
+        return menu;
+    }
+
+    private Menu buildBackofficeConfigurationMenu() {
+        final var menu = new Menu("Backoffice Configuration >");
+        menu.addItem(REGISTER_ENGINE_MODEL_OPTION, "Register Engine Model", new RegisterEngineModelAction());
+        menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
     }
 }
