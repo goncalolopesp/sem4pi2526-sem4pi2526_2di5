@@ -2,8 +2,8 @@ package pt.isep.sem4pi.application.service.airtransportcompany;
 
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.model.shared.IataCode;
+import pt.isep.sem4pi.domain.model.shared.IcaoCode;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 
 public class RegisterAirTransportCompanyService {

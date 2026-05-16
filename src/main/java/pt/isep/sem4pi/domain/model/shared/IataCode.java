@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.model.airtransportcompany;
+package pt.isep.sem4pi.domain.model.shared;
 
 import jakarta.persistence.Embeddable;
 

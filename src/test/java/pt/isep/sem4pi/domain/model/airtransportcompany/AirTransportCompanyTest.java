@@ -1,6 +1,9 @@
 package pt.isep.sem4pi.domain.model.airtransportcompany;
 
 import org.junit.Test;
+import pt.isep.sem4pi.domain.model.shared.IataCode;
+import pt.isep.sem4pi.domain.model.shared.IcaoCode;
+
 import static org.junit.Assert.*;
 
 public class AirTransportCompanyTest {
