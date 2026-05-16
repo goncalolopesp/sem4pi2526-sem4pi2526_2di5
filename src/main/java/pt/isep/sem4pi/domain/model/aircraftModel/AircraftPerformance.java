@@ -84,10 +84,7 @@ public class AircraftPerformance implements ValueObject {
 
     @Override
     public String toString() {
-        return "AircraftPerformance{" +
-                "serviceCeiling=" + serviceCeiling +
-                ", cruiseSpeed=" + cruiseSpeed +
-                ", maximumRangeKm=" + maximumRangeKm +
-                '}';
+        return String.format(java.util.Locale.US, "serviceCeiling: %.2f, cruiseSpeed: %.2f, maximumRange: %.2f",
+                this.serviceCeiling, this.cruiseSpeed, this.maximumRangeKm);
     }
 }

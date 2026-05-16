@@ -105,9 +105,6 @@ public class WingGeometry implements ValueObject {
 
     @Override
     public String toString() {
-        return "WingGeometry{" +
-                "wingArea=" + wingArea +
-                ", aspectRatio=" + aspectRatio +
-                '}';
+        return String.format(java.util.Locale.US, "wingArea: %.2f, aspectRatio: %.4f", this.wingArea, this.aspectRatio);
     }
 }

@@ -1,11 +1,10 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * Test class for the Coefficient value object.
@@ -13,12 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * verifying constructor validation for drag and lift coefficients,
  * including boundary checks, and equality and hashing behavior.</p>
  */
-@DisplayName("Coefficient Tests")
 public class CoefficientTests {
 
     @Test
-    @DisplayName("Should create coefficient with valid values")
-    void testValidCoefficient() {
+    public void testValidCoefficient() {
         BigDecimal drag = new BigDecimal("0.5");
         BigDecimal lift = new BigDecimal("2.0");
 
@@ -32,88 +29,107 @@ public class CoefficientTests {
     }
 
     @Test
-    @DisplayName("Should throw exception when drag coefficient is null")
-    void testNullDragCoefficient() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Coefficient(null, new BigDecimal("2.0"))
-        );
+    public void testNullDragCoefficient() {
+        try {
+            new Coefficient(null, new BigDecimal("2.0"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when lift coefficient is null")
-    void testNullLiftCoefficient() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Coefficient(new BigDecimal("0.5"), null)
-        );
+    public void testNullLiftCoefficient() {
+        try {
+            new Coefficient(new BigDecimal("0.5"), null);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when drag coefficient is zero")
-    void testZeroDragCoefficient() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Coefficient(BigDecimal.ZERO, new BigDecimal("2.0"))
-        );
+    public void testZeroDragCoefficient() {
+        try {
+            new Coefficient(BigDecimal.ZERO, new BigDecimal("2.0"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when drag coefficient is negative")
-    void testNegativeDragCoefficient() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Coefficient(new BigDecimal("-0.5"), new BigDecimal("2.0"))
-        );
+    public void testNegativeDragCoefficient() {
+        try {
+            new Coefficient(new BigDecimal("-0.5"), new BigDecimal("2.0"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when drag coefficient exceeds 1.0")
-    void testDragCoefficientTooHigh() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Coefficient(new BigDecimal("1.5"), new BigDecimal("2.0"))
-        );
+    public void testDragCoefficientTooHigh() {
+        try {
+            new Coefficient(new BigDecimal("1.5"), new BigDecimal("2.0"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when lift coefficient is zero")
-    void testZeroLiftCoefficient() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Coefficient(new BigDecimal("0.5"), BigDecimal.ZERO)
-        );
+    public void testZeroLiftCoefficient() {
+        try {
+            new Coefficient(new BigDecimal("0.5"), BigDecimal.ZERO);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when lift coefficient is negative")
-    void testNegativeLiftCoefficient() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Coefficient(new BigDecimal("0.5"), new BigDecimal("-2.0"))
-        );
+    public void testNegativeLiftCoefficient() {
+        try {
+            new Coefficient(new BigDecimal("0.5"), new BigDecimal("-2.0"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when lift coefficient exceeds 4.0")
-    void testLiftCoefficientTooHigh() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Coefficient(new BigDecimal("0.5"), new BigDecimal("5.0"))
-        );
+    public void testLiftCoefficientTooHigh() {
+        try {
+            new Coefficient(new BigDecimal("0.5"), new BigDecimal("5.0"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should reject drag coefficient value 1.0")
-    void testBoundaryDragCoefficient() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new Coefficient(new BigDecimal("1.0"), new BigDecimal("1.0"))
-        );
+    public void testBoundaryDragCoefficient() {
+        try {
+            new Coefficient(new BigDecimal("1.0"), new BigDecimal("1.0"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should not accept boundary lift coefficient value 4.0")
-    void testBoundaryLiftCoefficient() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new Coefficient(new BigDecimal("0.5"), new BigDecimal("4.0"))
-        );
+    public void testBoundaryLiftCoefficient() {
+        try {
+            new Coefficient(new BigDecimal("0.5"), new BigDecimal("4.0"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should verify equality between two coefficients")
-    void testEquality() {
+    public void testEquality() {
         Coefficient coef1 = new Coefficient(new BigDecimal("0.5"), new BigDecimal("2.0"));
         Coefficient coef2 = new Coefficient(new BigDecimal("0.5"), new BigDecimal("2.0"));
 
@@ -121,8 +137,7 @@ public class CoefficientTests {
     }
 
     @Test
-    @DisplayName("Should verify inequality between different coefficients")
-    void testInequality() {
+    public void testInequality() {
         Coefficient coef1 = new Coefficient(new BigDecimal("0.5"), new BigDecimal("2.0"));
         Coefficient coef2 = new Coefficient(new BigDecimal("0.6"), new BigDecimal("2.0"));
 
@@ -130,8 +145,7 @@ public class CoefficientTests {
     }
 
     @Test
-    @DisplayName("Should have consistent hashcode for equal coefficients")
-    void testHashCodeConsistency() {
+    public void testHashCodeConsistency() {
         Coefficient coef1 = new Coefficient(new BigDecimal("0.5"), new BigDecimal("2.0"));
         Coefficient coef2 = new Coefficient(new BigDecimal("0.5"), new BigDecimal("2.0"));
 

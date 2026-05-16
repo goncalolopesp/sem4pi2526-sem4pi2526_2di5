@@ -46,7 +46,6 @@ public class AddAircraftModelUI extends AbstractUI {
         if (selectedMan == null) return false;
 
         /// 2. Simple data
-        String id = Console.readLine("Aircraft Model ID (ex: B737): ");
         String name = Console.readLine("Model Name: ");
 
         List<String> validTypes = Arrays.asList("PASSENGER", "CARGO", "MIXED");

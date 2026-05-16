@@ -35,6 +35,7 @@ public class MainMenu extends AbstractUI {
 
     // BACKOFFICE CONFIGURATION
     private static final int REGISTER_ENGINE_MODEL_OPTION = 1;
+    private static final int REGISTER_AIRCRAFT_MODEL_OPTION = 2;
     private static final int OPERATOR_OPTION = 4;
     private static final int ADMIN_OPTION = 5;
 
@@ -92,20 +93,6 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(BACKOFFICE_CONFIGURATION_OPTION, backofficeConfigurationMenu);
             }
 
-            if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR)) {
-                final var operatorMenu = new Menu("Operator >");
-                operatorMenu.addItem(1, "Add New Aircraft Model", new AddAircraftModelAction());
-                operatorMenu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
-                mainMenu.addSubMenu(OPERATOR_OPTION, operatorMenu);
-            }
-
-            if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR)) {
-                final var operatorMenu = new Menu("Operator >");
-                operatorMenu.addItem(1, "Add New Aircraft Model", new AddAircraftModelAction());
-                operatorMenu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
-                mainMenu.addSubMenu(OPERATOR_OPTION, operatorMenu);
-            }
-
             if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
                 final var adminMenu = new Menu("Admin >");
                 adminMenu.addItem(1, "Admin Task (TODO)", new ShowMessageAction("Admin task not implemented yet"));
@@ -134,6 +121,7 @@ public class MainMenu extends AbstractUI {
     private Menu buildBackofficeConfigurationMenu() {
         final var menu = new Menu("Backoffice Configuration >");
         menu.addItem(REGISTER_ENGINE_MODEL_OPTION, "Register Engine Model", new RegisterEngineModelAction());
+        menu.addItem(REGISTER_AIRCRAFT_MODEL_OPTION, "Add Aircraft Model", new AddAircraftModelAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
     }

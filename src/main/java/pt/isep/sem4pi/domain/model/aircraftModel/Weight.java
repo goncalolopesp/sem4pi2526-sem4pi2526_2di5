@@ -138,10 +138,8 @@ public class Weight implements ValueObject {
 
     @Override
     public String toString() {
-        return "Weight{" +
-                "emptyWeight=" + emptyWeight +
-                ", maxZeroFuelWeight=" + maxZeroFuelWeight +
-                ", maxTakeOffWeight=" + maxTakeOffWeight +
-                '}';
+        return "Empty Weight: " + this.emptyWeight +
+                ", Max Zero Fuel Weight: " + this.maxZeroFuelWeight +
+                ", Max Takeoff Weight: " + this.maxTakeOffWeight;
     }
 }

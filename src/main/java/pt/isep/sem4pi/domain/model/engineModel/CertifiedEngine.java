@@ -1,30 +1,29 @@
 package pt.isep.sem4pi.domain.model.engineModel;
 
 import eapli.framework.validations.Preconditions;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
+import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 
 @Entity
-public class CertifiedEngine implements DomainEntity<Long> {
+public class CertifiedEngine {
 
     @Id
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "engine_model_id", nullable = false)
-    private EngineModel engineModel;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-    @Version
-    private Long version;
+    @Embedded
+    @AttributeOverride(name = "code", column = @Column(name = "engine_model_id"))
+    private EngineModelId engineModelId;
 
     protected CertifiedEngine() {
-        // for ORM
     }
 
-    public CertifiedEngine(final EngineModel engineModel) {
-        Preconditions.nonNull(engineModel, "Engine Model cannot be null.");
-        this.engineModel = engineModel;
+    public CertifiedEngine(EngineModelId engineModelId) {
+        Preconditions.nonNull(engineModelId, "EngineModelId não pode ser nulo.");
+        this.engineModelId = engineModelId;
+    }
+
+    public EngineModelId engineModelId() {
+        return this.engineModelId;
     }
 }

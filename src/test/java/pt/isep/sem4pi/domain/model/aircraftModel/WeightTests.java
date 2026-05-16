@@ -1,11 +1,10 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * Test class for the Weight value object.
@@ -14,12 +13,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * and maximum takeoff weight, including relationship constraints,
  * and equality and hashing behavior.</p>
  */
-@DisplayName("Weight Tests")
 public class WeightTests {
 
     @Test
-    @DisplayName("Should create weight with valid values")
-    void testValidWeight() {
+    public void testValidWeight() {
         BigDecimal ew = new BigDecimal("50000");
         BigDecimal mzfw = new BigDecimal("60000");
         BigDecimal mtow = new BigDecimal("70000");
@@ -32,108 +29,130 @@ public class WeightTests {
     }
 
     @Test
-    @DisplayName("Should throw exception when empty weight is null")
-    void testNullEmptyWeight() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(null, new BigDecimal("60000"), new BigDecimal("70000"))
-        );
+    public void testNullEmptyWeight() {
+        try {
+            new Weight(null, new BigDecimal("60000"), new BigDecimal("70000"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when max zero fuel weight is null")
-    void testNullMzfw() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(new BigDecimal("50000"), null, new BigDecimal("70000"))
-        );
+    public void testNullMzfw() {
+        try {
+            new Weight(new BigDecimal("50000"), null, new BigDecimal("70000"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when max take off weight is null")
-    void testNullMtow() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(new BigDecimal("50000"), new BigDecimal("60000"), null)
-        );
+    public void testNullMtow() {
+        try {
+            new Weight(new BigDecimal("50000"), new BigDecimal("60000"), null);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when empty weight is zero")
-    void testZeroEmptyWeight() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(BigDecimal.ZERO, new BigDecimal("60000"), new BigDecimal("70000"))
-        );
+    public void testZeroEmptyWeight() {
+        try {
+            new Weight(BigDecimal.ZERO, new BigDecimal("60000"), new BigDecimal("70000"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when empty weight is negative")
-    void testNegativeEmptyWeight() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(new BigDecimal("-50000"), new BigDecimal("60000"), new BigDecimal("70000"))
-        );
+    public void testNegativeEmptyWeight() {
+        try {
+            new Weight(new BigDecimal("-50000"), new BigDecimal("60000"), new BigDecimal("70000"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when max zero fuel weight is zero")
-    void testZeroMzfw() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(new BigDecimal("50000"), BigDecimal.ZERO, new BigDecimal("70000"))
-        );
+    public void testZeroMzfw() {
+        try {
+            new Weight(new BigDecimal("50000"), BigDecimal.ZERO, new BigDecimal("70000"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when max zero fuel weight is negative")
-    void testNegativeMzfw() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(new BigDecimal("50000"), new BigDecimal("-60000"), new BigDecimal("70000"))
-        );
+    public void testNegativeMzfw() {
+        try {
+            new Weight(new BigDecimal("50000"), new BigDecimal("-60000"), new BigDecimal("70000"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when max take off weight is zero")
-    void testZeroMtow() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(new BigDecimal("50000"), new BigDecimal("60000"), BigDecimal.ZERO)
-        );
+    public void testZeroMtow() {
+        try {
+            new Weight(new BigDecimal("50000"), new BigDecimal("60000"), BigDecimal.ZERO);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when max take off weight is negative")
-    void testNegativeMtow() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(new BigDecimal("50000"), new BigDecimal("60000"), new BigDecimal("-70000"))
-        );
+    public void testNegativeMtow() {
+        try {
+            new Weight(new BigDecimal("50000"), new BigDecimal("60000"), new BigDecimal("-70000"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when MZFW is not greater than empty weight")
-    void testMzfwNotGreaterThanEw() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(new BigDecimal("50000"), new BigDecimal("50000"), new BigDecimal("70000"))
-        );
+    public void testMzfwNotGreaterThanEw() {
+        try {
+            new Weight(new BigDecimal("50000"), new BigDecimal("50000"), new BigDecimal("70000"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should throw exception when MTOW is not greater than MZFW")
-    void testMtowNotGreaterThanMzfw() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Weight(new BigDecimal("50000"), new BigDecimal("60000"), new BigDecimal("60000"))
-        );
+    public void testMtowNotGreaterThanMzfw() {
+        try {
+            new Weight(new BigDecimal("50000"), new BigDecimal("60000"), new BigDecimal("60000"));
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    @DisplayName("Should accept boundary values where MZFW > EW and MTOW > MZFW")
-    void testBoundaryValues() {
+    public void testBoundaryValues() {
         BigDecimal ew = new BigDecimal("50000");
         BigDecimal mzfw = new BigDecimal("50000.01");
         BigDecimal mtow = new BigDecimal("50000.02");
 
-        assertDoesNotThrow(() ->
-            new Weight(ew, mzfw, mtow)
-        );
+        try {
+            new Weight(ew, mzfw, mtow);
+        } catch (Exception e) {
+            fail("Expected no exception, but got: " + e.getMessage());
+        }
     }
 
     @Test
-    @DisplayName("Should verify equality between two weights")
-    void testEquality() {
+    public void testEquality() {
         Weight weight1 = new Weight(new BigDecimal("50000"), new BigDecimal("60000"), new BigDecimal("70000"));
         Weight weight2 = new Weight(new BigDecimal("50000"), new BigDecimal("60000"), new BigDecimal("70000"));
 
@@ -141,8 +160,7 @@ public class WeightTests {
     }
 
     @Test
-    @DisplayName("Should verify inequality between different weights")
-    void testInequality() {
+    public void testInequality() {
         Weight weight1 = new Weight(new BigDecimal("50000"), new BigDecimal("60000"), new BigDecimal("70000"));
         Weight weight2 = new Weight(new BigDecimal("50001"), new BigDecimal("60000"), new BigDecimal("70000"));
 
@@ -150,8 +168,7 @@ public class WeightTests {
     }
 
     @Test
-    @DisplayName("Should have consistent hashcode for equal weights")
-    void testHashCodeConsistency() {
+    public void testHashCodeConsistency() {
         Weight weight1 = new Weight(new BigDecimal("50000"), new BigDecimal("60000"), new BigDecimal("70000"));
         Weight weight2 = new Weight(new BigDecimal("50000"), new BigDecimal("60000"), new BigDecimal("70000"));
 

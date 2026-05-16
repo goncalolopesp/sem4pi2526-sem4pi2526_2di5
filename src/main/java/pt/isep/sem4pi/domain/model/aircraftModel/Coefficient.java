@@ -74,9 +74,6 @@ public class Coefficient implements ValueObject {
 
     @Override
     public String toString() {
-        return "Coefficient{" +
-                "dragCoefficient=" + dragCoefficient +
-                ", liftCoefficient=" + liftCoefficient +
-                '}';
+        return "Drag: " + this.dragCoefficient + ", Lift: " + this.liftCoefficient;
     }
 }

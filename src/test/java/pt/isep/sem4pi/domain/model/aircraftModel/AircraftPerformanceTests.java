@@ -1,8 +1,8 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import java.math.BigDecimal;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * Test class for the AircraftPerformance value object.
@@ -10,10 +10,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * verifying constructor validation for service ceiling, cruise speed, and maximum range,
  * as well as equality and hashing behavior.</p>
  */
-class AircraftPerformanceTests {
+public class AircraftPerformanceTests {
 
     @Test
-    void testConstructorValidValues() {
+    public void testConstructorValidValues() {
         BigDecimal serviceCeiling = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
         BigDecimal maximumRange = new BigDecimal("5000.00");
@@ -21,80 +21,125 @@ class AircraftPerformanceTests {
         AircraftPerformance expectedAp = new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
 
         assertEquals(expectedAp, ap);
-        assertEquals("serviceCeiling: 35000.00, cruiseSpeed: 5000.00, maximumRange: 5000.00", ap.toString());
+        assertEquals("serviceCeiling: 35000.00, cruiseSpeed: 500.00, maximumRange: 5000.00", ap.toString());
     }
 
     @Test
-    void testConstructorNullServiceCeiling() {
+    public void testConstructorNullServiceCeiling() {
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
         BigDecimal maximumRange = new BigDecimal("5000.00");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftPerformance(null, cruiseSpeed, maximumRange));
+        try {
+            new AircraftPerformance(null, cruiseSpeed, maximumRange);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorZeroServiceCeiling() {
+    public void testConstructorZeroServiceCeiling() {
         BigDecimal serviceCeiling = BigDecimal.ZERO;
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
         BigDecimal maximumRange = new BigDecimal("5000.00");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange));
+        try {
+            new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNegativeServiceCeiling() {
+    public void testConstructorNegativeServiceCeiling() {
         BigDecimal serviceCeiling = new BigDecimal("-1000.00");
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
         BigDecimal maximumRange = new BigDecimal("5000.00");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange));
+        try {
+            new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullCruiseSpeed() {
+    public void testConstructorNullCruiseSpeed() {
         BigDecimal serviceCeiling = new BigDecimal("35000.00");
         BigDecimal maximumRange = new BigDecimal("5000.00");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftPerformance(serviceCeiling, null, maximumRange));
+        try {
+            new AircraftPerformance(serviceCeiling, null, maximumRange);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorZeroCruiseSpeed() {
+    public void testConstructorZeroCruiseSpeed() {
         BigDecimal serviceCeiling = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed = BigDecimal.ZERO;
         BigDecimal maximumRange = new BigDecimal("5000.00");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange));
+        try {
+            new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNegativeCruiseSpeed() {
+    public void testConstructorNegativeCruiseSpeed() {
         BigDecimal serviceCeiling = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed = new BigDecimal("-50.00");
         BigDecimal maximumRange = new BigDecimal("5000.00");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange));
+        try {
+            new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullMaximumRange() {
+    public void testConstructorNullMaximumRange() {
         BigDecimal serviceCeiling = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftPerformance(serviceCeiling, cruiseSpeed, null));
+        try {
+            new AircraftPerformance(serviceCeiling, cruiseSpeed, null);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorZeroMaximumRange() {
+    public void testConstructorZeroMaximumRange() {
         BigDecimal serviceCeiling = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
         BigDecimal maximumRange = BigDecimal.ZERO;
-        assertThrows(IllegalArgumentException.class, () -> new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange));
+        try {
+            new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNegativeMaximumRange() {
+    public void testConstructorNegativeMaximumRange() {
         BigDecimal serviceCeiling = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
         BigDecimal maximumRange = new BigDecimal("-100.00");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange));
+        try {
+            new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testEqualsSameObject() {
+    public void testEqualsSameObject() {
         BigDecimal serviceCeiling = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
         BigDecimal maximumRange = new BigDecimal("5000.00");
@@ -103,7 +148,7 @@ class AircraftPerformanceTests {
     }
 
     @Test
-    void testEqualsDifferentValues() {
+    public void testEqualsDifferentValues() {
         BigDecimal serviceCeiling1 = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed1 = new BigDecimal("500.00");
         BigDecimal maximumRange1 = new BigDecimal("5000.00");
@@ -118,7 +163,7 @@ class AircraftPerformanceTests {
     }
 
     @Test
-    void testEqualsSameValues() {
+    public void testEqualsSameValues() {
         BigDecimal serviceCeiling1 = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed1 = new BigDecimal("500.00");
         BigDecimal maximumRange1 = new BigDecimal("5000.00");
@@ -133,7 +178,7 @@ class AircraftPerformanceTests {
     }
 
     @Test
-    void testEqualsDifferentScaleSameValue() {
+    public void testEqualsDifferentScaleSameValue() {
         // serviceCeiling: 35000 vs 35000.00, cruiseSpeed: 500 vs 500.00, maximumRange: 5000 vs 5000.00
         BigDecimal serviceCeiling1 = new BigDecimal("35000");
         BigDecimal cruiseSpeed1 = new BigDecimal("500");
@@ -150,7 +195,7 @@ class AircraftPerformanceTests {
     }
 
     @Test
-    void testHashCodeConsistency() {
+    public void testHashCodeConsistency() {
         BigDecimal serviceCeiling = new BigDecimal("35000.00");
         BigDecimal cruiseSpeed = new BigDecimal("500.00");
         BigDecimal maximumRange = new BigDecimal("5000.00");

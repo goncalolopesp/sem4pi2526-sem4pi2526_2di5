@@ -12,8 +12,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
-import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
-import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -84,6 +84,11 @@ public class EngineModel implements AggregateRoot<EngineModelId>, Serializable {
     @Override
     public EngineModelId identity() {
         return id;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     public boolean hasManufacturerAndName(final ManufacturerId manufacturerId, final String name) {

@@ -1,18 +1,18 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * Test class for the AircraftModelId value object.
  * <p>This class contains unit tests for the AircraftModelId class,
  * verifying constructor validation, equality, hashing, and comparison methods.</p>
  */
-class AircraftModelIdTests {
+public class AircraftModelIdTests {
 
     @Test
-    void testConstructorValid() {
+    public void testConstructorValid() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
         String modelName = "A320";
         AircraftModelId id = new AircraftModelId(manId, modelName);
@@ -20,30 +20,50 @@ class AircraftModelIdTests {
     }
 
     @Test
-    void testConstructorNullManufacturerId() {
-        assertThrows(IllegalArgumentException.class, () -> new AircraftModelId(null, "A320"));
+    public void testConstructorNullManufacturerId() {
+        try {
+            new AircraftModelId(null, "A320");
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullModelName() {
+    public void testConstructorNullModelName() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftModelId(manId, null));
+        try {
+            new AircraftModelId(manId, null);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorEmptyModelName() {
+    public void testConstructorEmptyModelName() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftModelId(manId, ""));
+        try {
+            new AircraftModelId(manId, "");
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorBlankModelName() {
+    public void testConstructorBlankModelName() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
-        assertThrows(IllegalArgumentException.class, () -> new AircraftModelId(manId, "   "));
+        try {
+            new AircraftModelId(manId, "   ");
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testCompareToDifferentManufacturers() {
+    public void testCompareToDifferentManufacturers() {
         ManufacturerId manId1 = new ManufacturerId("AIRBUS");
         ManufacturerId manId2 = new ManufacturerId("BOEING");
         AircraftModelId id1 = new AircraftModelId(manId1, "A320");
@@ -52,7 +72,7 @@ class AircraftModelIdTests {
     }
 
     @Test
-    void testCompareToSameManufacturerDifferentModels() {
+    public void testCompareToSameManufacturerDifferentModels() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
         AircraftModelId id1 = new AircraftModelId(manId, "A320");
         AircraftModelId id2 = new AircraftModelId(manId, "A380");
@@ -60,7 +80,7 @@ class AircraftModelIdTests {
     }
 
     @Test
-    void testCompareToEqual() {
+    public void testCompareToEqual() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
         AircraftModelId id1 = new AircraftModelId(manId, "A320");
         AircraftModelId id2 = new AircraftModelId(manId, "A320");
@@ -68,14 +88,14 @@ class AircraftModelIdTests {
     }
 
     @Test
-    void testEqualsSameObject() {
+    public void testEqualsSameObject() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
         AircraftModelId id = new AircraftModelId(manId, "A320");
         assertEquals(id, id);
     }
 
     @Test
-    void testEqualsDifferentValues() {
+    public void testEqualsDifferentValues() {
         ManufacturerId manId1 = new ManufacturerId("AIRBUS");
         ManufacturerId manId2 = new ManufacturerId("BOEING");
         AircraftModelId id1 = new AircraftModelId(manId1, "A320");
@@ -84,7 +104,7 @@ class AircraftModelIdTests {
     }
 
     @Test
-    void testEqualsSameValues() {
+    public void testEqualsSameValues() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
         AircraftModelId id1 = new AircraftModelId(manId, "A320");
         AircraftModelId id2 = new AircraftModelId(manId, "A320");
@@ -92,7 +112,7 @@ class AircraftModelIdTests {
     }
 
     @Test
-    void testHashCodeConsistency() {
+    public void testHashCodeConsistency() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
         AircraftModelId id1 = new AircraftModelId(manId, "A320");
         AircraftModelId id2 = new AircraftModelId(manId, "A320");
@@ -100,7 +120,7 @@ class AircraftModelIdTests {
     }
 
     @Test
-    void testToString() {
+    public void testToString() {
         ManufacturerId manId = new ManufacturerId("AIRBUS");
         String modelName = "A320";
         AircraftModelId id = new AircraftModelId(manId, modelName);

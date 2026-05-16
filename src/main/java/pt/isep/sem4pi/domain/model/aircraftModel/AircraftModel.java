@@ -19,11 +19,13 @@ import java.util.List;
 public class AircraftModel implements AggregateRoot<AircraftModelId> {
 
     @EmbeddedId
-    @AttributeOverride(name = "code", column = @Column(name = "aircraft_model_code"))
     private AircraftModelId id;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "aircraft_model_id")
+    @JoinColumns({
+            @JoinColumn(name = "aircraft_manufacturer_id", referencedColumnName = "manufacturer_id"),
+            @JoinColumn(name = "aircraft_model_name", referencedColumnName = "model_name")
+    })
     private List<CertifiedEngine> certifiedEngines = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -60,15 +62,15 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
                          WingGeometry wingGeometry, List<EngineModelId> engineModelIds) {
 
         // EAPLI Preconditions
-        Preconditions.nonNull(id, "AircraftModelId não pode ser nulo.");
-        Preconditions.nonNull(aircraftType, "AircraftType não pode ser nulo.");
-        Preconditions.nonNull(motorization, "Motorization não pode ser nulo.");
-        Preconditions.nonNull(fuel, "Fuel não pode ser nulo.");
-        Preconditions.nonNull(wingGeometry, "Wing geometry não pode ser nulo.");
-        Preconditions.nonNull(performance, "AircraftPerformance não pode ser nulo.");
-        Preconditions.nonNull(weightLimits, "Weight limits não pode ser nulo.");
-        Preconditions.nonNull(aerodynamics, "Aerodynamics não pode ser nulo.");
-        Preconditions.ensure(engineModelIds != null && !engineModelIds.isEmpty(), "Deve fornecer pelo menos um Engine Model ID.");
+        Preconditions.nonNull(id, "AircraftModelId cannot be null.");
+        Preconditions.nonNull(aircraftType, "AircraftType cannot be null.");
+        Preconditions.nonNull(motorization, "Motorization cannot be null.");
+        Preconditions.nonNull(fuel, "Fuel cannot be null.");
+        Preconditions.nonNull(wingGeometry, "Wing geometry cannot be null.");
+        Preconditions.nonNull(performance, "AircraftPerformance cannot be null.");
+        Preconditions.nonNull(weightLimits, "Weight limits cannot be null.");
+        Preconditions.nonNull(aerodynamics, "Aerodynamics cannot be null.");
+        Preconditions.ensure(engineModelIds != null && !engineModelIds.isEmpty(), "Should give at least one Engine Model ID.");
 
         this.id = id;
         this.aircraftType = aircraftType;
@@ -85,12 +87,12 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
     }
 
     public void certifyEngine(EngineModelId engineId) {
-        Preconditions.nonNull(engineId, "Engine ID não pode ser nulo.");
+        Preconditions.nonNull(engineId, "Engine ID cannot be null.");
 
         boolean alreadyCertified = this.certifiedEngines.stream()
                 .anyMatch(ce -> ce.engineModelId().equals(engineId));
 
-        Preconditions.ensure(!alreadyCertified, "Este motor já está certificado para este modelo.");
+        Preconditions.ensure(!alreadyCertified, "This engine is already certified for this model.");
 
         this.certifiedEngines.add(new CertifiedEngine(engineId));
     }
@@ -104,7 +106,7 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
 
     @Override
     public AircraftModelId identity() {
-        return null;
+        return id;
     }
 
     @Override

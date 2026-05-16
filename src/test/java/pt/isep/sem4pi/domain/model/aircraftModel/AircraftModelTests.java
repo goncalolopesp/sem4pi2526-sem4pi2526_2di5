@@ -1,7 +1,7 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 
@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * Test class for the AircraftModel aggregate.
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * including constructor validation, engine certification, identity comparison,
  * and various edge cases for all parameters.</p>
  */
-class AircraftModelTests {
+public class AircraftModelTests {
 
     private AircraftModelId aircraftModelId;
     private ManufacturerId manufacturerId;
@@ -31,8 +31,8 @@ class AircraftModelTests {
     private WingGeometry wingGeometry;
     private List<EngineModelId> engineModelIds;
 
-    @BeforeEach
-    void setUp() {
+    @Before
+    public void setUp() {
         manufacturerId = new ManufacturerId("AIRBUS");
         aircraftModelId = new AircraftModelId(manufacturerId, "A320");
         aircraftType = AircraftType.PASSENGER;
@@ -64,7 +64,7 @@ class AircraftModelTests {
     }
 
     @Test
-    void testConstructorValidValues() {
+    public void testConstructorValidValues() {
         AircraftModel am = new AircraftModel(
                 aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
@@ -75,120 +75,163 @@ class AircraftModelTests {
     }
 
     @Test
-    void testConstructorNullAircraftModelId() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(null, aircraftType, motorization,
-                        weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
-        );
+    public void testConstructorNullAircraftModelId() {
+        try {
+            new AircraftModel(null, aircraftType, motorization,
+                    weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullAircraftType() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, null, motorization,
-                        weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
-        );
+    public void testConstructorNullAircraftType() {
+        try {
+            new AircraftModel(aircraftModelId, null, motorization,
+                    weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullMotorization() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, aircraftType, null,
-                        weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
-        );
+    public void testConstructorNullMotorization() {
+        try {
+            new AircraftModel(aircraftModelId, aircraftType, null,
+                    weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullWeightLimits() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, aircraftType, motorization,
-                        null, aerodynamics, performance, fuel, wingGeometry, engineModelIds)
-        );
+    public void testConstructorNullWeightLimits() {
+        try {
+            new AircraftModel(aircraftModelId, aircraftType, motorization,
+                    null, aerodynamics, performance, fuel, wingGeometry, engineModelIds);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullAerodynamics() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, aircraftType, motorization,
-                        weightLimits, null, performance, fuel, wingGeometry, engineModelIds)
-        );
+    public void testConstructorNullAerodynamics() {
+        try {
+            new AircraftModel(aircraftModelId, aircraftType, motorization,
+                    weightLimits, null, performance, fuel, wingGeometry, engineModelIds);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullPerformance() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, aircraftType, motorization,
-                        weightLimits, aerodynamics, null, fuel, wingGeometry, engineModelIds)
-        );
+    public void testConstructorNullPerformance() {
+        try {
+            new AircraftModel(aircraftModelId, aircraftType, motorization,
+                    weightLimits, aerodynamics, null, fuel, wingGeometry, engineModelIds);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullFuel() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, aircraftType, motorization,
-                        weightLimits, aerodynamics, performance, null, wingGeometry, engineModelIds)
-        );
+    public void testConstructorNullFuel() {
+        try {
+            new AircraftModel(aircraftModelId, aircraftType, motorization,
+                    weightLimits, aerodynamics, performance, null, wingGeometry, engineModelIds);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullWingGeometry() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, aircraftType, motorization,
-                        weightLimits, aerodynamics, performance, fuel, null, engineModelIds)
-        );
+    public void testConstructorNullWingGeometry() {
+        try {
+            new AircraftModel(aircraftModelId, aircraftType, motorization,
+                    weightLimits, aerodynamics, performance, fuel, null, engineModelIds);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullEngineModelIds() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, aircraftType, motorization,
-                        weightLimits, aerodynamics, performance, fuel, wingGeometry, null)
-        );
+    public void testConstructorNullEngineModelIds() {
+        try {
+            new AircraftModel(aircraftModelId, aircraftType, motorization,
+                    weightLimits, aerodynamics, performance, fuel, wingGeometry, null);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorEmptyEngineModelIds() {
+    public void testConstructorEmptyEngineModelIds() {
         List<EngineModelId> emptyEngines = new ArrayList<>();
-        assertThrows(IllegalArgumentException.class, () ->
-                new AircraftModel(aircraftModelId, aircraftType, motorization,
-                        weightLimits, aerodynamics, performance, fuel, wingGeometry, emptyEngines)
-        );
+        try {
+            new AircraftModel(aircraftModelId, aircraftType, motorization,
+                    weightLimits, aerodynamics, performance, fuel, wingGeometry, emptyEngines);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testCertifyEngineNullEngineId() {
+    public void testCertifyEngineNullEngineId() {
         AircraftModel am = new AircraftModel(
                 aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
-
-        assertThrows(IllegalArgumentException.class, () -> am.certifyEngine(null));
+        try {
+            am.certifyEngine(null);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testCertifyEngineDuplicateEngine() {
+    public void testCertifyEngineDuplicateEngine() {
         AircraftModel am = new AircraftModel(
                 aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
         EngineModelId duplicateEngine = engineModelIds.get(0);
-        assertThrows(IllegalArgumentException.class, () -> am.certifyEngine(duplicateEngine));
+        try {
+            am.certifyEngine(duplicateEngine);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testCertifyEngineNewEngine() {
+    public void testCertifyEngineNewEngine() {
         AircraftModel am = new AircraftModel(
                 aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
         );
 
         EngineModelId newEngine = new EngineModelId("CFM56-5B5");
-        assertDoesNotThrow(() -> am.certifyEngine(newEngine));
+        try {
+            am.certifyEngine(newEngine);
+        } catch (Exception e) {
+            fail("Expected no exception, but got: " + e.getMessage());
+        }
     }
 
     @Test
-    void testSameAsIdentity() {
+    public void testSameAsIdentity() {
         AircraftModel am1 = new AircraftModel(
                 aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
@@ -203,7 +246,7 @@ class AircraftModelTests {
     }
 
     @Test
-    void testSameAsNotIdentity() {
+    public void testSameAsNotIdentity() {
         AircraftModel am1 = new AircraftModel(
                 aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
@@ -219,7 +262,7 @@ class AircraftModelTests {
     }
 
     @Test
-    void testSameAsNotAircraftModel() {
+    public void testSameAsNotAircraftModel() {
         AircraftModel am = new AircraftModel(
                 aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds
@@ -229,7 +272,7 @@ class AircraftModelTests {
     }
 
     @Test
-    void testIdentity() {
+    public void testIdentity() {
         AircraftModel am = new AircraftModel(
                 aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModelIds

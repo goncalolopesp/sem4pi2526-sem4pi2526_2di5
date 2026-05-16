@@ -20,13 +20,9 @@ public class EngineModelId implements ValueObject, Comparable<EngineModelId>, Se
         this.code = code;
     }
 
-    public String getCode() {
-        return code;
-    }
-
     @Override
     public int compareTo(EngineModelId o) {
-        return this.code.compareTo(o.getCode());
+        return this.code.compareTo(o.code);
     }
 
     @Override

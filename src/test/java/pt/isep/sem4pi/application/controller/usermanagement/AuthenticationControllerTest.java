@@ -2,22 +2,35 @@ package pt.isep.sem4pi.application.controller.usermanagement;
 
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
+import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
+import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
-import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
 
 import static org.junit.Assert.assertEquals;
 
 public class AuthenticationControllerTest {
 
+    private String testUser;
+    private String disabledUser;
+
     @Before
     public void setUp() {
-        System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
+        final var userRepo = PersistenceContext.repositories().users();
+        AuthzRegistry.configure(userRepo, new SEM4PIPasswordPolicy(), new PlainTextEncoder());
 
-        final var factory = PersistenceContext.repositories();
-        AuthzRegistry.configure(factory.users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());
+        testUser = "usr_" + java.util.UUID.randomUUID().toString().substring(0, 5);
+        disabledUser = "dis_" + java.util.UUID.randomUUID().toString().substring(0, 5);
+
+        SystemUserBuilder builder = new SystemUserBuilder(new SEM4PIPasswordPolicy(), new PlainTextEncoder());
+
+        userRepo.save(builder.withUsername(testUser).withPassword("Password1").withName("Test", "User").withEmail(testUser + "@isep.pt").withRoles(SEM4PIRoles.ADMIN).build());
+
+        var disUser = builder.withUsername(disabledUser).withPassword("Password1").withName("Dis", "User").withEmail(disabledUser + "@isep.pt").withRoles(SEM4PIRoles.BACKOFFICE_OPERATOR).build();
+        disUser.deactivate(eapli.framework.time.util.CurrentTimeCalendars.now());
+        userRepo.save(disUser);
 
         if (AuthzRegistry.authorizationService().hasSession()) {
             AuthzRegistry.authorizationService().clearSession();
@@ -27,34 +40,18 @@ public class AuthenticationControllerTest {
     @Test
     public void loginWithValidCredentialsReturnsSuccess() {
         final AuthenticationController controller = new AuthenticationController();
-
-        final var result = controller.login("admin", "Password1");
-
-        assertEquals(AuthenticationController.LoginResult.SUCCESS, result);
+        assertEquals(AuthenticationController.LoginResult.SUCCESS, controller.login(testUser, "Password1"));
     }
 
     @Test
     public void loginWithInvalidCredentialsReturnsInvalidCredentials() {
         final AuthenticationController controller = new AuthenticationController();
-
-        final var result = controller.login("admin", "wrongPassword");
-
-        assertEquals(AuthenticationController.LoginResult.INVALID_CREDENTIALS, result);
+        assertEquals(AuthenticationController.LoginResult.INVALID_CREDENTIALS, controller.login(testUser, "wrongPassword"));
     }
 
     @Test
     public void loginWithDisabledUserReturnsInvalidCredentials() {
-        AuthzRegistry.authenticationService().authenticate("admin", "Password1");
-
-        final var manageController = new ManageBackofficeUserStatusController();
-        manageController.disableUser("bo");
-
-        AuthzRegistry.authorizationService().clearSession();
-
         final AuthenticationController controller = new AuthenticationController();
-
-        final var result = controller.login("bo", "Password1");
-
-        assertEquals(AuthenticationController.LoginResult.INVALID_CREDENTIALS, result);
+        assertEquals(AuthenticationController.LoginResult.INVALID_CREDENTIALS, controller.login(disabledUser, "Password1"));
     }
 }

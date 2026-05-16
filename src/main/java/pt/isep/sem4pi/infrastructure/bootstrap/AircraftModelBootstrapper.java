@@ -2,8 +2,14 @@ package pt.isep.sem4pi.infrastructure.bootstrap;
 
 import eapli.framework.actions.Action;
 import pt.isep.sem4pi.application.AddAircraftModelController;
+import pt.isep.sem4pi.domain.model.aircraftModel.MotorizationType;
+import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Bootstrapper class for initializing AircraftModel data.
@@ -31,16 +37,51 @@ public class AircraftModelBootstrapper implements Action {
             Iterable<Manufacturer> manufacturers = controller.getManufacturers();
             Iterable<EngineModel> engines = controller.getEngineModels();
 
-            /* When US056 is done, add this:
+            Manufacturer airbus = null;
+            for (Manufacturer m : manufacturers) {
+                if (m.identity().toString().equalsIgnoreCase("CFM")) {
+                    airbus = m;
+                    break;
+                }
+            }
+
+            if (airbus == null) {
+                System.out.println("Bootstrapper Error: Manufacturer AIRBUS not found. The Manufacturers bootstrapper (US056) must run first!");
+                return false;
+            }
+
+            List<EngineModelId> engineIds = new ArrayList<>();
+            for (EngineModel e : engines) {
+                if (e.identity().toString().equalsIgnoreCase("CFM56-5B")) {
+                    engineIds.add(e.identity());
+                }
+            }
+
+            if (engineIds.isEmpty()) {
+                System.out.println("Bootstrapper Warning: None compatible engine found. US56 must create the engine 'CFM56-5B'.");
+                return false;
+            }
+
             controller.addAircraftModel(
-                    "A320", airbus, "PASSENGER", "A320", MotorizationType.TURBOFAN,
-                    new BigDecimal("42600"), new BigDecimal("61000"), new BigDecimal("73500"),
-                    new BigDecimal("24210"), new BigDecimal("39000"), new BigDecimal("448"),
-                    new BigDecimal("122.4"), new BigDecimal("0.024"), new BigDecimal("0.5"),
-                    new BigDecimal("6100"), new BigDecimal("9.5"), engineIds
+                    airbus,
+                    "PASSENGER",
+                    "A320",
+                    MotorizationType.TURBOFAN,
+                    new BigDecimal("42600"), // emptyWeight
+                    new BigDecimal("61000"), // mzfw
+                    new BigDecimal("73500"), // mtow
+                    new BigDecimal("24210"), // fuelCap
+                    new BigDecimal("39000"), // ceiling
+                    new BigDecimal("448"),   // speed
+                    new BigDecimal("122.4"), // wingArea
+                    new BigDecimal("0.024"), // drag
+                    new BigDecimal("0.5"),   // lift
+                    new BigDecimal("6100"),  // range
+                    new BigDecimal("9.5"),   // aspectRatio
+                    engineIds
             );
             System.out.println("A320 Bootstrapped successfully!");
-            */
+
 
             return true;
         } catch (Exception e) {

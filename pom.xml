@@ -44,6 +44,14 @@
             <version>6.4.4.Final</version>
         </dependency>
 
+        <!-- Mockito for testing -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>4.11.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- H2 database for local development/testing -->
         <dependency>
             <groupId>com.h2database</groupId>

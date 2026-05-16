@@ -16,7 +16,7 @@ import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 public class AircraftModelId implements ValueObject, Comparable<AircraftModelId> {
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "manufacturer_id"))
+    @AttributeOverride(name = "code", column = @Column(name = "manufacturer_id"))
     private ManufacturerId manufacturerId;
 
     @Column(name = "model_name", nullable = false)
@@ -56,10 +56,7 @@ public class AircraftModelId implements ValueObject, Comparable<AircraftModelId>
 
     @Override
     public String toString() {
-        return "AircraftModelId{" +
-                "manufacturerId=" + manufacturerId +
-                ", modelName='" + modelName + '\'' +
-                '}';
+        return this.manufacturerId.toString() + " - " + this.modelName;
     }
 }
 

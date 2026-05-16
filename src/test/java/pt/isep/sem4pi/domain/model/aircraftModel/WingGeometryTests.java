@@ -1,8 +1,8 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import java.math.BigDecimal;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * Test class for the WingGeometry value object.
@@ -10,10 +10,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * verifying constructor validation for wing area and aspect ratio,
  * and equality and hashing behavior.</p>
  */
-class WingGeometryTests {
+public class WingGeometryTests {
 
     @Test
-    void testConstructorValidValues() {
+    public void testConstructorValidValues() {
         BigDecimal wingArea = new BigDecimal("50.00");
         BigDecimal aspectRatio = new BigDecimal("7.5000");
         WingGeometry wg = new WingGeometry(wingArea, aspectRatio);
@@ -24,47 +24,77 @@ class WingGeometryTests {
     }
 
     @Test
-    void testConstructorNullWingArea() {
+    public void testConstructorNullWingArea() {
         BigDecimal aspectRatio = new BigDecimal("7.5000");
-        assertThrows(IllegalArgumentException.class, () -> new WingGeometry(null, aspectRatio));
+        try {
+            new WingGeometry(null, aspectRatio);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorZeroWingArea() {
+    public void testConstructorZeroWingArea() {
         BigDecimal wingArea = BigDecimal.ZERO;
         BigDecimal aspectRatio = new BigDecimal("7.5000");
-        assertThrows(IllegalArgumentException.class, () -> new WingGeometry(wingArea, aspectRatio));
+        try {
+            new WingGeometry(wingArea, aspectRatio);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNegativeWingArea() {
+    public void testConstructorNegativeWingArea() {
         BigDecimal wingArea = new BigDecimal("-10.00");
         BigDecimal aspectRatio = new BigDecimal("7.5000");
-        assertThrows(IllegalArgumentException.class, () -> new WingGeometry(wingArea, aspectRatio));
+        try {
+            new WingGeometry(wingArea, aspectRatio);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNullAspectRatio() {
+    public void testConstructorNullAspectRatio() {
         BigDecimal wingArea = new BigDecimal("50.00");
-        assertThrows(IllegalArgumentException.class, () -> new WingGeometry(wingArea, null));
+        try {
+            new WingGeometry(wingArea, null);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorZeroAspectRatio() {
+    public void testConstructorZeroAspectRatio() {
         BigDecimal wingArea = new BigDecimal("50.00");
         BigDecimal aspectRatio = BigDecimal.ZERO;
-        assertThrows(IllegalArgumentException.class, () -> new WingGeometry(wingArea, aspectRatio));
+        try {
+            new WingGeometry(wingArea, aspectRatio);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testConstructorNegativeAspectRatio() {
+    public void testConstructorNegativeAspectRatio() {
         BigDecimal wingArea = new BigDecimal("50.00");
         BigDecimal aspectRatio = new BigDecimal("-1.0000");
-        assertThrows(IllegalArgumentException.class, () -> new WingGeometry(wingArea, aspectRatio));
+        try {
+            new WingGeometry(wingArea, aspectRatio);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testEqualsSameObject() {
+    public void testEqualsSameObject() {
         BigDecimal wingArea = new BigDecimal("50.00");
         BigDecimal aspectRatio = new BigDecimal("7.5000");
         WingGeometry wg = new WingGeometry(wingArea, aspectRatio);
@@ -72,7 +102,7 @@ class WingGeometryTests {
     }
 
     @Test
-    void testEqualsDifferentValues() {
+    public void testEqualsDifferentValues() {
         BigDecimal wingArea1 = new BigDecimal("50.00");
         BigDecimal aspectRatio1 = new BigDecimal("7.5000");
         WingGeometry wg1 = new WingGeometry(wingArea1, aspectRatio1);
@@ -85,7 +115,7 @@ class WingGeometryTests {
     }
 
     @Test
-    void testEqualsSameValues() {
+    public void testEqualsSameValues() {
         BigDecimal wingArea1 = new BigDecimal("50.00");
         BigDecimal aspectRatio1 = new BigDecimal("7.5000");
         WingGeometry wg1 = new WingGeometry(wingArea1, aspectRatio1);
@@ -98,7 +128,7 @@ class WingGeometryTests {
     }
 
     @Test
-    void testEqualsDifferentScaleSameValue() {
+    public void testEqualsDifferentScaleSameValue() {
         // wingArea: 50 vs 50.00
         BigDecimal wingArea1 = new BigDecimal("50");
         BigDecimal aspectRatio1 = new BigDecimal("7.5");
@@ -113,7 +143,7 @@ class WingGeometryTests {
     }
 
     @Test
-    void testHashCodeConsistency() {
+    public void testHashCodeConsistency() {
         BigDecimal wingArea = new BigDecimal("50.00");
         BigDecimal aspectRatio = new BigDecimal("7.5000");
         WingGeometry wg1 = new WingGeometry(wingArea, aspectRatio);

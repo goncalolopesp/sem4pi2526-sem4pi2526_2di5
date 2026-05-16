@@ -51,37 +51,14 @@ public class AddAircraftModelController {
         this.engineRepo = engineRepo;
     }
 
-//    public Iterable<Manufacturer> getManufacturers() {
-//        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR);
-//        return manufacturerRepo.findAll();
-//    }
-
     public Iterable<Manufacturer> getManufacturers() {
-
-        // --- Temporary Bypass to test UI from US055 ---
-        List<Manufacturer> dummyManufacturers = new ArrayList<>();
-        dummyManufacturers.add(new Manufacturer(airbus, "Airbus", "USA"));
-        dummyManufacturers.add(new Manufacturer(boeing, "Boeing", "USA"));
-
-        return dummyManufacturers;
-
-        // --- When US056 is completed, delete this method and leave method above
+        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR);
+        return manufacturerRepo.findAll();
     }
 
-//    public Iterable<EngineModel> getEngineModels() {
-//        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR);
-//        return engineRepo.findAll();
-//    }
-
     public Iterable<EngineModel> getEngineModels() {
-
-        List<EngineModel> dummyEngines = new ArrayList<>();
-        dummyEngines.add(new EngineModel(new EngineModelId("CFM56-5B"), airbus, "CFM56-5B", "TYPE", new BigDecimal("1000"), "TYPE", new BigDecimal("1000")));
-        dummyEngines.add(new EngineModel(new EngineModelId("GE90-115B"), boeing, "GE90-115B", "TYPE", new BigDecimal("1000"), "TYPE", new BigDecimal("1000")));
-
-        return dummyEngines;
-
-        // --- When US056 is completed, delete this method and leave method above
+        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR);
+        return engineRepo.findAll();
     }
 
     public AircraftModel addAircraftModel(Manufacturer manufacturer, String type, String name,
@@ -94,6 +71,11 @@ public class AddAircraftModelController {
 
         ManufacturerId manId = manufacturer.identity();
         AircraftModelId modelId = new AircraftModelId(manId, name);
+
+        if (aircraftRepo.containsOfIdentity(modelId)) {
+            throw new IllegalArgumentException("Already exists a model with this name for this manufacturer.");
+        }
+
         AircraftType aircraftType = AircraftType.valueOf(type.toUpperCase());
 
         Weight weight = new Weight(emptyWeight, mzfw, mtow);

@@ -24,8 +24,12 @@ import eapli.framework.util.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.isep.sem4pi.application.Application;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Properties;
 
 /**
  * provides easy access to the persistence layer. works as a factory of
