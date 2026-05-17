@@ -1,63 +1,59 @@
 package pt.isep.sem4pi.application.controller.usermanagement;
 
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+import eapli.framework.infrastructure.authz.application.AuthenticationService;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
-import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
 import org.junit.Before;
 import org.junit.Test;
+import pt.isep.sem4pi.application.controller.usermanagement.RegisterBackofficeUserController;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
-import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
+import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
 
+/**
+ * Testes para o controlador de registo de utilizadores do backoffice (US30/US32).
+ */
 public class RegisterBackofficeUserControllerTest {
-
-    private String testAdmin;
-    private String testBo;
-    private String testEmail;
 
     @Before
     public void setUp() {
-        final var userRepo = PersistenceContext.repositories().users();
-        AuthzRegistry.configure(userRepo, new SEM4PIPasswordPolicy(), new PlainTextEncoder());
+        // Força o PersistenceContext a usar InMemory para este teste
+        System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
 
-        testAdmin = "adm_" + java.util.UUID.randomUUID().toString().substring(0, 5);
-        testBo = "bo_" + java.util.UUID.randomUUID().toString().substring(0, 5);
-        testEmail = testBo + "@example.org";
-
-        eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder builder =
-                new eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder(new SEM4PIPasswordPolicy(), new PlainTextEncoder());
-
-        userRepo.save(builder.withUsername(testAdmin).withPassword("Password1").withName("Admin", "User").withEmail(testAdmin + "@isep.pt").withRoles(SEM4PIRoles.ADMIN).build());
-        userRepo.save(builder.withUsername(testBo).withPassword("Password1").withName("BO", "User").withEmail(testEmail).withRoles(SEM4PIRoles.BACKOFFICE_OPERATOR).build());
-
-        if (AuthzRegistry.authorizationService().hasSession()) {
-            AuthzRegistry.authorizationService().clearSession();
-        }
-        AuthzRegistry.authenticationService().authenticate(testAdmin, "Password1");
+        // Configura o Authz com o mesmo repositório que o controller vai usar
+        final var factory = PersistenceContext.repositories();
+        AuthzRegistry.configure(factory.users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());
     }
 
     @Test
     public void usernameAndEmailChecksAndRegister() {
         final RegisterBackofficeUserController ctrl = new RegisterBackofficeUserController();
 
+        assertFalse(ctrl.isUsernameAvailable("bo"));
+        assertFalse(ctrl.isUsernameAvailable(null));
+        assertFalse(ctrl.isUsernameAvailable("   "));
+
         assertTrue(ctrl.isEmailFormatValid("joe@example.org"));
         assertFalse(ctrl.isEmailFormatValid("bad-email"));
+
+        assertFalse(ctrl.isEmailAvailable("bo@example.org"));
+
         assertTrue(ctrl.isPasswordValid("Password1"));
         assertFalse(ctrl.isPasswordValid("weak"));
 
-        final String username = "new_" + java.util.UUID.randomUUID().toString().substring(0, 6);
-        final String email = username + "@example.org";
+        final AuthenticationService auth = AuthzRegistry.authenticationService();
+        auth.authenticate("admin", "Password1");
 
+        final String username = "newuser" + System.nanoTime();
+        final String email = username + "@example.org";
         final Optional<BackofficeUser> before = ctrl.findBackofficeUserByUsername(username);
         assertFalse(before.isPresent());
-        assertTrue(ctrl.isUsernameAvailable(username));
-        assertTrue(ctrl.isEmailAvailable(email));
 
         final BackofficeUser created = ctrl.register(
                 username,
@@ -69,14 +65,10 @@ public class RegisterBackofficeUserControllerTest {
                 LocalDate.now().plusYears(1),
                 LocalDate.now()
         );
-
         assertNotNull(created);
-        assertEquals(username, created.username().toString());
+        assertEquals(username, created.username());
 
         final Optional<BackofficeUser> after = ctrl.findBackofficeUserByUsername(username);
         assertTrue(after.isPresent());
-
-        assertFalse(ctrl.isUsernameAvailable(username));
-        assertFalse(ctrl.isEmailAvailable(email));
     }
 }

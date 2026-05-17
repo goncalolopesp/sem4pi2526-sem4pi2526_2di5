@@ -2,7 +2,6 @@ package pt.isep.sem4pi.application.controller.engineModel;
 
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
-import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
@@ -20,33 +19,19 @@ import static org.junit.Assert.*;
 
 public class RegisterEngineModelControllerTest {
 
-    private String testManCode;
-
     @Before
     public void setUp() {
         System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
 
         final var factory = PersistenceContext.repositories();
-        final var userRepo = factory.users();
-
-        AuthzRegistry.configure(userRepo, new SEM4PIPasswordPolicy(), new PlainTextEncoder());
-
-        SystemUserBuilder userBuilder =
-                new SystemUserBuilder(new SEM4PIPasswordPolicy(), new PlainTextEncoder());
-
-        if (!userRepo.containsOfIdentity(eapli.framework.infrastructure.authz.domain.model.Username.valueOf("admin"))) {
-            userBuilder.withUsername("admin").withPassword("Password1").withName("Admin", "User").withEmail("admin@isep.pt").withRoles(pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles.ADMIN);
-            userRepo.save(userBuilder.build());
-        }
+        AuthzRegistry.configure(factory.users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());
 
         if (AuthzRegistry.authorizationService().hasSession()) {
             AuthzRegistry.authorizationService().clearSession();
         }
 
-        final var manufacturers = factory.manufacturers();
-        this.testManCode = "M-" + java.util.UUID.randomUUID().toString().substring(0, 4);
-        Manufacturer m = new Manufacturer(new ManufacturerId(testManCode), "Test Man", "France");
-        manufacturers.save(m);
+        final var manufacturers = PersistenceContext.repositories().manufacturers();
+        manufacturers.save(new Manufacturer(new ManufacturerId("CFM"), "CFM International", "France"));
     }
 
     @Test
@@ -54,12 +39,10 @@ public class RegisterEngineModelControllerTest {
         AuthzRegistry.authenticationService().authenticate("admin", "Password1");
 
         final RegisterEngineModelController controller = new RegisterEngineModelController();
-        String uniqueCode = "ENG-" + java.util.UUID.randomUUID().toString().substring(0, 6);
-
         final var engineModel = controller.registerEngineModel(
-                uniqueCode,
-                this.testManCode,
-                uniqueCode,
+                "CFM56-5B",
+                "CFM",
+                "CFM56-5B",
                 EngineType.TURBOFAN,
                 new BigDecimal("120.00"),
                 FuelType.JET_A1,
@@ -67,7 +50,7 @@ public class RegisterEngineModelControllerTest {
         );
 
         assertNotNull(engineModel);
-        assertTrue(PersistenceContext.repositories().engineModels().containsOfIdentity(new EngineModelId(uniqueCode)));
+        assertTrue(PersistenceContext.repositories().engineModels().containsOfIdentity(new EngineModelId("CFM56-5B")));
     }
 
     @Test
@@ -78,8 +61,7 @@ public class RegisterEngineModelControllerTest {
         final var manufacturers = controller.listManufacturers();
 
         assertFalse(manufacturers.isEmpty());
-        boolean found = manufacturers.stream().anyMatch(m -> m.identity().toString().equals(this.testManCode));
-        assertTrue(found);
+        assertEquals("CFM", manufacturers.get(0).identity().toString());
     }
 
     @Test
@@ -88,9 +70,9 @@ public class RegisterEngineModelControllerTest {
 
         try {
             controller.registerEngineModel(
-                    "ENG-REJECT",
-                    this.testManCode,
-                    "ENG-REJECT",
+                    "CFM56-5B",
+                    "CFM",
+                    "CFM56-5B",
                     EngineType.TURBOFAN,
                     new BigDecimal("120.00"),
                     FuelType.JET_A1,
