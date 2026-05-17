@@ -13,6 +13,7 @@ import eapli.framework.presentation.console.menu.MenuItemRenderer;
 import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.AddAirport.AddAirportUI;
+import pt.isep.sem4pi.presentation.airtransportcompany.ListCompanyCollaboratorsAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterCompanyCollaboratorAction;
 import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
@@ -42,6 +43,7 @@ public class MainMenu extends AbstractUI {
     // AirTransportCompany
     private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 1;
     private static final int REGISTER_ATCC_COLLABORATOR = 2;
+    private static final int LIST_ATCC_COLABORATORS = 3;
 
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
@@ -151,6 +153,7 @@ public class MainMenu extends AbstractUI {
 
         menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Trasnport Company", new RegisterAirTransportCompanyUI()::show);
         menu.addItem(REGISTER_ATCC_COLLABORATOR, "Register Air Transport Company's Customer Collaborator", new RegisterCompanyCollaboratorAction());
+        menu.addItem(LIST_ATCC_COLABORATORS, "List Air Transport Company's Customer's Collaborators", new ListCompanyCollaboratorsAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;
