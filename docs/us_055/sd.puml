@@ -1,0 +1,125 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title US055 - Register Aircraft Model (SD)
+
+autonumber
+
+actor "Backoffice Operator" as Actor
+
+participant ":AddAircraftModelUI" as UI
+participant ":AddAircraftModelController" as Controller
+
+participant "repositories:\nPersistenceContext" as PersistenceContext
+participant "manufacturerRepository:\nManufacturerRepository" as ManufacturerRepo
+participant "engineModelRepository:\nEngineModelRepository" as EngineRepo
+participant "aircraftModelRepository:\nAircraftModelRepository" as AircraftRepo
+participant "aircraftModelRepositoryJpa:\nAircraftModelRepositoryJPA" as AircraftRepoJpa
+
+participant "aircraftModel:\nAircraftModel" as AircraftModel
+participant "certifiedEngine:\nCertifiedEngine" as CertifiedEngine
+
+note right of AircraftRepo
+Repository interfaces are defined
+in the Domain layer.
+
+Concrete implementations may be
+JPA or In-Memory, selected by
+Infrastructure configuration.
+end note
+
+note right of AircraftRepoJpa
+JPA implementation selected by
+PersistenceContext configuration.
+end note
+
+Actor -> UI : requests register aircraft model
+activate UI
+
+UI -> Controller ++ : create()
+Controller --> UI : controller
+
+UI -> Controller : getManufacturers()
+activate Controller
+
+Controller -> PersistenceContext : repositories()
+activate PersistenceContext
+PersistenceContext --> Controller : repositories
+
+Controller -> PersistenceContext : manufacturers()
+PersistenceContext --> Controller : ManufacturerRepo
+
+Controller -> ManufacturerRepo : findAll()
+activate ManufacturerRepo
+ManufacturerRepo --> Controller : manufacturers
+deactivate ManufacturerRepo
+
+Controller --> UI : manufacturers
+deactivate Controller
+
+UI --> Actor : shows manufacturers
+
+Actor -> UI : selects manufacturer, type, motorization\nand provides aircraft model data
+
+UI -> Controller : getEngineModels()
+activate Controller
+
+Controller -> PersistenceContext : engineModels()
+PersistenceContext --> Controller : EngineRepo
+
+Controller -> EngineRepo : findAll()
+activate EngineRepo
+EngineRepo --> Controller : engineModels
+deactivate EngineRepo
+
+Controller --> UI : engineModels
+deactivate Controller
+
+UI --> Actor : shows engine models
+
+Actor -> UI : selects engine model(s)
+
+UI -> Controller : addAircraftModel(data, engines)
+activate Controller
+
+Controller -> PersistenceContext : aircraftModels()
+PersistenceContext --> Controller : AircraftRepo
+
+Controller -> AircraftRepo : containsOfIdentity(aircraftModelId)
+activate AircraftRepo
+AircraftRepo --> Controller : existsById
+deactivate AircraftRepo
+
+Controller -> AircraftModel ++ : new(id, type, motorization,\nweight, aerodynamics, performance,\nfuel, wingGeometry, engineModels)
+
+loop for each engine model
+    AircraftModel -> AircraftModel : certifyEngine(engine)
+    AircraftModel -> CertifiedEngine ++ : new(engine)
+    CertifiedEngine --> AircraftModel : certifiedEngine
+    deactivate CertifiedEngine
+end
+
+AircraftModel --> Controller : aircraftModel
+
+Controller -> AircraftRepo : save(aircraftModel)
+activate AircraftRepo
+AircraftRepo -> AircraftRepoJpa : save(aircraftModel)
+activate AircraftRepoJpa
+AircraftRepoJpa --> AircraftRepo : savedAircraftModel
+deactivate AircraftRepoJpa
+AircraftRepo --> Controller : savedAircraftModel
+deactivate AircraftRepo
+
+deactivate AircraftModel
+deactivate PersistenceContext
+
+Controller --> UI : savedAircraftModel
+deactivate Controller
+
+UI --> Actor : displays success
+
+deactivate UI
+
+@enduml
