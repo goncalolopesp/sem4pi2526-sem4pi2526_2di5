@@ -91,6 +91,18 @@ public class EngineModel implements AggregateRoot<EngineModelId>, Serializable {
         return name;
     }
 
+    public EngineType type() {
+        return type;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public ManufacturerId manufacturerId() {
+        return manufacturer.identity();
+    }
+
     public boolean hasManufacturerAndName(final ManufacturerId manufacturerId, final String name) {
         if (manufacturerId == null || name == null || name.trim().isEmpty()) {
             return false;

@@ -31,4 +31,11 @@ public class CertifiedEngine {
         Preconditions.nonNull(engineModel, "Engine Model cannot be null.");
         this.engineModel = engineModel;
     }
+
+    public boolean hasEngineModel(final EngineModel engineModel) {
+        if (engineModel == null) {
+            return false;
+        }
+        return this.engineModel.identity().equals(engineModel.identity());
+    }
 }

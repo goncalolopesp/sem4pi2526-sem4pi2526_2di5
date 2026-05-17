@@ -99,6 +99,28 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
         this.certifiedEngines.add(new CertifiedEngine(engine));
     }
 
+    private boolean isEngineAlreadyCertified(final EngineModel engine) {
+        return certifiedEngines.stream().anyMatch(certifiedEngine -> certifiedEngine.hasEngineModel(engine));
+    }
+
+    private boolean isEngineCompatible(final EngineModel engine) {
+        final String motorizationValue = motorization == null ? "" : motorization.trim();
+        return !motorizationValue.isEmpty()
+                && motorizationValue.equalsIgnoreCase(engine.type().name());
+    }
+
+    public String modelName() {
+        return modelName;
+    }
+
+    public AircraftType aircraftType() {
+        return aircraftType;
+    }
+
+    public String motorization() {
+        return motorization;
+    }
+
     @Override
     public boolean sameAs(Object other) {
         if (!(other instanceof AircraftModel)) return false;
