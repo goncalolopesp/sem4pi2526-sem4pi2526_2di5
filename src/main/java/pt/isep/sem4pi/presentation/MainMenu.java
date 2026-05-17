@@ -18,6 +18,7 @@ import pt.isep.sem4pi.presentation.aircraft.RetireAircraftAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.ListCompanyCollaboratorsAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterCompanyCollaboratorAction;
+import pt.isep.sem4pi.presentation.authz.ListUsersAction;
 import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
@@ -167,7 +168,7 @@ public class MainMenu extends AbstractUI {
         final var menu = new Menu("Users >");
 
         menu.addItem(ADD_USER_OPTION, "Add User", new ShowMessageAction("Add User - TODO"));
-        menu.addItem(LIST_USERS_OPTION, "List all Users", new ListBackofficeUsersUI()::show);
+        menu.addItem(LIST_USERS_OPTION, "List Users", new ListUsersAction());
         menu.addItem(DEACTIVATE_USER_OPTION, "Manage User status", new ManageBackofficeUserStatusUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
