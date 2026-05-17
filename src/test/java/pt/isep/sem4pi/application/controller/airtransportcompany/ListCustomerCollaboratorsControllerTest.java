@@ -3,6 +3,7 @@ package pt.isep.sem4pi.application.controller.airtransportcompany;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
 import eapli.framework.infrastructure.authz.domain.model.Username;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.application.controller.airtransportcompany.ListCustomerCollaboratorsController.CollaboratorView;
@@ -12,13 +13,12 @@ import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
-import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
-import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportCompanyCollaboratorRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportCompanyRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -33,6 +33,16 @@ public class ListCustomerCollaboratorsControllerTest {
 
     private static final IcaoCode TAP_ICAO = new IcaoCode("TAP");
 
+    private static void clearSharedCollaboratorRepository() {
+        final InMemoryAirTransportCompanyCollaboratorRepository repo =
+                new InMemoryAirTransportCompanyCollaboratorRepository();
+        final List<AirTransportCompanyCollaborator> toDelete = new ArrayList<>();
+        repo.findAll().forEach(toDelete::add);
+        for (final AirTransportCompanyCollaborator c : toDelete) {
+            repo.delete(c);
+        }
+    }
+
     @Before
     public void setUp() {
         System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
@@ -44,6 +54,8 @@ public class ListCustomerCollaboratorsControllerTest {
             AuthzRegistry.authorizationService().clearSession();
         }
 
+        clearSharedCollaboratorRepository();
+
         companyRepo = new InMemoryAirTransportCompanyRepository();
         collaboratorRepo = new InMemoryAirTransportCompanyCollaboratorRepository();
         controller = new ListCustomerCollaboratorsController(companyRepo, collaboratorRepo);
@@ -54,6 +66,11 @@ public class ListCustomerCollaboratorsControllerTest {
                 new IataCode("TP"),
                 TAP_ICAO
         ));
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        clearSharedCollaboratorRepository();
     }
 
     @Test
