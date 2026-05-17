@@ -22,6 +22,7 @@ import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
+import pt.isep.sem4pi.presentation.aircraft.RetireAircraftAction;
 
 /**
  * Menu principal da aplicacao SEM4PI.
@@ -47,6 +48,7 @@ public class MainMenu extends AbstractUI {
     private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 1;
     private static final int REGISTER_ATCC_COLLABORATOR = 2;
     private static final int LIST_ATCC_COLABORATORS = 3;
+    private static final int RETIRE_AIRCRAFT_OPTION = 4;
 
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
@@ -108,7 +110,10 @@ public class MainMenu extends AbstractUI {
         mainMenu.addItem(MenuItem.separator(SEPARATOR_LABEL));
 
         if (authz.hasSession()) {
-            if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN)) {
+            final boolean isBackoffice = authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
+            final boolean isAtcc = authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR, SEM4PIRoles.ADMIN);
+
+            if (isBackoffice) {
                 final var usersMenu = buildUsersMenu();
                 final var airTransportCompanyMenu = buildAirTransportCompanyMenu();
                 final var airportMenu = buildAirportMenu();
@@ -122,6 +127,9 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(AIRPORT_OPTIONS, airportMenu);
                 mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, airControlAreaMenu);
                 mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, weatherDataMenu);
+            } else if (isAtcc) {
+                final var airTransportCompanyMenu = buildAirTransportCompanyMenu();
+                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, airTransportCompanyMenu);
             }
 
             if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
@@ -164,6 +172,7 @@ public class MainMenu extends AbstractUI {
         menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Trasnport Company", new RegisterAirTransportCompanyUI()::show);
         menu.addItem(REGISTER_ATCC_COLLABORATOR, "Register Air Transport Company's Customer Collaborator", new RegisterCompanyCollaboratorAction());
         menu.addItem(LIST_ATCC_COLABORATORS, "List Air Transport Company's Customer's Collaborators", new ListCompanyCollaboratorsAction());
+        menu.addItem(RETIRE_AIRCRAFT_OPTION, "Retire Aircraft", new RetireAircraftAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;

@@ -2,7 +2,6 @@ package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
 import pt.isep.sem4pi.domain.repositories.*;
 import pt.isep.sem4pi.domain.usermanagement.Email;
 import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
@@ -11,9 +10,6 @@ import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUserRepository;
 import pt.isep.sem4pi.infrastructure.persistence.RepositoryFactory;
-import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftModelRepository;
-import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryEngineModelRepository;
-import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryManufacturerRepository;
 
 import java.time.LocalDate;
 
@@ -31,6 +27,8 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private static EngineModelRepository engineModelRepository;
     private static ManufacturerRepository manufacturerRepository;
     private static AirControlAreaRepository airControlAreaRepository;
+    private static AircraftRepository aircraftRepository;
+    private static FlightRepository flightRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -111,6 +109,22 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     @Override
     public AirTransportCompanyCollaboratorRepository airTransportCompanyCollaborators() {
         return new InMemoryAirTransportCompanyCollaboratorRepository();
+    }
+
+    @Override
+    public AircraftRepository aircrafts() {
+        if (aircraftRepository == null) {
+            aircraftRepository = new InMemoryAircraftRepository();
+        }
+        return aircraftRepository;
+    }
+
+    @Override
+    public FlightRepository flights() {
+        if (flightRepository == null) {
+            flightRepository = new InMemoryFlightRepository();
+        }
+        return flightRepository;
     }
 
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {
