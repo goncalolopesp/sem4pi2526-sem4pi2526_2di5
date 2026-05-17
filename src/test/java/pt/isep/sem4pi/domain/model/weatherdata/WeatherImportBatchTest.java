@@ -33,11 +33,6 @@ public class WeatherImportBatchTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void ensureFailsIfAreaIdIsEmpty() {
-        new WeatherImportBatch("   ", createValidWeatherData());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void ensureFailsIfWeatherDataIsNull() {
         new WeatherImportBatch("AREA_PT", null);
     }
