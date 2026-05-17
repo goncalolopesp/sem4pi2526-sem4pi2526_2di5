@@ -1,0 +1,49 @@
+@startuml
+autonumber
+actor "Backoffice Operator" as Actor
+participant "AddAirportUI" as UI
+participant "AddAirportController" as Controller
+participant "AddAirportService" as Service
+participant "AirportRepository" as Repo
+participant "Airport" as Domain
+
+Actor -> UI : Inputs airport data (Name, IATA, ICAO, Lat, Lon, Elev, AreaID)
+activate UI
+
+UI -> Controller : addAirport(name, ..., areaId)
+activate Controller
+
+Controller -> Service : addAirport(name, ..., areaId)
+activate Service
+
+note right of Service: Value Objects (Coordinates, AirportIataCode, etc.)\nare instantiated and validated here.
+
+Service -> Repo : findByIataCode(iata)
+activate Repo
+Repo --> Service : Optional.empty
+deactivate Repo
+
+Service -> Repo : findByIcaoCode(icao)
+activate Repo
+Repo --> Service : Optional.empty
+deactivate Repo
+
+Service -> Domain ** : create(name, ..., iata, icao, coords, elev, areaId)
+activate Domain
+Domain --> Service : airport
+deactivate Domain
+
+Service -> Repo : save(airport)
+activate Repo
+Repo --> Service : savedAirport
+deactivate Repo
+
+Service --> Controller : savedAirport
+deactivate Service
+
+Controller --> UI : savedAirport
+deactivate Controller
+
+UI --> Actor : Displays Success Message
+deactivate UI
+@enduml

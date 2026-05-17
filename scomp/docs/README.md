@@ -1,5 +1,29 @@
 # SCOMP – Sprint 3
 
+## Component Diagram
+
+```plantuml
+@startuml
+title Component Diagram - flight_simulator
+actor "Terminal" as T
+rectangle "Main Process\n(flight_simulator)" as Main
+folder "PositionTracker / History" as Tracker
+package "Flight Processes (1..N)" {
+  rectangle "Flight Process" as Flight
+}
+database "data/Flight_Plan_v0a.json" as FP
+file "simulation_report.txt" as Report
+T --> Main : start / params
+Main --> FP : read plans
+Main --> Flight : fork + SIGUSR1 (start)
+Main --> Flight : sync pipe (parent->child) : 'N' (next step)
+Flight --> Main : update pipe (child->parent) : PositionUpdate
+Main --> Tracker : tracker_update()
+Main --> Report : write history
+note right of Main: poll() on update pipes\nwrite 'N' on sync pipes to advance
+@enduml
+```
+
 ## User Stories Implementadas
 
 ### US100 – Simulação Base de Voos
@@ -68,16 +92,6 @@ A comunicação entre processos é feita através de estruturas binárias (`stru
 - Geração de relatório final;
 - Alocação dinâmica do histórico;
 - Validação dos parâmetros da simulação.
-
-#### Não Implementado
-
-- Física real de voo;
-- Simulação de vento ou combustível;
-- Deteção de colisões;
-- Esperas em tempo real;
-- Parser JSON genérico;
-- Comunicação através de memória partilhada;
-- Simulação baseada em threads.
 
 #### Limitações Conhecidas
 
@@ -149,6 +163,64 @@ A simulação gera:
 
 ---
 
+### US101 - Capture and process flight movements
+
+## 1. Analysis
+
+### User Story
+
+As a simulation process, I want to receive movement commands from flight processes so that I can track aircraft positions over time.
+
+### Acceptance Criteria Addressed
+
+1. Each flight process sends position updates to the main process via pipe.
+2. The main process tracks the current position of each aircraft.
+3. The system stores past positions to anticipate and detect potential safety violations.
+
+## 2. Design
+
+### Main Process
+
+Added responsibilities compared to US100:
+
+- initialize the `PositionTracker` before launching flight processes;
+- call `tracker_update` for each `PositionUpdate` received via pipe;
+- provide the complete position history to the violation detection module (US102);
+- print the tracker summary at the end of the simulation;
+- destroy the tracker and free memory before terminating.
+
+### Tracking Module (`position_tracker.c`)
+
+Responsibilities:
+
+- maintain a table of entries, one per active flight;
+- create a flight entry on the first received message;
+- update the current position and most recent time step for each update;
+- add each position to the dynamic history buffer of the corresponding entry;
+- expose the current position of any flight by `flight_id` for external query.
+
+## 3. Main Structures
+
+- `TrackPoint`: an instant in a flight's history — time step, position and status.
+- `TrackEntry`: complete state of a tracked flight — current position, latest time step, status and dynamic buffer of `TrackPoint`.
+- `PositionTracker`: table with up to `MAX_TRACKED_FLIGHTS` entries, maintained by the main process.
+
+## 4. Implementation Decisions
+
+- The history buffer of each `TrackEntry` grows by duplication, guaranteeing amortized O(1) cost per insertion and avoiding frequent reallocations.
+- Searching for entries by `flight_id` is linear over the number of active flights, which is sufficient given the `MAX_TRACKED_FLIGHTS` limit.
+- The module is isolated in `position_tracker.c` to facilitate independent replacement or extension in the following US.
+
+## 5. Assumed Limitations
+
+This implementation does not handle conflict detection between aircraft, as this belongs to US102. The history stored in `TrackEntry` was designed to be directly consumed by that module. Global synchronization by time step belongs to US103.
+
+---
+
+### US102
+
+---
+
 ### US103 - Synchronized flight simulation
 
 ## Objetivo
@@ -164,7 +236,7 @@ Cada processo filho executa um voo e envia uma atualização de posição ao pro
 - Usa `pipe()` para comunicação entre cada processo de voo e o processo principal.
 - Usa sinais:
   - `SIGUSR1` inicia a execução sincronizada dos voos.
-  - `SIGUSR2` autoriza os processos filhos a avançar para o próximo time step.
+  - sincronização por pipe: o processo principal escreve o caractere `'N'` no `sync_pipe` para autorizar cada filho a avançar ao próximo time step (implementação por pipe usada no código; o uso de `SIGUSR2` encontra-se comentado).
   - `SIGTERM`/`SIGINT` pedem terminação limpa.
 - Cada processo de voo executa o seu plano de voo e envia uma atualização por ciclo.
 - O processo principal mantém histórico de posições por voo numa estrutura dinâmica (`HistoryEntry`).
@@ -182,11 +254,11 @@ SIGUSR1 inicia todos os voos
 ↓
 Cada voo envia um PositionUpdate
 ↓
-Cada voo fica bloqueado à espera de SIGUSR2
+Cada voo fica bloqueado à espera de um comando no `sync_pipe` (leitura de um `char`)
 ↓
 O processo principal recebe os updates de todos os voos
 ↓
-O processo principal envia SIGUSR2
+O processo principal escreve `'N'` no `sync_pipe` de cada filho para autorizar o próximo time step
 ↓
 Todos os voos avançam para o próximo time step
 ````
@@ -253,16 +325,18 @@ com o histórico completo de posições por voo.
 
 Esta implementação foca a sincronização temporal da simulação da US103. A deteção de conflitos entre aeronaves e alterações automáticas de voo pertence à US102.
 
-```
+---
+
+### US109
 
 ---
 
 ## Auto-avaliação da Contribuição do Grupo
 
-| Avaliador | Mariana Gabriel | Guilherme Tavares | Pedro Soares | Gonçalo Pinto | João Sousa |
-|---|---|---|---|---|---|
-| Mariana Gabriel | 100% | 100% | 0% | 0% | 0% |
-| Guilherme Tavares | 100% | 100% | 0% | 0% | 0% |
-| Pedro Soares | 0% | 0% | 0% | 0% | 0% |
-| Gonçalo Pinto | 0% | 0% | 0% | 0% | 0% |
-| João Sousa | 0% | 0% | 0% | 0% | 0% |
+| Membro | Contribuição  |
+|---|---|
+| Mariana Gabriel | 20% |
+| Guilherme Tavares | 20% |
+| Pedro Soares | 20% |
+| Gonçalo Pinto | 20% |
+| João Sousa | 20% |

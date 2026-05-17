@@ -1,0 +1,54 @@
+@startuml
+autonumber
+actor "Operator" as Actor
+participant "AddAircraftController" as Controller
+participant "AddAircraftService" as Service
+participant "AirTransportCompanyRepository" as CompanyRepo
+participant "AircraftModelRepository" as ModelRepo
+participant "AirTransportCompany" as CompanyAggregate
+participant "Aircraft" as AircraftEntity
+
+Actor -> Controller : addAircraft(companyIata, reg, model, eco, bus, first)
+activate Controller
+
+Controller -> Service : addAircraftToFleet(...)
+activate Service
+
+Service -> CompanyRepo : findByIataCode(companyIata)
+activate CompanyRepo
+CompanyRepo --> Service : company
+deactivate CompanyRepo
+
+Service -> ModelRepo : findById(modelId)
+activate ModelRepo
+ModelRepo --> Service : aircraftModel
+deactivate ModelRepo
+
+note right of Service: Validates seats.getTotalCapacity() \n<= aircraftModel.getMaximumCapacity()
+
+Service -> CompanyRepo : existsByAircraftRegistration(reg)
+activate CompanyRepo
+CompanyRepo --> Service : false
+deactivate CompanyRepo
+
+Service -> AircraftEntity ** : create(reg, modelId, country, seats)
+activate AircraftEntity
+AircraftEntity --> Service : newAircraft
+deactivate AircraftEntity
+
+Service -> CompanyAggregate : addAircraftToFleet(newAircraft)
+activate CompanyAggregate
+CompanyAggregate --> Service
+deactivate CompanyAggregate
+
+Service -> CompanyRepo : save(company)
+activate CompanyRepo
+CompanyRepo --> Service : savedCompany
+deactivate CompanyRepo
+
+Service --> Controller
+deactivate Service
+
+Controller --> Actor : Displays Success Message
+deactivate Controller
+@enduml

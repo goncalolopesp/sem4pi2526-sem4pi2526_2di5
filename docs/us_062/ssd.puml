@@ -1,0 +1,21 @@
+@startuml US062_SSD
+title US062 - List Collaborators of an Air Transport Company - SSD
+
+actor "Backoffice Operator" as Operator
+participant "SEM4PI Backoffice System" as System
+
+Operator -> System : request to list collaborators of an Air Transport Company
+System --> Operator : ask for company ICAO code
+
+Operator -> System : provide ICAO code
+System --> Operator : present list of active collaborators (username, first name, last name, email)
+
+alt company not found
+    System --> Operator : show error (company not found)
+else no active collaborators
+    System --> Operator : present empty list
+else not authenticated / not authorized
+    System --> Operator : show access denied message
+end
+
+@enduml

@@ -1,0 +1,23 @@
+@startuml US061_SSD
+title US061 - Add Air Transport Company Collaborator - SSD
+
+actor "Backoffice Operator" as Operator
+participant "SEM4PI Backoffice System" as System
+
+Operator -> System : request to add a collaborator to an Air Transport Company
+System --> Operator : present list of system users and list of Air Transport Companies
+
+Operator -> System : select system user and Air Transport Company
+System --> Operator : confirmation of created collaborator association
+
+alt system user not found
+    System --> Operator : show error (user not found)
+else company not found
+    System --> Operator : show error (company not found)
+else collaborator already exists for user
+    System --> Operator : show error (user already assigned as collaborator)
+else not authenticated / not authorized
+    System --> Operator : show access denied message
+end
+
+@enduml

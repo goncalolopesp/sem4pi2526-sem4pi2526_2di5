@@ -28,6 +28,13 @@ public class IataCode {
     }
 
     @Override
+    public String toString() {
+        return "IataCode{" +
+                "iataCode='" + iataCode + '\'' +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return iataCode.hashCode();
     }
