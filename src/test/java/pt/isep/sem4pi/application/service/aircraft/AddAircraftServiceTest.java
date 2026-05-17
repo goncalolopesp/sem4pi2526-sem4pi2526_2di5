@@ -23,12 +23,16 @@ public class AddAircraftServiceTest {
         modelRepo = new InMemoryAircraftModelTempRepository();
         service = new AddAircraftService(companyRepo, modelRepo);
 
-        companyRepo.save(new AirTransportCompany(new CompanyName("TAP"), new IataCode("TP"), new IcaoCode("TAP")));
+        companyRepo.save(new AirTransportCompany(
+                new CompanyName("TAP"),
+                new IataCode("TP"),
+                new IcaoCode("TAP")
+        ));
     }
 
     @Test
     public void ensureSuccessfulAircraftAddition() {
-        service.addAircraftToFleet("TP", "CS-TPA", "A320", "Portugal", 150, 0, 0);
+        service.addAircraftToFleet("TP", "CS-TPA", "AIRBUS", "A320", "Portugal", 150, 0, 0);
 
         AirTransportCompany tap = companyRepo.findByIataCode(new IataCode("TP")).get();
         assertEquals(1, tap.getFleet().size());
@@ -37,7 +41,7 @@ public class AddAircraftServiceTest {
     @Test
     public void ensureFailsIfSeatsExceedModelCapacity() {
         try {
-            service.addAircraftToFleet("TP", "CS-TPB", "A320", "Portugal", 200, 0, 0);
+            service.addAircraftToFleet("TP", "CS-TPB", "AIRBUS", "A320", "Portugal", 200, 0, 0);
             fail("Expected exception");
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("exceed the maximum capacity"));
@@ -46,10 +50,10 @@ public class AddAircraftServiceTest {
 
     @Test
     public void ensureFailsIfRegistrationAlreadyExists() {
-        service.addAircraftToFleet("TP", "CS-TPA", "A320", "Portugal", 150, 0, 0);
+        service.addAircraftToFleet("TP", "CS-TPA", "AIRBUS", "A320", "Portugal", 150, 0, 0);
 
         try {
-            service.addAircraftToFleet("TP", "CS-TPA", "A320", "Portugal", 100, 0, 0);
+            service.addAircraftToFleet("TP", "CS-TPA", "AIRBUS", "A320", "Portugal", 100, 0, 0);
             fail("Expected exception");
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("already exists"));

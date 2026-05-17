@@ -4,11 +4,8 @@ import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.aircraft.AddAircraftController;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirTransportCompanyRepository;
-import pt.isep.sem4pi.infrastructure.persistence.RepositoryFactory;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftModelTempRepository;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class AddAircraftUI extends AbstractUI {
@@ -20,33 +17,48 @@ public class AddAircraftUI extends AbstractUI {
 
     private final Scanner scanner = new Scanner(System.in);
 
-    public boolean doShow() {
+    @Override
+    protected boolean doShow() {
         System.out.println("=== Add Aircraft to Fleet ===");
         try {
 
-            for (AirTransportCompany l : controller.getAirTransportCompanyList())
-                System.out.println(l.identityIata().toString());
+            System.out.println("\nAvailable companies:");
+            for (AirTransportCompany l : controller.getAirTransportCompanyList()) {
+                System.out.println(" - " + l.identityIata().toString());
+            }
 
+            System.out.print("\nCompany IATA (e.g., TP): ");
+            final String iata = scanner.nextLine().trim();
 
-            System.out.print("Company IATA (e.g., TP): ");
-            String iata = scanner.nextLine();
             System.out.print("Registration (e.g., CS-TPA): ");
-            String reg = scanner.nextLine();
-            System.out.print("Model ID (A320 or B737): ");
-            String model = scanner.nextLine();
-            System.out.print("Country: ");
-            String country = scanner.nextLine();
-            System.out.print("Economy Seats: ");
-            int eco = Integer.parseInt(scanner.nextLine());
-            System.out.print("Business Seats: ");
-            int bus = Integer.parseInt(scanner.nextLine());
-            System.out.print("First Class Seats: ");
-            int first = Integer.parseInt(scanner.nextLine());
+            final String reg = scanner.nextLine().trim();
 
-            controller.addAircraft(iata, reg, model, country, eco, bus, first);
+            System.out.print("Manufacturer code (e.g., AIRBUS, BOEING): ");
+            final String manufacturerCode = scanner.nextLine().trim().toUpperCase();
+
+            System.out.print("Model name (e.g., A320, B737): ");
+            final String modelName = scanner.nextLine().trim();
+
+            System.out.print("Country: ");
+            final String country = scanner.nextLine().trim();
+
+            System.out.print("Economy Seats: ");
+            final int eco = Integer.parseInt(scanner.nextLine().trim());
+
+            System.out.print("Business Seats: ");
+            final int bus = Integer.parseInt(scanner.nextLine().trim());
+
+            System.out.print("First Class Seats: ");
+            final int first = Integer.parseInt(scanner.nextLine().trim());
+
+            controller.addAircraft(iata, reg, manufacturerCode, modelName, country, eco, bus, first);
             System.out.println("\n[SUCCESS] Aircraft added to fleet!");
 
             return true;
+
+        } catch (NumberFormatException e) {
+            System.err.println("\n[ERROR] Invalid number for seats.");
+            return false;
         } catch (Exception e) {
             System.err.println("\n[ERROR] " + e.getMessage());
             return false;
