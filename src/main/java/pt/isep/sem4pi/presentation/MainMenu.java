@@ -61,10 +61,10 @@ public class MainMenu extends AbstractUI {
 
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
-    private static final int USERS_OPTION = 2;
-    private static final int BACKOFFICE_CONFIGURATION_OPTION = 3;
-    private static final int AIR_TRANSPORT_COMPANY_OPTIONS = 4;
-    private static final int ADMIN_OPTION = 5;
+    private static final int ADMIN_OPTION = 2;
+    private static final int USERS_OPTION = 3;
+    private static final int BACKOFFICE_CONFIGURATION_OPTION = 4;
+    private static final int AIR_TRANSPORT_COMPANY_OPTIONS = 5;
     private static final int AIRPORT_OPTIONS = 6;
     private static final int AIR_CONTROL_AREA_OPTIONS = 7;
     private static final int WEATHER_DATA_OPTIONS = 8;
@@ -110,34 +110,35 @@ public class MainMenu extends AbstractUI {
         mainMenu.addItem(MenuItem.separator(SEPARATOR_LABEL));
 
         if (authz.hasSession()) {
-            final boolean isBackoffice = authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
-            final boolean isAtcc = authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR, SEM4PIRoles.ADMIN);
 
-            if (isBackoffice) {
-                final var usersMenu = buildUsersMenu();
-                final var airTransportCompanyMenu = buildAirTransportCompanyMenu();
-                final var airportMenu = buildAirportMenu();
-                final var airControlAreaMenu = buildAirControlAreaMenu();
-                final var weatherDataMenu = buildWeatherDataMenu();
+            final boolean isBackoffice =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.BACKOFFICE_OPERATOR,
+                            SEM4PIRoles.ADMIN);
 
-                mainMenu.addSubMenu(USERS_OPTION, usersMenu);
-                final var backofficeConfigurationMenu = buildBackofficeConfigurationMenu();
-                mainMenu.addSubMenu(BACKOFFICE_CONFIGURATION_OPTION, backofficeConfigurationMenu);
-                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, airTransportCompanyMenu);
-                mainMenu.addSubMenu(AIRPORT_OPTIONS, airportMenu);
-                mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, airControlAreaMenu);
-                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, weatherDataMenu);
-            } else if (isAtcc) {
-                final var airTransportCompanyMenu = buildAirTransportCompanyMenu();
-                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, airTransportCompanyMenu);
+            final boolean isAdmin =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.ADMIN);
+
+            final boolean isAtcc =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR,
+                            SEM4PIRoles.ADMIN);
+
+            if (isAdmin) {
+                final var adminMenu = buildAdminMenu();
+                mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
             }
 
-            if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
-                final var adminMenu = new Menu("Admin >");
-                adminMenu.addItem(1, "Admin Task (TODO)", new ShowMessageAction("Admin task not implemented yet"));
-                adminMenu.addItem(2, "Register Backoffice User", new pt.isep.sem4pi.presentation.usermanagement.RegisterBackofficeUserUI()::show);
-                adminMenu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
-                mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
+            if (isBackoffice) {
+                mainMenu.addSubMenu(USERS_OPTION, buildUsersMenu());
+                mainMenu.addSubMenu(BACKOFFICE_CONFIGURATION_OPTION, buildBackofficeConfigurationMenu());
+                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
+                mainMenu.addSubMenu(AIRPORT_OPTIONS, buildAirportMenu());
+                mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, buildAirControlAreaMenu());
+                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu());
+            } else if (isAtcc) {
+                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
             }
         }
 
@@ -146,10 +147,20 @@ public class MainMenu extends AbstractUI {
         return mainMenu;
     }
 
+    private Menu buildAdminMenu() {
+        final var menu = new Menu("Admin >");
+
+        menu.addItem(1, "Register Backoffice User",
+                new pt.isep.sem4pi.presentation.usermanagement.RegisterBackofficeUserUI()::show);
+
+        menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
+
+        return menu;
+    }
+
     private Menu buildUsersMenu() {
         final var menu = new Menu("Users >");
 
-        menu.addItem(ADD_USER_OPTION, "Add User", new ShowMessageAction("Add User - TODO"));
         menu.addItem(LIST_USERS_OPTION, "List all Users", new ListBackofficeUsersUI()::show);
         menu.addItem(DEACTIVATE_USER_OPTION, "Manage User status", new ManageBackofficeUserStatusUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
@@ -169,9 +180,9 @@ public class MainMenu extends AbstractUI {
     {
         final var menu = new Menu("AirTransportCompany >");
 
-        menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Trasnport Company", new RegisterAirTransportCompanyUI()::show);
-        menu.addItem(REGISTER_ATCC_COLLABORATOR, "Register Air Transport Company's Customer Collaborator", new RegisterCompanyCollaboratorAction());
-        menu.addItem(LIST_ATCC_COLABORATORS, "List Air Transport Company's Customer's Collaborators", new ListCompanyCollaboratorsAction());
+        menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Transport Company", new RegisterAirTransportCompanyUI()::show);
+        menu.addItem(REGISTER_ATCC_COLLABORATOR, "Register Company Collaborator", new RegisterCompanyCollaboratorAction());
+        menu.addItem(LIST_ATCC_COLABORATORS, "List Company Collaborators", new ListCompanyCollaboratorsAction());
         menu.addItem(RETIRE_AIRCRAFT_OPTION, "Retire Aircraft", new RetireAircraftAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
