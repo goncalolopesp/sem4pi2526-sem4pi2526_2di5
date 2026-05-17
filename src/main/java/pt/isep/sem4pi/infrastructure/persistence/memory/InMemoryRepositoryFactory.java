@@ -2,6 +2,7 @@ package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
+import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
 import pt.isep.sem4pi.domain.usermanagement.Email;
 import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
@@ -31,6 +32,7 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private static AircraftModelRepository aircraftModelRepository;
     private static EngineModelRepository engineModelRepository;
     private static ManufacturerRepository manufacturerRepository;
+    private static AirControlAreaRepository airControlAreaRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -89,6 +91,20 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
         }
         return manufacturerRepository;
     }
+
+    @Override
+    public AirControlAreaRepository airControlAreas() {
+        if (airControlAreaRepository == null){
+            return new InMemoryAirControlAreaRepository();
+        }
+        return airControlAreaRepository;
+    }
+
+    @Override
+    public AirControlAreaRepository airControlAreas(TransactionalContext tx){
+        return airControlAreas();
+    }
+
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {
         // ADMIN
         final SystemUserBuilder adminBuilder = UserBuilderHelper.builder();

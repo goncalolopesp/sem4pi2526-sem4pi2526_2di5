@@ -1,8 +1,8 @@
 package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.model.shared.IataCode;
-import pt.isep.sem4pi.domain.model.shared.IcaoCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 
 import java.util.ArrayList;

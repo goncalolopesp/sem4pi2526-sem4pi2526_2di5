@@ -1,8 +1,6 @@
 package pt.isep.sem4pi.domain.model.airport;
 
 import jakarta.persistence.*;
-import pt.isep.sem4pi.domain.model.shared.IataCode;
-import pt.isep.sem4pi.domain.model.shared.IcaoCode;
 
 @Entity
 @Table(name = "Airport")
