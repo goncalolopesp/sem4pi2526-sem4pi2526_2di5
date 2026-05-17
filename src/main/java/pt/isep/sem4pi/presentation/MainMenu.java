@@ -20,6 +20,7 @@ import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
+import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
 
 /**
  * Menu principal da aplicacao SEM4PI.
@@ -48,6 +49,9 @@ public class MainMenu extends AbstractUI {
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
 
+    // Weather Data
+    private static final int REGISTER_WEATHER_DATA_OPTIONS = 1;
+
     //Air Control Area
     private static final int ADD_AIR_CONTROL_AREA_OPTIONS = 1;
 
@@ -59,6 +63,7 @@ public class MainMenu extends AbstractUI {
     private static final int ADMIN_OPTION = 5;
     private static final int AIRPORT_OPTIONS = 6;
     private static final int AIR_CONTROL_AREA_OPTIONS = 7;
+    private static final int WEATHER_DATA_OPTIONS = 8;
 
     private static final String SEPARATOR_LABEL = "--------------";
 
@@ -106,6 +111,7 @@ public class MainMenu extends AbstractUI {
                 final var airTransportCompanyMenu = buildAirTransportCompanyMenu();
                 final var airportMenu = buildAirportMenu();
                 final var airControlAreaMenu = buildAirControlAreaMenu();
+                final var weatherDataMenu = buildWeatherDataMenu();
 
                 mainMenu.addSubMenu(USERS_OPTION, usersMenu);
                 final var backofficeConfigurationMenu = buildBackofficeConfigurationMenu();
@@ -113,6 +119,7 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, airTransportCompanyMenu);
                 mainMenu.addSubMenu(AIRPORT_OPTIONS, airportMenu);
                 mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, airControlAreaMenu);
+                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, weatherDataMenu);
             }
 
             if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
@@ -177,4 +184,14 @@ public class MainMenu extends AbstractUI {
 
         return menu;
     }
+
+    private Menu buildWeatherDataMenu() {
+        final var menu = new Menu("Weather Data >");
+
+        menu.addItem(REGISTER_WEATHER_DATA_OPTIONS, "Register Weather Data", new RegisterWeatherUI()::show);
+        menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
+
+        return menu;
+    }
+
 }
