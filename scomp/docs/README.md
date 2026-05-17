@@ -321,10 +321,109 @@ com o histórico completo de posições por voo.
 
 Esta implementação foca a sincronização temporal da simulação da US103. A deteção de conflitos entre aeronaves e alterações automáticas de voo pertence à US102.
 
+---
+
+### US109 - Generate and store final simulation report
+
+## Objetivo
+
+Gerar automaticamente um relatório final completo da simulação após a execução de todos os voos.
+
+## Funcionalidades implementadas
+
+- geração automática do ficheiro `simulation_report.txt`;
+- armazenamento do histórico completo de posições por voo;
+- integração com o `PositionTracker`;
+- integração com o módulo de violações da US102;
+- registo do estado final de cada voo;
+- resumo global da simulação.
+
+## Informação presente no relatório
+
+O relatório final inclui:
+
+- configuração da simulação;
+- número total de voos;
+- histórico temporal de posições;
+- estado final dos voos;
+- resumo do Position Tracker;
+- violações de segurança detetadas.
+
+## Implementação
+
+A geração do relatório foi implementada na função:
+
+```c
+static void write_report(...)
+```
+
+localizada em `main.c`.
+
+O relatório é produzido automaticamente no final da execução da simulação e guardado no ficheiro:
+
+```text
+simulation_report.txt
 ```
 
 ---
 
+## Compilação e Execução
+
+### Compilar
+
+```bash
+make
+```
+
+## Executar
+
+```bash
+make run
+```
+
+Ou manualmente:
+
+```bash
+./flight_simulator --area 39 43 -9 -3 --start 0 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
+```
+
+Sem `--start` (usa `DepartureTime` do plano):
+
+```bash
+./flight_simulator --area 39 43 -9 -3 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
+```
+
+## Parâmetros
+
+```bash
+--area <minLat> <maxLat> <minLon> <maxLon>
+--start <segundos>
+--end <segundos>
+--step <segundos>
+--weather <clear|rain|storm|fog>
+--safety-min-sep <nm>
+--safety-min-alt <m>
+--perf-max-flights <n>
+--flight <ficheiro>
+```
+
+### Limpar
+
+```bash
+make clean
+```
+
+## Output
+
+A simulação gera:
+- atualizações no terminal durante a execução;
+- um ficheiro `simulation_report.txt` contendo:
+  - informação dos voos;
+  - número de updates recebidos;
+  - posições ao longo do tempo;
+  - estado final de cada voo;
+  - histórico completo do tracker;
+  - violações de segurança detetadas.
 ## Auto-avaliação da Contribuição do Grupo
 
 | Membro | Contribuição  |
