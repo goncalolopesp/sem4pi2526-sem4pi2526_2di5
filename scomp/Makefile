@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -Wpedantic -std=c11 -D_DEFAULT_SOURCE -g
 LDLIBS=-lm
-SRC=main.c flight_process.c flight_plan_parser.c position_tracker.c safety_monitor.c
+SRC=src/main.c src/flight_process.c src/flight_plan_parser.c src/position_tracker.c src/safety_monitor.c
 BIN=flight_simulator
 
 all: $(BIN)
