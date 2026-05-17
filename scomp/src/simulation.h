@@ -82,7 +82,8 @@ typedef struct {
 typedef struct {
     char flight_id[FLIGHT_ID_SIZE];
     pid_t pid;
-    int pipe_fd;
+    int pipe_fd;        // pipe filho -> pai: usado para receber PositionUpdate
+    int sync_fd;        // pipe pai -> filho: usado para autorizar o próximo step
     int active;
     HistoryEntry *history;
     size_t history_count;
@@ -110,7 +111,7 @@ int parse_args(int argc, char **argv, SimulationConfig *config);
 int validate_config(const SimulationConfig *config);
 int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_size);
 int parse_departure_time_seconds(const char *path, int *out_seconds, char *err, size_t err_size);
-void run_flight_process(const char *flight_file, int write_fd, const SimulationConfig *config);
+void run_flight_process(const char *flight_file, int update_write_fd, int sync_read_fd, const SimulationConfig *config);
 int append_history(FlightRuntime *runtime, const PositionUpdate *update);
 int position_inside_area(Position p, const SimulationConfig *config);
 void print_usage(const char *program);

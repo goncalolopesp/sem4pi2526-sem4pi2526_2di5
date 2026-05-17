@@ -1,5 +1,7 @@
 package pt.isep.sem4pi.infrastructure.bootstrap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
 import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
 import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
@@ -11,7 +13,14 @@ import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
+import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.CustomerCollaboratorBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
+import pt.isep.sem4pi.domain.aircontrolarea.AirControlArea;
+import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary;
+import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
+import eapli.framework.domain.repositories.ConcurrencyException;
+import eapli.framework.domain.repositories.IntegrityViolationException;
 
 import java.math.BigDecimal;
 
@@ -19,13 +28,18 @@ import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.FuelType;
 
 public class BackofficeConfigurationBootstrapper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BackofficeConfigurationBootstrapper.class);
+
     private final ManufacturerRepository manufacturerRepository = PersistenceContext.repositories().manufacturers();
     private final EngineModelRepository engineModelRepository = PersistenceContext.repositories().engineModels();
     private final AircraftModelRepository aircraftModelRepository = PersistenceContext.repositories().aircraftModels();
+    private final AirControlAreaRepository airControlAreaRepository = PersistenceContext.repositories().airControlAreas();
     private final EngineModelRegistrationService engineModelRegistrationService =
             new EngineModelRegistrationService(engineModelRepository, manufacturerRepository);
 
     public boolean execute() {
+        // Inicializar Manufacturers e Engine Models
         registerManufacturer("CFM", "CFM International", "France");
         registerManufacturer("RR", "Rolls-Royce", "United Kingdom");
         registerManufacturer("GE", "General Electric", "United States");
@@ -43,6 +57,14 @@ public class BackofficeConfigurationBootstrapper {
                 new BigDecimal("24000.00"), new BigDecimal("39000.00"), new BigDecimal("828.00"),
                 new BigDecimal("122.60"), new BigDecimal("0.0320"), new BigDecimal("1.5200"),
                 new BigDecimal("6150.00"), new BigDecimal("9.45"), "CFM56-5B");
+
+        // Inicializar Air Control Areas (Critério de Aceitação 3)
+        registerAirControlArea("LIS_FIR", 36.0, 42.0, -10.0, -6.0, "Lisbon FIR", 1000.0);
+        registerAirControlArea("MAD_FIR", 35.0, 43.0, -5.0, 0.0, "Madrid FIR", 1200.0);
+
+        //Executar o Bootstrap dos Customer Collaborators
+        CustomerCollaboratorBootstrapper ccb = new CustomerCollaboratorBootstrapper();
+        ccb.execute();
 
         return true;
     }
@@ -103,5 +125,26 @@ public class BackofficeConfigurationBootstrapper {
         }
 
         aircraftModelRepository.save(aircraftModel);
+    }
+
+    private void registerAirControlArea(String code, double minLat, double maxLat, double minLon, double maxLon, String name, double minFuel) {
+        try {
+            AirControlAreaID id = new AirControlAreaID(code);
+            if (airControlAreaRepository.containsOfIdentity(id)) {
+                LOGGER.info("Air Control Area '{}' already exists in the system.", code);
+                return;
+            }
+
+            AirControlAreaBoundary boundaries = new AirControlAreaBoundary(minLat, maxLat, minLon, maxLon);
+            AirControlArea newArea = new AirControlArea(code, boundaries, name, minFuel);
+
+            airControlAreaRepository.save(newArea);
+            LOGGER.info("Air Control Area '{}' was successfully registered.", code);
+
+        } catch (final ConcurrencyException | IntegrityViolationException e) {
+            LOGGER.warn("Integrity violation registering '{}'", code);
+        } catch (final Exception e) {
+            LOGGER.error("Unexpected error registering Air Control Area '{}': {}", code, e.getMessage());
+        }
     }
 }

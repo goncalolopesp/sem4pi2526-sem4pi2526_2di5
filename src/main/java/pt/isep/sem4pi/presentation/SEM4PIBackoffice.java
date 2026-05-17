@@ -27,7 +27,7 @@ public final class SEM4PIBackoffice extends BaseApp {
         );
 
 //        Minimal Bootstrap
-//        new MasterUsersBootstrapper().execute();
+        new MasterUsersBootstrapper().execute();
         new BackofficeConfigurationBootstrapper().execute();
 
         new SEM4PIBackoffice().run(args);

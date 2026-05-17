@@ -2,11 +2,10 @@ package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
+import pt.isep.sem4pi.domain.repositories.*;
 import pt.isep.sem4pi.domain.usermanagement.Email;
 import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
-import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
-import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
-import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 import pt.isep.sem4pi.domain.usermanagement.BackofficeUser;
@@ -31,6 +30,7 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private static AircraftModelRepository aircraftModelRepository;
     private static EngineModelRepository engineModelRepository;
     private static ManufacturerRepository manufacturerRepository;
+    private static AirControlAreaRepository airControlAreaRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -88,6 +88,29 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
             manufacturerRepository = new InMemoryManufacturerRepository();
         }
         return manufacturerRepository;
+    }
+
+    @Override
+    public AirControlAreaRepository airControlAreas() {
+        if (airControlAreaRepository == null){
+            return new InMemoryAirControlAreaRepository();
+        }
+        return airControlAreaRepository;
+    }
+
+    @Override
+    public AirControlAreaRepository airControlAreas(TransactionalContext tx){
+        return airControlAreas();
+    }
+
+    @Override
+    public AirTransportCompanyRepository airTransportCompanies() {
+        return new InMemoryAirTransportCompanyRepository();
+    }
+
+    @Override
+    public AirTransportCompanyCollaboratorRepository airTransportCompanyCollaborators() {
+        return new InMemoryAirTransportCompanyCollaboratorRepository();
     }
 
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {
