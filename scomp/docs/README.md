@@ -217,6 +217,10 @@ This implementation does not handle conflict detection between aircraft, as this
 
 ---
 
+### US102
+
+---
+
 ### US103 - Synchronized flight simulation
 
 ## Objetivo
@@ -321,16 +325,18 @@ com o histórico completo de posições por voo.
 
 Esta implementação foca a sincronização temporal da simulação da US103. A deteção de conflitos entre aeronaves e alterações automáticas de voo pertence à US102.
 
-```
+---
+
+### US109
 
 ---
 
 ## Auto-avaliação da Contribuição do Grupo
 
 | Membro | Contribuição  |
-|---|---:|
-| Mariana Gabriel | 33.3% |
-| Guilherme Tavares | 33.3% |
-| Pedro Soares | 0% |
-| Gonçalo Pinto | 33.3% |
-| João Sousa | 0% |
+|---|---|
+| Mariana Gabriel | 20% |
+| Guilherme Tavares | 20% |
+| Pedro Soares | 20% |
+| Gonçalo Pinto | 20% |
+| João Sousa | 20% |

@@ -1,0 +1,48 @@
+@startuml US050_SD
+title US050 - Register an Air Control Area - Sequence Diagram
+
+actor "Backoffice Operator" as Operator
+
+participant "RegisterAirControlAreaUI" as UI
+participant "RegisterAirControlAreaController" as Controller
+participant "AuthorizationService\n(EAPLI Authz)" as AuthzService
+participant "AirControlAreaRepository" as Repository
+participant "AirControlAreaID" as ACID
+participant "AirControlAreaBoundary" as Boundary
+participant "AirControlArea" as Area
+
+Operator -> UI : request to register a new Air Control Area
+UI --> Operator : ask for area data
+
+Operator -> UI : provide code, name, minLat, maxLat, minLon, maxLon, minFuel
+UI -> Controller : registerAirControlArea(code, minLat, maxLat, minLon, maxLon, name, minFuel)
+
+Controller -> AuthzService : ensureAuthenticatedUserHasAnyOf(BACKOFFICE_OPERATOR, ADMIN)
+AuthzService --> Controller : authorized
+
+Controller -> ACID ** : new AirControlAreaID(code)
+Controller -> Repository : containsOfIdentity(id)
+Repository --> Controller : false
+
+alt area code already exists
+    Repository --> Controller : true
+    Controller --> UI : throw IllegalArgumentException (duplicate code)
+    UI --> Operator : show error message
+else
+    Controller -> Boundary ** : new AirControlAreaBoundary(minLat, maxLat, minLon, maxLon)
+
+    alt invalid boundary values
+        Boundary --> Controller : throw IllegalArgumentException
+        Controller --> UI : propagate error
+        UI --> Operator : show error message
+    else
+        Controller -> Area ** : new AirControlArea(code, boundaries, name, minFuel)
+        Controller -> Repository : save(newArea)
+        Repository --> Controller : savedArea
+
+        Controller --> UI : savedArea
+        UI --> Operator : show success message with area details
+    end
+end
+
+@enduml
