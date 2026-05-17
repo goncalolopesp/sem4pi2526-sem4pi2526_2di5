@@ -42,7 +42,7 @@ static int send_update(int fd, const FlightPlan *plan, int t, Position p, int st
 }
 
 /* Envia um PositionUpdate pelo pipe. Uso formato fixo para simplificar leitura pelo processo pai. */
-void run_flight_process(const char *flight_file, int write_fd, const SimulationConfig *config) {
+void run_flight_process(const char *flight_file, int update_write_fd, int sync_read_fd, const SimulationConfig *config) {
     struct sigaction start_action;
     struct sigaction term_action;
     memset(&start_action, 0, sizeof(start_action));
@@ -57,6 +57,14 @@ void run_flight_process(const char *flight_file, int write_fd, const SimulationC
     sigaction(SIGTERM, &term_action, NULL);
     sigaction(SIGINT, &term_action, NULL);
 
+    // US103: sinal de avanco de passo
+//     struct sigaction next_action;
+//     memset(&next_action, 0, sizeof(next_action));
+//     next_action.sa_handler = handle_next_step;
+//     sigemptyset(&next_action.sa_mask);
+//     next_action.sa_flags = SA_RESTART;
+//     sigaction(SIGUSR2, &next_action, NULL);
+
     sigset_t startup_mask;
     sigemptyset(&startup_mask);
     sigaddset(&startup_mask, SIGUSR1);
@@ -66,13 +74,14 @@ void run_flight_process(const char *flight_file, int write_fd, const SimulationC
     char err[256];
     if (parse_flight_plan(flight_file, &plan, err, sizeof(err)) != 0) {
         dprintf(STDERR_FILENO, "Flight process error: %s\n", err);
-        close(write_fd);
+        close(update_write_fd);
         _exit(EXIT_FAILURE);
     }
 
     while (!start_requested && !terminate_requested) pause();
     if (terminate_requested) {
-        close(write_fd);
+        close(update_write_fd);
+        close(sync_read_fd);
         _exit(EXIT_SUCCESS);
     }
 
@@ -88,15 +97,26 @@ void run_flight_process(const char *flight_file, int write_fd, const SimulationC
         for (int s = 0; s < steps_per_segment && current_time <= config->end_time && !terminate_requested; ++s) {
             double ratio = steps_per_segment == 1 ? 1.0 : (double)s / (double)(steps_per_segment - 1);
             Position p = interpolate(seg->start, seg->end, ratio);
-            send_update(write_fd, &plan, current_time, p, STATUS_RUNNING);
+
+            send_update(update_write_fd, &plan, current_time, p, STATUS_RUNNING);
+
+            char command;
+            ssize_t n = read(sync_read_fd, &command, sizeof(command));
+
+            if (n <= 0 || command != 'N') {
+                terminate_requested = 1;
+                break;
+            }
+
             current_time += config->step_seconds;
-            usleep(50000);
+//            usleep(50000);
         }
     }
 
     Position final_position = plan.segments[plan.segment_count - 1].end;
-    send_update(write_fd, &plan, current_time, final_position,
+    send_update(update_write_fd, &plan, current_time, final_position,
                 terminate_requested ? STATUS_ABORTED : STATUS_FINISHED);
-    close(write_fd);
+    close(update_write_fd);
+    close(sync_read_fd);
     _exit(EXIT_SUCCESS);
 }
