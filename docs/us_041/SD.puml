@@ -1,0 +1,46 @@
+@startuml
+autonumber
+actor "Weather Person" as Actor
+participant "RegisterWeatherUI" as UI
+participant "RegisterWeatherController" as Controller
+participant "RegisterWeatherService" as Service
+participant "WeatherData" as Entity
+participant "WeatherImportBatch" as Aggregate
+participant "WeatherBatchRepository" as Repo
+
+Actor -> UI : Inputs manual weather metrics
+activate UI
+
+UI -> Controller : registerWeather(areaId, temp, windSpeed, ...)
+activate Controller
+
+Controller -> Service : registerManualData(...)
+activate Service
+
+note right of Service: Value Objects (Temperature, Wind, etc.)\nare instantiated and validated here.
+
+Service -> Entity ** : create(date, time, temp, wind, press, hum, alt)
+activate Entity
+Entity --> Service : weatherData
+deactivate Entity
+
+Service -> Aggregate ** : create(areaId, weatherData)
+activate Aggregate
+note right of Aggregate: Sets status to COMPLETED\nand importedRecords to 1.
+Aggregate --> Service : batch
+deactivate Aggregate
+
+Service -> Repo : save(batch)
+activate Repo
+Repo --> Service : savedBatch
+deactivate Repo
+
+Service --> Controller : savedBatch
+deactivate Service
+
+Controller --> UI : savedBatch
+deactivate Controller
+
+UI --> Actor : Displays Success Message
+deactivate UI
+@enduml
