@@ -242,6 +242,21 @@ static void write_report(const FlightRuntime *runtimes, int count,
         }
     }
     fprintf(report, "==========================================\n");
+
+    int failed = 0;
+
+    for (int i = 0; i < tracker->entry_count; ++i) {
+        if (tracker->entries[i].status == STATUS_ABORTED) {
+            failed = 1;
+            break;
+        }
+    }
+
+    fprintf(report, "\n=== FINAL VALIDATION RESULT ===\n");
+    fprintf(report, "Simulation result: %s\n",
+            failed ? "FAIL" : "PASS");
+    fprintf(report, "================================\n");
+
     fclose(report);
 }
 
