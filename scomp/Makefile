@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -Wpedantic -std=c11 -D_DEFAULT_SOURCE -g
-SRC=src/main.c src/flight_process.c src/flight_plan_parser.c
+SRC=src/main.c src/flight_process.c src/flight_plan_parser.c src/position_tracker.c
 BIN=us100_simulator
 
 all: $(BIN)

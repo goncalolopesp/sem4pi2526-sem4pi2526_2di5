@@ -189,21 +189,59 @@ static void free_runtimes(FlightRuntime *runtimes, int count) {
     for (int i = 0; i < count; ++i) free(runtimes[i].history);
 }
 
-static void write_report(const FlightRuntime *runtimes, int count, const SimulationConfig *config) {
+static void write_report(const FlightRuntime *runtimes, int count,
+                         const SimulationConfig *config,
+                         const PositionTracker *tracker) {
     FILE *report = fopen("simulation_report.txt", "w");
     if (!report) return;
-    fprintf(report, "US100 Simulation Report\n");
-    fprintf(report, "Area: lat [%.6f, %.6f], lon [%.6f, %.6f]\n", config->min_lat, config->max_lat, config->min_lon, config->max_lon);
-    fprintf(report, "Time range: %d to %d, step: %d seconds\n", config->start_time, config->end_time, config->step_seconds);
+
+    fprintf(report, "US100/US101 Simulation Report\n");
+    fprintf(report, "Area: lat [%.6f, %.6f], lon [%.6f, %.6f]\n",
+            config->min_lat, config->max_lat, config->min_lon, config->max_lon);
+    fprintf(report, "Time range: %d to %d, step: %d seconds\n",
+            config->start_time, config->end_time, config->step_seconds);
     fprintf(report, "Total flights: %d\n\n", count);
+
+    /* Secção 1: histórico por runtime (US100). */
     for (int i = 0; i < count; ++i) {
-        fprintf(report, "Flight %s, PID %d, updates %zu\n", runtimes[i].flight_id, runtimes[i].pid, runtimes[i].history_count);
+        fprintf(report, "Flight %s, PID %d, updates %zu\n",
+                runtimes[i].flight_id, runtimes[i].pid, runtimes[i].history_count);
         for (size_t j = 0; j < runtimes[i].history_count; ++j) {
             const HistoryEntry *h = &runtimes[i].history[j];
-            fprintf(report, "  t=%d lat=%.6f lon=%.6f alt=%.2f status=%d\n", h->time_step, h->position.latitude, h->position.longitude, h->position.altitude_m, h->status);
+            fprintf(report, "  t=%d lat=%.6f lon=%.6f alt=%.2f status=%d\n",
+                    h->time_step, h->position.latitude, h->position.longitude,
+                    h->position.altitude_m, h->status);
         }
         fprintf(report, "\n");
     }
+
+    /* Secção 2: resumo do Position Tracker (US101). */
+    fprintf(report, "=== US101 Position Tracker (%d entries) ===\n", tracker->entry_count);
+    for (int i = 0; i < tracker->entry_count; ++i) {
+        const TrackEntry *e = &tracker->entries[i];
+        const char *st = e->status == STATUS_RUNNING  ? "RUNNING"  :
+                         e->status == STATUS_FINISHED ? "FINISHED" :
+                         e->status == STATUS_ABORTED  ? "ABORTED"  : "UNKNOWN";
+        fprintf(report,
+                "  [%s] pid=%d final_pos=(%.6f, %.6f, %.1fm) status=%s history=%zu pts\n",
+                e->flight_id, e->pid,
+                e->current_position.latitude,
+                e->current_position.longitude,
+                e->current_position.altitude_m,
+                st, e->history_count);
+
+        /* Lista completa do histórico para cada voo (útil para US102). */
+        for (size_t j = 0; j < e->history_count; ++j) {
+            const TrackPoint *tp = &e->history[j];
+            fprintf(report, "    t=%d lat=%.6f lon=%.6f alt=%.2f status=%d\n",
+                    tp->time_step,
+                    tp->position.latitude,
+                    tp->position.longitude,
+                    tp->position.altitude_m,
+                    tp->status);
+        }
+    }
+    fprintf(report, "==========================================\n");
     fclose(report);
 }
 
@@ -222,6 +260,9 @@ int main(int argc, char **argv) {
     interrupt_action.sa_flags = SA_RESTART;
     sigaction(SIGINT, &interrupt_action, NULL);
     sigaction(SIGTERM, &interrupt_action, NULL);
+
+    PositionTracker tracker;
+    tracker_init(&tracker);
 
     FlightRuntime runtimes[MAX_FLIGHTS];
     memset(runtimes, 0, sizeof(runtimes));
@@ -291,6 +332,7 @@ int main(int argc, char **argv) {
                         snprintf(runtimes[i].flight_id, sizeof(runtimes[i].flight_id), "%s", update.flight_id);
                     }
                     append_history(&runtimes[i], &update);
+                    tracker_update(&tracker, &update);
                     const char *scope = position_inside_area(update.position, &config) ? "inside" : "outside";
                     printf("[%s] t=%d pid=%d lat=%.6f lon=%.6f alt=%.1f status=%d (%s area)\n",
                            update.flight_id, update.time_step, update.pid,
@@ -324,7 +366,10 @@ int main(int argc, char **argv) {
         waitpid(runtimes[i].pid, &status, 0);
     }
 
-    write_report(runtimes, config.flight_count, &config);
+    // write_report(runtimes, config.flight_count, &config);
+    tracker_print_summary(&tracker);
+    write_report(runtimes, config.flight_count, &config, &tracker);
+    tracker_destroy(&tracker);
     free_runtimes(runtimes, config.flight_count);
     printf("Simulation finished. Report saved in simulation_report.txt\n");
     return EXIT_SUCCESS;
