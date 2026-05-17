@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
@@ -59,5 +60,16 @@ public class JpaAirTransportCompanyRepository implements AirTransportCompanyRepo
         Iterable<AirTransportCompany> results = query.getResultList();
         em.close();
         return results;
+    }
+
+    @Override
+    public boolean existsByAircraftRegistration(AircraftRegistration registration) {
+        EntityManager em = emf.createEntityManager();
+        Long count = em.createQuery(
+                        "SELECT COUNT(a) FROM AirTransportCompany c JOIN c.fleet a WHERE a.registration = :reg", Long.class)
+                .setParameter("reg", registration)
+                .getSingleResult();
+        em.close();
+        return count > 0;
     }
 }

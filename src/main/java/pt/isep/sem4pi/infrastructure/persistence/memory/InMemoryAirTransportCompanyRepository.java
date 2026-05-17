@@ -1,5 +1,6 @@
 package pt.isep.sem4pi.infrastructure.persistence.memory;
 
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
@@ -36,5 +37,12 @@ public class InMemoryAirTransportCompanyRepository implements AirTransportCompan
     @Override
     public Iterable<AirTransportCompany> findAll() {
         return database;
+    }
+
+    @Override
+    public boolean existsByAircraftRegistration(AircraftRegistration registration) {
+        return database.stream()
+                .flatMap(c -> c.getFleet().stream())
+                .anyMatch(a -> a.getRegistration().equals(registration));
     }
 }
