@@ -9,6 +9,15 @@ import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
+import pt.isep.sem4pi.domain.repositories.AircraftRepository;
+import pt.isep.sem4pi.domain.repositories.FlightRepository;
+import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.flight.Flight;
+import pt.isep.sem4pi.domain.model.flight.FlightId;
+import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
+import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
+import pt.isep.sem4pi.domain.model.aircraftModel.AircraftType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.CustomerCollaboratorBootstrapper;
@@ -33,6 +42,8 @@ public class BackofficeConfigurationBootstrapper {
     private final EngineModelRepository engineModelRepository = PersistenceContext.repositories().engineModels();
     private final AircraftModelRepository aircraftModelRepository = PersistenceContext.repositories().aircraftModels();
     private final AirControlAreaRepository airControlAreaRepository = PersistenceContext.repositories().airControlAreas();
+    private final AircraftRepository aircraftRepository = PersistenceContext.repositories().aircrafts();
+    private final FlightRepository flightRepository = PersistenceContext.repositories().flights();
     private final EngineModelRegistrationService engineModelRegistrationService =
             new EngineModelRegistrationService(engineModelRepository, manufacturerRepository);
 
@@ -68,6 +79,14 @@ public class BackofficeConfigurationBootstrapper {
                 new BigDecimal("9.45"),                  // aspectRatio
                 "CFM56-5B"                               // engineModelCode
         );
+
+        registerAircraft("CS-TST", "A320");
+        registerAircraft("CS-RET", "A320");
+        registerFlight("TP100", "CS-TST");
+
+        registerAircraft("CS-TST", "A320");
+        registerAircraft("CS-RET", "A320");
+        registerFlight("TP100", "CS-TST");
 
         // Inicializar Air Control Areas (Critério de Aceitação 3)
         registerAirControlArea("LIS_FIR", 36.0, 42.0, -10.0, -6.0, "Lisbon FIR", 1000.0);
@@ -154,6 +173,42 @@ public class BackofficeConfigurationBootstrapper {
 
         aircraftModelRepository.save(aircraftModel);
         LOGGER.info("Aircraft Model '{}' was successfully registered.", aircraftModelId);
+    }
+
+    private void registerAircraft(final String registrationCode, final String aircraftModelCode) {
+        final AircraftRegistration registration = new AircraftRegistration(registrationCode);
+        if (aircraftRepository.containsOfIdentity(registration)) {
+            return;
+        }
+        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(aircraftModelCode));
+        aircraftRepository.save(aircraft);
+    }
+
+    private void registerFlight(final String flightCode, final String registrationCode) {
+        final FlightId flightId = new FlightId(flightCode);
+        if (flightRepository.containsOfIdentity(flightId)) {
+            return;
+        }
+        final Flight flight = new Flight(flightId, new AircraftRegistration(registrationCode));
+        flightRepository.save(flight);
+    }
+
+    private void registerAircraft(final String registrationCode, final String aircraftModelCode) {
+        final AircraftRegistration registration = new AircraftRegistration(registrationCode);
+        if (aircraftRepository.containsOfIdentity(registration)) {
+            return;
+        }
+        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(aircraftModelCode));
+        aircraftRepository.save(aircraft);
+    }
+
+    private void registerFlight(final String flightCode, final String registrationCode) {
+        final FlightId flightId = new FlightId(flightCode);
+        if (flightRepository.containsOfIdentity(flightId)) {
+            return;
+        }
+        final Flight flight = new Flight(flightId, new AircraftRegistration(registrationCode));
+        flightRepository.save(flight);
     }
 
     private void registerAirControlArea(String code, double minLat, double maxLat, double minLon, double maxLon, String name, double minFuel) {

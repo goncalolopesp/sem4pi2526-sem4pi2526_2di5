@@ -71,4 +71,14 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     public AirTransportCompanyCollaboratorRepository airTransportCompanyCollaborators() {
         return new JpaAirTransportCompanyCollaboratorRepository(PERSISTENCE_UNIT_NAME);
     }
+
+    @Override
+    public AircraftRepository aircrafts() {
+        return new JpaAircraftRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public FlightRepository flights() {
+        return new JpaFlightRepository(PERSISTENCE_UNIT_NAME);
+    }
 }
