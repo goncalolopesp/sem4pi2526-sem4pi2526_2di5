@@ -28,7 +28,7 @@ public class IataCodeTest {
             new IataCode("TP");
             fail("Expected an IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
-            assertEquals("Airport IATA code must be exactly 3 letters.", e.getMessage());
+            assertEquals("IATA code must be exactly 3 letters.", e.getMessage());
         }
     }
 
@@ -38,7 +38,7 @@ public class IataCodeTest {
             new IataCode("OPOX");
             fail("Expected an IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
-            assertEquals("Airport IATA code must be exactly 3 letters.", e.getMessage());
+            assertEquals("IATA code must be exactly 3 letters.", e.getMessage());
         }
     }
 

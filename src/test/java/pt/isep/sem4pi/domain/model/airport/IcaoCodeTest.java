@@ -28,7 +28,7 @@ public class IcaoCodeTest {
             new IcaoCode("LPP");
             fail("Expected an IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
-            assertEquals("Airport ICAO code must be exactly 4 letters.", e.getMessage());
+            assertEquals("ICAO code must be 4 letters.", e.getMessage());
         }
     }
 
@@ -38,7 +38,7 @@ public class IcaoCodeTest {
             new IcaoCode("LPPRX");
             fail("Expected an IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
-            assertEquals("Airport ICAO code must be exactly 4 letters.", e.getMessage());
+            assertEquals("ICAO code must be 4 letters.", e.getMessage());
         }
     }
 
