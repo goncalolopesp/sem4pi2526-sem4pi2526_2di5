@@ -1,0 +1,120 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title US056 - Register Engine Model (SD)
+
+autonumber
+
+actor "Backoffice Operator" as Actor
+
+participant ":RegisterEngineModelUI" as UI
+participant ":RegisterEngineModelController" as Controller
+participant ":EngineModelRegistrationService" as Service
+
+participant "repositories:\nPersistenceContext" as PersistenceContext
+participant "engineModelRepository:\nEngineModelRepository" as EngineRepo
+participant "manufacturerRepository:\nManufacturerRepository" as ManufacturerRepo
+participant "engineModelRepositoryJpa:\nEngineModelRepositoryJPA" as EngineRepoJpa
+
+participant "engineModel:\nEngineModel" as EngineModel
+
+note right of EngineRepo
+Repository interfaces are defined
+in the Domain layer.
+
+Concrete implementations may be
+JPA or In-Memory, selected by
+Infrastructure configuration.
+end note
+
+note right of EngineRepoJpa
+JPA implementation selected by
+PersistenceContext configuration.
+end note
+
+Actor -> UI : requests register engine model
+activate UI
+
+UI -> Controller ++ : create()
+Controller --> UI : controller
+
+UI -> Controller : listManufacturers()
+activate Controller
+
+Controller -> PersistenceContext : repositories()
+activate PersistenceContext
+PersistenceContext --> Controller : repositories
+
+Controller -> PersistenceContext : manufacturers()
+PersistenceContext --> Controller : ManufacturerRepo
+
+Controller -> ManufacturerRepo : findAll()
+activate ManufacturerRepo
+ManufacturerRepo --> Controller : manufacturers
+
+Controller --> UI : manufacturers
+deactivate ManufacturerRepo
+
+UI --> Actor : shows manufacturers
+
+deactivate Controller
+
+Actor -> UI : provides engine model data
+
+UI -> Controller : registerEngineModel(data)
+activate Controller
+
+Controller -> Service : register(data)
+activate Service
+
+Service -> PersistenceContext : repositories()
+activate PersistenceContext
+PersistenceContext --> Service : repositories
+
+Service -> PersistenceContext : manufacturers()
+PersistenceContext --> Service : ManufacturerRepo
+
+Service -> ManufacturerRepo : ofIdentity(manufacturerId)
+activate ManufacturerRepo
+ManufacturerRepo --> Service : manufacturer
+
+Service -> PersistenceContext : engineModels()
+PersistenceContext --> Service : EngineRepo
+
+Service -> EngineRepo : containsOfIdentity(engineModelId)
+activate EngineRepo
+EngineRepo --> Service : existsById
+
+Service -> EngineRepo : existsWithManufacturerAndName(manufacturerId, name)
+EngineRepo --> Service : existsByComposite
+
+Service -> EngineModel ++ : new(engineModelId, manufacturer, name, type, power, fuelType, efficiency)
+EngineModel --> Service : engineModel
+
+Service -> EngineRepo : save(engineModel)
+EngineRepo --> Service : savedEngineModel
+
+EngineRepo -> EngineRepoJpa : save(engineModel)
+EngineRepoJpa --> EngineRepo : savedEngineModel
+
+deactivate EngineRepo
+
+deactivate ManufacturerRepo
+
+Service --> Controller : savedEngineModel
+
+deactivate PersistenceContext
+
+deactivate Service
+
+Controller --> UI : savedEngineModel
+
+deactivate Controller
+
+UI --> Actor : displays success
+
+deactivate UI
+
+@enduml
