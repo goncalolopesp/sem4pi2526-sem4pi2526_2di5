@@ -19,6 +19,7 @@ import pt.isep.sem4pi.presentation.airtransportcompany.RegisterCompanyCollaborat
 import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
+import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
 
@@ -40,6 +41,7 @@ public class MainMenu extends AbstractUI {
 
     // BACKOFFICE CONFIGURATION
     private static final int REGISTER_ENGINE_MODEL_OPTION = 1;
+    private static final int CERTIFY_ENGINE_MODEL_OPTION = 2;
 
     // AirTransportCompany
     private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 1;
@@ -150,6 +152,7 @@ public class MainMenu extends AbstractUI {
     private Menu buildBackofficeConfigurationMenu() {
         final var menu = new Menu("Backoffice Configuration >");
         menu.addItem(REGISTER_ENGINE_MODEL_OPTION, "Register Engine Model", new RegisterEngineModelAction());
+        menu.addItem(CERTIFY_ENGINE_MODEL_OPTION, "Certify Engine Model", new CertifyEngineModelAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
     }
