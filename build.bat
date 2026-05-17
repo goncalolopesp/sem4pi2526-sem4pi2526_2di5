@@ -1,13 +1,10 @@
 @echo off
 
-if exist out rmdir /s /q out
-mkdir out
+if exist target rmdir /s /q target
+mkdir target\classes
 
-set a=
 for /r src\main\java %%f in (*.java) do (
-    set a=%a% "%%f"
+    javac -d target\classes "%%f"
 )
-
-javac %a%
 
 echo Success compiling the code

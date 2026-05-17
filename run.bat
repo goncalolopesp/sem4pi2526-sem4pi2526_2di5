@@ -4,4 +4,4 @@ call .\build.bat
 
 echo Finished compiling, trying to run
 
-java -cp target/classes Main
+java -cp target/classes pt.isep.sem4pi.Main
