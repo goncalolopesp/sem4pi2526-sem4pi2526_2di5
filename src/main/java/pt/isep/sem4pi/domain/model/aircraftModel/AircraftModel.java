@@ -3,6 +3,7 @@ package pt.isep.sem4pi.domain.model.aircraftModel;
 import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.validations.Preconditions;
 import jakarta.persistence.*;
+import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.CertifiedEngine;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
@@ -59,7 +60,7 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
     public AircraftModel(AircraftModelId id, AircraftType aircraftType, MotorizationType motorization,
                          Weight weightLimits, Coefficient aerodynamics,
                          AircraftPerformance performance, Fuel fuel,
-                         WingGeometry wingGeometry, List<EngineModelId> engineModelIds) {
+                         WingGeometry wingGeometry, List<EngineModel> engineModel) {
 
         // EAPLI Preconditions
         Preconditions.nonNull(id, "AircraftModelId cannot be null.");
@@ -70,7 +71,7 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
         Preconditions.nonNull(performance, "AircraftPerformance cannot be null.");
         Preconditions.nonNull(weightLimits, "Weight limits cannot be null.");
         Preconditions.nonNull(aerodynamics, "Aerodynamics cannot be null.");
-        Preconditions.ensure(engineModelIds != null && !engineModelIds.isEmpty(), "Should give at least one Engine Model ID.");
+        Preconditions.ensure(engineModel != null && !engineModel.isEmpty(), "Should give at least one Engine Model.");
 
         this.id = id;
         this.aircraftType = aircraftType;
@@ -81,20 +82,21 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
         this.weightLimits = weightLimits;
         this.aerodynamics = aerodynamics;
 
-        for (EngineModelId engine : engineModelIds) {
+        for (EngineModel engine : engineModel) {
             this.certifyEngine(engine);
         }
     }
 
-    public void certifyEngine(EngineModelId engineId) {
-        Preconditions.nonNull(engineId, "Engine ID cannot be null.");
+    public void certifyEngine(EngineModel engine) {
+        Preconditions.nonNull(engine, "Engine cannot be null.");
 
         boolean alreadyCertified = this.certifiedEngines.stream()
-                .anyMatch(ce -> ce.engineModelId().equals(engineId));
+                .anyMatch(ce -> ce.engineModel().identity().equals(engine.identity()));
 
-        Preconditions.ensure(!alreadyCertified, "This engine is already certified for this model.");
+        Preconditions.ensure(!alreadyCertified,
+                "This engine is already certified for this model.");
 
-        this.certifiedEngines.add(new CertifiedEngine(engineId));
+        this.certifiedEngines.add(new CertifiedEngine(engine));
     }
 
     @Override

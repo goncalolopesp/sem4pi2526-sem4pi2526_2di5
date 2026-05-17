@@ -7,7 +7,6 @@ import pt.isep.sem4pi.application.AddAircraftModelController;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.aircraftModel.MotorizationType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
-import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -86,26 +85,33 @@ public class AddAircraftModelUI extends AbstractUI {
         BigDecimal aspectRatio = readBigDecimal("Aspect Ratio: ");
 
         /// 4. Choose Engines
-        List<EngineModelId> selectedEngines = new ArrayList<>();
+        /// 4. Choose Engines
+        List<EngineModel> selectedEngines = new ArrayList<>();
         Iterable<EngineModel> availableEngines = controller.getEngineModels();
+
         boolean addMore = true;
         while (addMore) {
-            SelectWidget<EngineModel> selectorEngine = new SelectWidget<>("Available Engines (select one or 0 to stop):", availableEngines);
+            SelectWidget<EngineModel> selectorEngine =
+                    new SelectWidget<>("Available Engines (select one or 0 to stop):", availableEngines);
             selectorEngine.show();
             EngineModel selectedEngine = selectorEngine.selectedElement();
+
             if (selectedEngine == null) {
                 addMore = false;
             } else {
-                EngineModelId engineId = selectedEngine.identity();
-                if (!selectedEngines.contains(engineId)) {
-                    selectedEngines.add(engineId);
-                    System.out.println("Engine added: " + engineId);
+                boolean alreadySelected = selectedEngines.stream()
+                        .anyMatch(e -> e.identity().equals(selectedEngine.identity()));
+
+                if (!alreadySelected) {
+                    selectedEngines.add(selectedEngine);
+                    System.out.println("Engine added: " + selectedEngine);
                 } else {
                     System.out.println("Engine already selected.");
                 }
                 addMore = Console.readBoolean("Add another engine? (y/n): ");
             }
         }
+
         if (selectedEngines.isEmpty()) {
             System.out.println("At least one engine must be selected.");
             return false;

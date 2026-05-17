@@ -3,7 +3,6 @@ package pt.isep.sem4pi.infrastructure.bootstrap;
 import eapli.framework.actions.Action;
 import pt.isep.sem4pi.application.AddAircraftModelController;
 import pt.isep.sem4pi.domain.model.aircraftModel.MotorizationType;
-import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 
@@ -21,9 +20,6 @@ public class AircraftModelBootstrapper implements Action {
 
     /**
      * Executes the bootstrapping process for aircraft models.
-     * <p>This method attempts to bootstrap aircraft models by retrieving manufacturers
-     * and engine models, then adding aircraft models. Currently, the actual addition
-     * is commented out pending completion of related user stories.</p>
      *
      * @return true if the bootstrapping succeeds, false otherwise
      */
@@ -37,28 +33,33 @@ public class AircraftModelBootstrapper implements Action {
             Iterable<Manufacturer> manufacturers = controller.getManufacturers();
             Iterable<EngineModel> engines = controller.getEngineModels();
 
+            // Find the aircraft manufacturer (AIRBUS)
             Manufacturer airbus = null;
             for (Manufacturer m : manufacturers) {
-                if (m.identity().toString().equalsIgnoreCase("CFM")) {
+                if (m.identity().toString().equalsIgnoreCase("AIRBUS")) {
                     airbus = m;
                     break;
                 }
             }
 
             if (airbus == null) {
-                System.out.println("Bootstrapper Error: Manufacturer AIRBUS not found. The Manufacturers bootstrapper (US056) must run first!");
+                System.out.println("Bootstrapper Error: Manufacturer AIRBUS not found. " +
+                        "The Manufacturers bootstrapper (US056) must run first!");
                 return false;
             }
 
-            List<EngineModelId> engineIds = new ArrayList<>();
+            // Find the engine model CFM56-5B (manufactured by CFM)
+            List<EngineModel> selectedEngines = new ArrayList<>();
             for (EngineModel e : engines) {
                 if (e.identity().toString().equalsIgnoreCase("CFM56-5B")) {
-                    engineIds.add(e.identity());
+                    selectedEngines.add(e);
+                    break;
                 }
             }
 
-            if (engineIds.isEmpty()) {
-                System.out.println("Bootstrapper Warning: None compatible engine found. US56 must create the engine 'CFM56-5B'.");
+            if (selectedEngines.isEmpty()) {
+                System.out.println("Bootstrapper Warning: No compatible engine found. " +
+                        "US56 must create the engine 'CFM56-5B'.");
                 return false;
             }
 
@@ -78,10 +79,9 @@ public class AircraftModelBootstrapper implements Action {
                     new BigDecimal("0.5"),   // lift
                     new BigDecimal("6100"),  // range
                     new BigDecimal("9.5"),   // aspectRatio
-                    engineIds
+                    selectedEngines
             );
             System.out.println("A320 Bootstrapped successfully!");
-
 
             return true;
         } catch (Exception e) {
