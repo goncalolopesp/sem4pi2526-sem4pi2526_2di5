@@ -15,6 +15,7 @@ import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.AddAirport.AddAirportUI;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
+import pt.isep.sem4pi.presentation.authz.ListUsersAction;
 import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;

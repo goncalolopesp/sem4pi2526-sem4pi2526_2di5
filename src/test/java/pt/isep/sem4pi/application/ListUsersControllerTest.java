@@ -3,33 +3,33 @@ package pt.isep.sem4pi.application;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
-    * Unit tests for ListUsersController, ensuring it correctly filters users based on roles.
+ * Unit tests for ListUsersController, ensuring it correctly filters users based on roles.
  */
-class ListUsersControllerTest {
+public class ListUsersControllerTest {
 
     private ListUsersController controller;
     private AuthorizationService authzMock;
     private UserRepository userRepoMock;
 
-    @BeforeEach
-    void setUp() {
+    @Before
+    public void setUp() {
         authzMock = mock(AuthorizationService.class);
         userRepoMock = mock(UserRepository.class);
         controller = new ListUsersController(authzMock, userRepoMock);
     }
 
     @Test
-    void ensureReturnsOnlyBackofficeUsers() {
+    public void ensureReturnsOnlyBackofficeUsers() {
         /// Create of Users with different roles
         SystemUser adminUser = mock(SystemUser.class);
         when(adminUser.hasAny(SEM4PIRoles.ADMIN, SEM4PIRoles.BACKOFFICE_OPERATOR)).thenReturn(true);
