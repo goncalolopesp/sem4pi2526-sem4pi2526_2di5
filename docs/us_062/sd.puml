@@ -1,0 +1,49 @@
+@startuml US062_SD
+title US062 - List Collaborators of an Air Transport Company - Sequence Diagram
+
+actor "Backoffice Operator" as Operator
+
+participant "ListCustomerCollaboratorsUI" as UI
+participant "ListCustomerCollaboratorsController" as Controller
+participant "AuthorizationService\n(EAPLI Authz)" as AuthzService
+participant "AirTransportCompanyRepository" as CompanyRepo
+participant "AirTransportCompanyCollaboratorRepository" as CollabRepo
+participant "SystemUser" as SysUser
+
+Operator -> UI : request to list collaborators of an Air Transport Company
+UI --> Operator : ask for company ICAO code
+
+Operator -> UI : provide ICAO code
+UI -> Controller : listCompanyCollaborators(icaoCode)
+
+Controller -> AuthzService : ensureAuthenticatedUserHasAnyOf(ADMIN, BACKOFFICE_OPERATOR)
+AuthzService --> Controller : authorized
+
+Controller -> CompanyRepo : findByIcaoCode(icaoCode)
+CompanyRepo --> Controller : Optional<AirTransportCompany>
+
+alt company not found
+    Controller --> UI : throw IllegalArgumentException (company not found)
+    UI --> Operator : show error message
+else company found
+    Controller -> CollabRepo : findByCompany(company)
+    CollabRepo --> Controller : Iterable<AirTransportCompanyCollaborator>
+
+    loop for each collaborator
+        Controller -> SysUser : isActive()
+        SysUser --> Controller : boolean
+
+        alt user is not active
+            Controller -> Controller : skip collaborator
+        else user is active
+            Controller -> SysUser : identity(), name(), email()
+            SysUser --> Controller : username, firstName, lastName, email
+            Controller -> Controller : add CollaboratorView to result list
+        end
+    end
+
+    Controller --> UI : List<CollaboratorView>
+    UI --> Operator : present list of active collaborators
+end
+
+@enduml
