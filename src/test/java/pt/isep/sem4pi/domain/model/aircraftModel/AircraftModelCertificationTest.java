@@ -5,56 +5,75 @@ import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.FuelType;
-import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
-import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class AircraftModelCertificationTest {
 
     @Test
     public void certifyEngineAddsCompatibleEngine() {
-        final AircraftModel aircraftModel = buildAircraftModel("TURBOFAN");
-        final EngineModel engineModel = buildEngineModel("CFM56-5B", EngineType.TURBOFAN);
+        final EngineModel firstEngine = buildEngineModel("CFM56-5B", EngineType.TURBOFAN);
+        final AircraftModel aircraftModel = buildAircraftModel(MotorizationType.TURBOFAN, firstEngine);
 
-        aircraftModel.certifyEngine(engineModel);
+        // Add a different compatible engine
+        final EngineModel anotherEngine = buildEngineModel("CFM56-5C", EngineType.TURBOFAN);
+        aircraftModel.certifyEngine(anotherEngine);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void certifyEngineRejectsDuplicateEngine() {
-        final AircraftModel aircraftModel = buildAircraftModel("TURBOFAN");
         final EngineModel engineModel = buildEngineModel("CFM56-5B", EngineType.TURBOFAN);
+        final AircraftModel aircraftModel = buildAircraftModel(MotorizationType.TURBOFAN, engineModel);
 
-        aircraftModel.certifyEngine(engineModel);
+        // Engine already certified through the constructor; certifying again must fail
         aircraftModel.certifyEngine(engineModel);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void certifyEngineRejectsIncompatibleEngine() {
-        final AircraftModel aircraftModel = buildAircraftModel("TURBOFAN");
-        final EngineModel engineModel = buildEngineModel("PW150", EngineType.TURBOPROP);
+        final EngineModel compatibleEngine = buildEngineModel("CFM56-5B", EngineType.TURBOFAN);
+        final AircraftModel aircraftModel = buildAircraftModel(MotorizationType.TURBOFAN, compatibleEngine);
 
-        aircraftModel.certifyEngine(engineModel);
+        final EngineModel incompatibleEngine = buildEngineModel("PW150", EngineType.TURBOPROP);
+        aircraftModel.certifyEngine(incompatibleEngine);
     }
 
-    private AircraftModel buildAircraftModel(final String motorization) {
+    private AircraftModel buildAircraftModel(final MotorizationType motorization, final EngineModel initialEngine) {
+        final AircraftModelId id = new AircraftModelId(new ManufacturerId("AIRBUS"), "A320");
+
+        final Weight weight = new Weight(
+                new BigDecimal("42000.00"),  // emptyWeight
+                new BigDecimal("62000.00"),  // mzfw
+                new BigDecimal("77000.00")   // mtow
+        );
+        final Fuel fuel = new Fuel(new BigDecimal("24000.00"));
+        final AircraftPerformance performance = new AircraftPerformance(
+                new BigDecimal("39000.00"),  // ceiling
+                new BigDecimal("828.00"),    // speed
+                new BigDecimal("6150.00")    // range
+        );
+        final WingGeometry wingGeometry = new WingGeometry(
+                new BigDecimal("122.60"),    // wingArea
+                new BigDecimal("9.45")       // aspectRatio
+        );
+        final Coefficient aerodynamics = new Coefficient(
+                new BigDecimal("0.0320"),    // drag
+                new BigDecimal("1.5200")     // lift
+        );
+
         return new AircraftModel(
-                new AircraftModelId("A320"),
-                new ManufacturerId("AIRBUS"),
+                id,
                 AircraftType.PASSENGER,
-                "A320",
                 motorization,
-                new BigDecimal("42000.00"),
-                new BigDecimal("77000.00"),
-                new BigDecimal("62000.00"),
-                new BigDecimal("24000.00"),
-                new BigDecimal("39000.00"),
-                new BigDecimal("828.00"),
-                new BigDecimal("122.60"),
-                new BigDecimal("0.0320"),
-                new BigDecimal("1.5200"),
-                new BigDecimal("6150.00"),
-                new BigDecimal("9.45")
+                weight,
+                aerodynamics,
+                performance,
+                fuel,
+                wingGeometry,
+                List.of(initialEngine)
         );
     }
 
@@ -71,4 +90,3 @@ public class AircraftModelCertificationTest {
         );
     }
 }
-
