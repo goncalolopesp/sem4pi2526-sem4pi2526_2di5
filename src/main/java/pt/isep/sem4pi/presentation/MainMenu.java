@@ -13,6 +13,8 @@ import eapli.framework.presentation.console.menu.MenuItemRenderer;
 import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.AddAirport.AddAirportUI;
+import pt.isep.sem4pi.presentation.aircraft.AddAircraftUI;
+import pt.isep.sem4pi.presentation.aircraft.RetireAircraftAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.ListCompanyCollaboratorsAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterCompanyCollaboratorAction;

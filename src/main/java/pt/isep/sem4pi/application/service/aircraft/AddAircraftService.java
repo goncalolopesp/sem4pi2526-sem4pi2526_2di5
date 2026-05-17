@@ -4,10 +4,14 @@ import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftModelTemp;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.aircraft.CabinConfiguration;
+import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftModelTempRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddAircraftService {
 
@@ -40,9 +44,21 @@ public class AddAircraftService {
             throw new IllegalStateException("An aircraft with this registration already exists.");
         }
 
-        Aircraft newAircraft = new Aircraft(registration, modelId, country, seats);
+        AircraftModelId id = new AircraftModelId(modelId);
+        Aircraft newAircraft = new Aircraft(registration, id);
         company.addAircraftToFleet(newAircraft);
 
         companyRepo.save(company);
+    }
+
+    public List<AirTransportCompany> getAirTransportCompanyList()
+    {
+        Iterable<AirTransportCompany> l = companyRepo.findAll();
+        List<AirTransportCompany> m = new ArrayList<>();
+
+        for (AirTransportCompany i : l)
+            m.add(i);
+
+        return m;
     }
 }

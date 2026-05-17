@@ -43,6 +43,6 @@ public class InMemoryAirTransportCompanyRepository implements AirTransportCompan
     public boolean existsByAircraftRegistration(AircraftRegistration registration) {
         return database.stream()
                 .flatMap(c -> c.getFleet().stream())
-                .anyMatch(a -> a.getRegistration().equals(registration));
+                .anyMatch(a -> a.registration().equals(registration));
     }
 }

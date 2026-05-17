@@ -43,7 +43,7 @@ public class AirTransportCompany {
     private List<Aircraft> fleet = new ArrayList<>();
 
     public void addAircraftToFleet(Aircraft aircraft) {
-        boolean exists = fleet.stream().anyMatch(a -> a.getRegistration().equals(aircraft.getRegistration()));
+        boolean exists = fleet.stream().anyMatch(a -> a.registration().equals(aircraft.registration()));
         if (exists) {
             throw new IllegalStateException("Aircraft already exists in this company's fleet.");
         }

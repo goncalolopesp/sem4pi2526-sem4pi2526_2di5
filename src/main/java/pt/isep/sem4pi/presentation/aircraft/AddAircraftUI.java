@@ -2,9 +2,13 @@ package pt.isep.sem4pi.presentation.aircraft;
 
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.aircraft.AddAircraftController;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirTransportCompanyRepository;
+import pt.isep.sem4pi.infrastructure.persistence.RepositoryFactory;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftModelTempRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class AddAircraftUI extends AbstractUI {
@@ -19,6 +23,11 @@ public class AddAircraftUI extends AbstractUI {
     public boolean doShow() {
         System.out.println("=== Add Aircraft to Fleet ===");
         try {
+
+            for (AirTransportCompany l : controller.getAirTransportCompanyList())
+                System.out.println(l.identityIata().toString());
+
+
             System.out.print("Company IATA (e.g., TP): ");
             String iata = scanner.nextLine();
             System.out.print("Registration (e.g., CS-TPA): ");
