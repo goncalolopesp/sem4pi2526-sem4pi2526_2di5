@@ -1,0 +1,49 @@
+@startuml
+autonumber
+actor "Backoffice Operator" as Actor
+participant "RegisterCompanyUI" as UI
+participant "RegisterCompanyController" as Controller
+participant "RegisterCompanyService" as Service
+participant "AirTransportCompanyRepository" as Repo
+participant "AirTransportCompany" as Domain
+
+Actor -> UI : Inputs company data (Name, IATA, ICAO)
+activate UI
+
+UI -> Controller : registerAirTransportCompany(name, iata, icao)
+activate Controller
+
+Controller -> Service : registerCompany(name, iata, icao)
+activate Service
+
+note right of Service: Value Objects (CompanyName, IataCode, IcaoCode)\nare instantiated and validated here.
+
+Service -> Repo : findByIataCode(iata)
+activate Repo
+Repo --> Service : Optional.empty
+deactivate Repo
+
+Service -> Repo : findByIcaoCode(icao)
+activate Repo
+Repo --> Service : Optional.empty
+deactivate Repo
+
+Service -> Domain ** : create(name, iata, icao)
+activate Domain
+Domain --> Service : company
+deactivate Domain
+
+Service -> Repo : save(company)
+activate Repo
+Repo --> Service : savedCompany
+deactivate Repo
+
+Service --> Controller : savedCompany
+deactivate Service
+
+Controller --> UI : savedCompany
+deactivate Controller
+
+UI --> Actor : Displays Success Message
+deactivate UI
+@enduml

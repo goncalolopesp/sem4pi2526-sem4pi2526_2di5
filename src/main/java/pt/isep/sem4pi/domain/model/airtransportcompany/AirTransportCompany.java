@@ -1,6 +1,10 @@
 package pt.isep.sem4pi.domain.model.airtransportcompany;
 
 import jakarta.persistence.*;
+import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "AirTransportCompany")
@@ -33,6 +37,20 @@ public class AirTransportCompany {
         this.iataCode = iataCode;
         this.icaoCode = icaoCode;
     }
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "company_id")
+    private List<Aircraft> fleet = new ArrayList<>();
+
+    public void addAircraftToFleet(Aircraft aircraft) {
+        boolean exists = fleet.stream().anyMatch(a -> a.registration().equals(aircraft.registration()));
+        if (exists) {
+            throw new IllegalStateException("Aircraft already exists in this company's fleet.");
+        }
+        this.fleet.add(aircraft);
+    }
+
+    public List<Aircraft> getFleet() { return new ArrayList<>(fleet); }
 
     public IataCode identityIata() {
         return this.iataCode;

@@ -13,16 +13,16 @@ import eapli.framework.presentation.console.menu.MenuItemRenderer;
 import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.AddAirport.AddAirportUI;
+import pt.isep.sem4pi.presentation.aircraft.AddAircraftUI;
+import pt.isep.sem4pi.presentation.aircraft.RetireAircraftAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.ListCompanyCollaboratorsAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterCompanyCollaboratorAction;
 import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
-import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
-import pt.isep.sem4pi.presentation.aircraft.RetireAircraftAction;
 
 /**
  * Menu principal da aplicacao SEM4PI.
@@ -49,6 +49,7 @@ public class MainMenu extends AbstractUI {
     private static final int REGISTER_ATCC_COLLABORATOR = 2;
     private static final int LIST_ATCC_COLABORATORS = 3;
     private static final int RETIRE_AIRCRAFT_OPTION = 4;
+    private static final int ADD_AIRCRAFT_OPTION = 5;
 
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
@@ -161,6 +162,7 @@ public class MainMenu extends AbstractUI {
     private Menu buildUsersMenu() {
         final var menu = new Menu("Users >");
 
+        menu.addItem(ADD_USER_OPTION, "Add User", new ShowMessageAction("Add User - TODO"));
         menu.addItem(LIST_USERS_OPTION, "List all Users", new ListBackofficeUsersUI()::show);
         menu.addItem(DEACTIVATE_USER_OPTION, "Manage User status", new ManageBackofficeUserStatusUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
@@ -171,7 +173,6 @@ public class MainMenu extends AbstractUI {
     private Menu buildBackofficeConfigurationMenu() {
         final var menu = new Menu("Backoffice Configuration >");
         menu.addItem(REGISTER_ENGINE_MODEL_OPTION, "Register Engine Model", new RegisterEngineModelAction());
-        menu.addItem(CERTIFY_ENGINE_MODEL_OPTION, "Certify Engine Model", new CertifyEngineModelAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
     }
@@ -184,6 +185,7 @@ public class MainMenu extends AbstractUI {
         menu.addItem(REGISTER_ATCC_COLLABORATOR, "Register Company Collaborator", new RegisterCompanyCollaboratorAction());
         menu.addItem(LIST_ATCC_COLABORATORS, "List Company Collaborators", new ListCompanyCollaboratorsAction());
         menu.addItem(RETIRE_AIRCRAFT_OPTION, "Retire Aircraft", new RetireAircraftAction());
+        menu.addItem(ADD_AIRCRAFT_OPTION, "Add Aircraft", new AddAircraftUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;
