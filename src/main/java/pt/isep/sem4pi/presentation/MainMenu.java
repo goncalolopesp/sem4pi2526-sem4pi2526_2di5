@@ -14,6 +14,7 @@ import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.AddAirport.AddAirportUI;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
+import pt.isep.sem4pi.presentation.aircraft.AddAircraftUI;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
@@ -40,7 +41,8 @@ public class MainMenu extends AbstractUI {
     private static final int REGISTER_ENGINE_MODEL_OPTION = 1;
 
     // AirTransportCompany
-    private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 2;
+    private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 1;
+    private static final int ADD_AIRCRAFT_OPTION = 2;
 
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
@@ -155,6 +157,7 @@ public class MainMenu extends AbstractUI {
         final var menu = new Menu("AirTransportCompany >");
 
         menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Trasnport Company", new RegisterAirTransportCompanyUI()::show);
+        menu.addItem(ADD_AIRCRAFT_OPTION, "Add Aircraft", new AddAircraftUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;
