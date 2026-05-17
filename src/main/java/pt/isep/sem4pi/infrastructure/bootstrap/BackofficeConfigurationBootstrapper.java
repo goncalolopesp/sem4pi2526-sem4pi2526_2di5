@@ -7,6 +7,7 @@ import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
 import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
+import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.CustomerCollaboratorBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.domain.aircontrolarea.AirControlArea;
 import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary;
@@ -47,6 +48,10 @@ public class BackofficeConfigurationBootstrapper {
         // Inicializar Air Control Areas (Critério de Aceitação 3)
         registerAirControlArea("LIS_FIR", 36.0, 42.0, -10.0, -6.0, "Lisbon FIR", 1000.0);
         registerAirControlArea("MAD_FIR", 35.0, 43.0, -5.0, 0.0, "Madrid FIR", 1200.0);
+
+        //Executar o Bootstrap dos Customer Collaborators
+        CustomerCollaboratorBootstrapper ccb = new CustomerCollaboratorBootstrapper();
+        ccb.execute();
 
         return true;
     }
