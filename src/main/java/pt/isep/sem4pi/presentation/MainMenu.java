@@ -13,6 +13,8 @@ import eapli.framework.presentation.console.menu.MenuItemRenderer;
 import eapli.framework.presentation.console.menu.MenuRenderer;
 import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.AddAirport.AddAirportUI;
+import pt.isep.sem4pi.presentation.aircraft.AddAircraftUI;
+import pt.isep.sem4pi.presentation.aircraft.RetireAircraftAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.ListCompanyCollaboratorsAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterCompanyCollaboratorAction;
@@ -41,11 +43,14 @@ public class MainMenu extends AbstractUI {
 
     // BACKOFFICE CONFIGURATION
     private static final int REGISTER_ENGINE_MODEL_OPTION = 1;
+    private static final int CERTIFY_ENGINE_MODEL_OPTION = 2;
 
     // AirTransportCompany
     private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 1;
     private static final int REGISTER_ATCC_COLLABORATOR = 2;
     private static final int LIST_ATCC_COLABORATORS = 3;
+    private static final int RETIRE_AIRCRAFT_OPTION = 4;
+    private static final int ADD_AIRCRAFT_OPTION = 5;
 
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
@@ -58,10 +63,10 @@ public class MainMenu extends AbstractUI {
 
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
-    private static final int USERS_OPTION = 2;
-    private static final int BACKOFFICE_CONFIGURATION_OPTION = 3;
-    private static final int AIR_TRANSPORT_COMPANY_OPTIONS = 4;
-    private static final int ADMIN_OPTION = 5;
+    private static final int ADMIN_OPTION = 2;
+    private static final int USERS_OPTION = 3;
+    private static final int BACKOFFICE_CONFIGURATION_OPTION = 4;
+    private static final int AIR_TRANSPORT_COMPANY_OPTIONS = 5;
     private static final int AIRPORT_OPTIONS = 6;
     private static final int AIR_CONTROL_AREA_OPTIONS = 7;
     private static final int WEATHER_DATA_OPTIONS = 8;
@@ -107,34 +112,52 @@ public class MainMenu extends AbstractUI {
         mainMenu.addItem(MenuItem.separator(SEPARATOR_LABEL));
 
         if (authz.hasSession()) {
-            if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN)) {
-                final var usersMenu = buildUsersMenu();
-                final var airTransportCompanyMenu = buildAirTransportCompanyMenu();
-                final var airportMenu = buildAirportMenu();
-                final var airControlAreaMenu = buildAirControlAreaMenu();
-                final var weatherDataMenu = buildWeatherDataMenu();
 
-                mainMenu.addSubMenu(USERS_OPTION, usersMenu);
-                final var backofficeConfigurationMenu = buildBackofficeConfigurationMenu();
-                mainMenu.addSubMenu(BACKOFFICE_CONFIGURATION_OPTION, backofficeConfigurationMenu);
-                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, airTransportCompanyMenu);
-                mainMenu.addSubMenu(AIRPORT_OPTIONS, airportMenu);
-                mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, airControlAreaMenu);
-                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, weatherDataMenu);
+            final boolean isBackoffice =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.BACKOFFICE_OPERATOR,
+                            SEM4PIRoles.ADMIN);
+
+            final boolean isAdmin =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.ADMIN);
+
+            final boolean isAtcc =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR,
+                            SEM4PIRoles.ADMIN);
+
+            if (isAdmin) {
+                final var adminMenu = buildAdminMenu();
+                mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
             }
 
-            if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
-                final var adminMenu = new Menu("Admin >");
-                adminMenu.addItem(1, "Admin Task (TODO)", new ShowMessageAction("Admin task not implemented yet"));
-                adminMenu.addItem(2, "Register Backoffice User", new pt.isep.sem4pi.presentation.usermanagement.RegisterBackofficeUserUI()::show);
-                adminMenu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
-                mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
+            if (isBackoffice) {
+                mainMenu.addSubMenu(USERS_OPTION, buildUsersMenu());
+                mainMenu.addSubMenu(BACKOFFICE_CONFIGURATION_OPTION, buildBackofficeConfigurationMenu());
+                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
+                mainMenu.addSubMenu(AIRPORT_OPTIONS, buildAirportMenu());
+                mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, buildAirControlAreaMenu());
+                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu());
+            } else if (isAtcc) {
+                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
             }
         }
 
         mainMenu.addItem(EXIT_OPTION, "Exit", new ExitWithMessageAction("Bye, Bye"));
 
         return mainMenu;
+    }
+
+    private Menu buildAdminMenu() {
+        final var menu = new Menu("Admin >");
+
+        menu.addItem(1, "Register Backoffice User",
+                new pt.isep.sem4pi.presentation.usermanagement.RegisterBackofficeUserUI()::show);
+
+        menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
+
+        return menu;
     }
 
     private Menu buildUsersMenu() {
@@ -159,9 +182,11 @@ public class MainMenu extends AbstractUI {
     {
         final var menu = new Menu("AirTransportCompany >");
 
-        menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Trasnport Company", new RegisterAirTransportCompanyUI()::show);
-        menu.addItem(REGISTER_ATCC_COLLABORATOR, "Register Air Transport Company's Customer Collaborator", new RegisterCompanyCollaboratorAction());
-        menu.addItem(LIST_ATCC_COLABORATORS, "List Air Transport Company's Customer's Collaborators", new ListCompanyCollaboratorsAction());
+        menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Transport Company", new RegisterAirTransportCompanyUI()::show);
+        menu.addItem(REGISTER_ATCC_COLLABORATOR, "Register Company Collaborator", new RegisterCompanyCollaboratorAction());
+        menu.addItem(LIST_ATCC_COLABORATORS, "List Company Collaborators", new ListCompanyCollaboratorsAction());
+        menu.addItem(RETIRE_AIRCRAFT_OPTION, "Retire Aircraft", new RetireAircraftAction());
+        menu.addItem(ADD_AIRCRAFT_OPTION, "Add Aircraft", new AddAircraftUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;

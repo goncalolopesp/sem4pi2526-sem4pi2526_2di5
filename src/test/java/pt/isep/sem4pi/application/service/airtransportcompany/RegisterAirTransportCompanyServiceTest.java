@@ -2,6 +2,7 @@ package pt.isep.sem4pi.application.service.airtransportcompany;
 
 import org.junit.Before;
 import org.junit.Test;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
@@ -43,6 +44,11 @@ public class RegisterAirTransportCompanyServiceTest {
         @Override
         public Iterable<AirTransportCompany> findAll() {
             return fakeDatabase;
+        }
+
+        @Override
+        public boolean existsByAircraftRegistration(AircraftRegistration registration) {
+            return false;
         }
     }
 

@@ -35,4 +35,8 @@ public interface RepositoryFactory {
     AirTransportCompanyRepository airTransportCompanies();
 
     AirTransportCompanyCollaboratorRepository airTransportCompanyCollaborators();
+
+    AircraftRepository aircrafts();
+
+    FlightRepository flights();
 }

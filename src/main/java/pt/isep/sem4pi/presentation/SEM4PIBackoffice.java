@@ -3,6 +3,12 @@ package pt.isep.sem4pi.presentation;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
 import pt.isep.sem4pi.infrastructure.bootstrap.MasterUsersBootstrapper;
+import pt.isep.sem4pi.infrastructure.bootstrap.airport.AirportBootstrapper;
+import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.AirTransportCompanyBootstrapper;
+import pt.isep.sem4pi.infrastructure.bootstrap.weatherdata.WeatherBootstrapper;
+import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirTransportCompanyRepository;
+import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirportRepository;
+import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaWeatherBatchRepository;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.bootstrap.BackofficeConfigurationBootstrapper;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
@@ -25,8 +31,13 @@ public final class SEM4PIBackoffice extends BaseApp {
                 new SEM4PIPasswordPolicy(),
                 new PlainTextEncoder()
         );
+
+//        Minimal Bootstrap
         new MasterUsersBootstrapper().execute();
         new BackofficeConfigurationBootstrapper().execute();
+        new AirportBootstrapper(new JpaAirportRepository()).execute();
+        new WeatherBootstrapper(new JpaWeatherBatchRepository()).execute();
+        new AirTransportCompanyBootstrapper(new JpaAirTransportCompanyRepository()).execute();
 
         new SEM4PIBackoffice().run(args);
     }
