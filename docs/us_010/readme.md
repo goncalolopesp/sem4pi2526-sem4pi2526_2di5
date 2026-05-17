@@ -72,7 +72,7 @@ Main identified Aggregate Roots (`<<AggregateRoot>>`):
 
 ### 4.1. Realization
 
-![domain-model.svg](domain-model.svg "AlSafe Domain Model Class Diagram")
+![domain-model.svg](DM-aggregate.svg "AlSafe Domain Model Class Diagram")
 
 ### 4.2. Acceptance Tests
 
