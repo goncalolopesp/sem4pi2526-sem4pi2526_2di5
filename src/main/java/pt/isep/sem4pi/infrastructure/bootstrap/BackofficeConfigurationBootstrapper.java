@@ -4,35 +4,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
 import pt.isep.sem4pi.domain.model.aircraftModel.*;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
-import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
-import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
-import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
-import pt.isep.sem4pi.domain.repositories.AircraftRepository;
-import pt.isep.sem4pi.domain.repositories.FlightRepository;
+import pt.isep.sem4pi.domain.repositories.*;
 import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
+import pt.isep.sem4pi.domain.model.engineModel.EngineType;
+import pt.isep.sem4pi.domain.model.engineModel.FuelType;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.CustomerCollaboratorBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.domain.aircontrolarea.AirControlArea;
 import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary;
 import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
-import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
 import eapli.framework.domain.repositories.ConcurrencyException;
 import eapli.framework.domain.repositories.IntegrityViolationException;
 
 import java.math.BigDecimal;
-
-import pt.isep.sem4pi.domain.model.engineModel.EngineType;
-import pt.isep.sem4pi.domain.model.engineModel.FuelType;
+import java.util.List;
 
 public class BackofficeConfigurationBootstrapper {
 
@@ -48,12 +44,13 @@ public class BackofficeConfigurationBootstrapper {
             new EngineModelRegistrationService(engineModelRepository, manufacturerRepository);
 
     public boolean execute() {
-        // Inicializar Manufacturers e Engine Models
+        // Manufacturers
         registerManufacturer("CFM", "CFM International", "France");
         registerManufacturer("RR", "Rolls-Royce", "United Kingdom");
         registerManufacturer("GE", "General Electric", "United States");
         registerManufacturer("AIRBUS", "Airbus", "France");
 
+        // Engine Models
         registerEngineModel("CFM56-5B", "CFM", "CFM56-5B", EngineType.TURBOFAN,
                 new BigDecimal("120.00"), FuelType.JET_A1, new BigDecimal("37.50"));
         registerEngineModel("TRENT1000", "RR", "Trent 1000", EngineType.TURBOFAN,
@@ -61,42 +58,58 @@ public class BackofficeConfigurationBootstrapper {
         registerEngineModel("GENX-1B", "GE", "GEnx-1B", EngineType.TURBOFAN,
                 new BigDecimal("330.00"), FuelType.JET_A1, new BigDecimal("40.80"));
 
+        // Aircraft Models
         registerAircraftModel(
-                "AIRBUS",                                // manufacturerCode
-                AircraftType.PASSENGER,                  // aircraftType
-                "A320",                                  // modelName
-                MotorizationType.TURBOFAN,               // motorization (enum)
-                new BigDecimal("42000.00"),              // emptyWeight
-                new BigDecimal("62000.00"),              // mzfw  ← confirma ordem
-                new BigDecimal("77000.00"),              // mtow  ← confirma ordem
-                new BigDecimal("24000.00"),              // fuelCapacity
-                new BigDecimal("39000.00"),              // serviceCeiling
-                new BigDecimal("828.00"),                // cruiseSpeed
-                new BigDecimal("122.60"),                // wingArea
-                new BigDecimal("0.0320"),                // dragCoefficient
-                new BigDecimal("1.5200"),                // liftCoefficient
-                new BigDecimal("6150.00"),               // maximumRange
-                new BigDecimal("9.45"),                  // aspectRatio
-                "CFM56-5B"                               // engineModelCode
+                "AIRBUS",
+                AircraftType.PASSENGER,
+                "A320",
+                MotorizationType.TURBOFAN,
+                new BigDecimal("42000.00"),  // emptyWeight
+                new BigDecimal("62000.00"),  // mzfw
+                new BigDecimal("77000.00"),  // mtow
+                new BigDecimal("24000.00"),  // fuelCapacity
+                new BigDecimal("39000.00"),  // serviceCeiling
+                new BigDecimal("828.00"),    // cruiseSpeed
+                new BigDecimal("122.60"),    // wingArea
+                new BigDecimal("0.0320"),    // dragCoefficient
+                new BigDecimal("1.5200"),    // liftCoefficient
+                new BigDecimal("6150.00"),   // maximumRange
+                new BigDecimal("9.45"),      // aspectRatio
+                "CFM56-5B"
         );
 
-        registerAircraft("CS-TST", "A320");
-        registerAircraft("CS-RET", "A320");
+        // Aircrafts
+        registerAircraft("CS-TST", "AIRBUS", "A320");
+        registerAircraft("CS-RET", "AIRBUS", "A320");
+
+        // Flights
         registerFlight("TP100", "CS-TST");
 
-        registerAircraft("CS-TST", "A320");
-        registerAircraft("CS-RET", "A320");
-        registerFlight("TP100", "CS-TST");
-
-        // Inicializar Air Control Areas (Critério de Aceitação 3)
+        // Air Control Areas
         registerAirControlArea("LIS_FIR", 36.0, 42.0, -10.0, -6.0, "Lisbon FIR", 1000.0);
         registerAirControlArea("MAD_FIR", 35.0, 43.0, -5.0, 0.0, "Madrid FIR", 1200.0);
 
-        //Executar o Bootstrap dos Customer Collaborators
-        CustomerCollaboratorBootstrapper ccb = new CustomerCollaboratorBootstrapper();
-        ccb.execute();
+        registerAirTransportCompany("TAP Portugal", "TP", "TAP");
+
+        // Customer Collaborators
+        new CustomerCollaboratorBootstrapper().execute();
 
         return true;
+    }
+
+    private void registerAirTransportCompany(final String name, final String iata, final String icao) {
+        final AirTransportCompanyRepository repo = PersistenceContext.repositories().airTransportCompanies();
+        final IcaoCode icaoCode = new IcaoCode(icao);
+
+        boolean exists = false;
+        for (final AirTransportCompany c : repo.findAll()) {
+            if (c.getIcaoCode().equals(icaoCode)) { exists = true; break; }
+        }
+
+        if (!exists) {
+            repo.save(new AirTransportCompany(new CompanyName(name), new IataCode(iata), icaoCode));
+            LOGGER.info("Air Transport Company '{}' registered.", name);
+        }
     }
 
     private void registerManufacturer(final String code, final String name, final String country) {
@@ -110,7 +123,7 @@ public class BackofficeConfigurationBootstrapper {
                                      final EngineType type, final BigDecimal power, final FuelType fuelType,
                                      final BigDecimal efficiency) {
         final ManufacturerId manufacturerId = new ManufacturerId(manufacturerCode);
-        if (!engineModelRepository.containsOfIdentity(new pt.isep.sem4pi.domain.model.engineModel.EngineModelId(modelCode))
+        if (!engineModelRepository.containsOfIdentity(new EngineModelId(modelCode))
                 && !engineModelRepository.existsWithManufacturerAndName(manufacturerId, name)) {
             engineModelRegistrationService.register(modelCode, manufacturerCode, name, type, power, fuelType, efficiency);
         }
@@ -141,7 +154,6 @@ public class BackofficeConfigurationBootstrapper {
             return;
         }
 
-        // Get the engine model BEFORE building the aircraft (the constructor requires at least one)
         final EngineModel engineModel = engineModelRepository
                 .ofIdentity(new EngineModelId(engineModelCode))
                 .orElse(null);
@@ -152,7 +164,6 @@ public class BackofficeConfigurationBootstrapper {
             return;
         }
 
-        // Build the value objects expected by the constructor
         final Weight weight = new Weight(emptyWeight, mzfw, mtow);
         final Fuel fuel = new Fuel(fuelCapacity);
         final AircraftPerformance performance = new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
@@ -168,59 +179,50 @@ public class BackofficeConfigurationBootstrapper {
                 performance,
                 fuel,
                 wingGeometry,
-                java.util.List.of(engineModel)
+                List.of(engineModel)
         );
 
         aircraftModelRepository.save(aircraftModel);
         LOGGER.info("Aircraft Model '{}' was successfully registered.", aircraftModelId);
     }
 
-    private void registerAircraft(final String registrationCode, final String aircraftModelCode) {
+    private void registerAircraft(final String registrationCode,
+                                  final String manufacturerCode,
+                                  final String aircraftModelName) {
         final AircraftRegistration registration = new AircraftRegistration(registrationCode);
         if (aircraftRepository.containsOfIdentity(registration)) {
+            LOGGER.info("Aircraft '{}' already exists.", registrationCode);
             return;
         }
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(aircraftModelCode));
+        final AircraftModelId modelId = new AircraftModelId(new ManufacturerId(manufacturerCode), aircraftModelName);
+        final Aircraft aircraft = new Aircraft(registration, modelId);
         aircraftRepository.save(aircraft);
+        LOGGER.info("Aircraft '{}' registered.", registrationCode);
     }
 
     private void registerFlight(final String flightCode, final String registrationCode) {
         final FlightId flightId = new FlightId(flightCode);
         if (flightRepository.containsOfIdentity(flightId)) {
+            LOGGER.info("Flight '{}' already exists.", flightCode);
             return;
         }
         final Flight flight = new Flight(flightId, new AircraftRegistration(registrationCode));
         flightRepository.save(flight);
+        LOGGER.info("Flight '{}' registered.", flightCode);
     }
 
-    private void registerAircraft(final String registrationCode, final String aircraftModelCode) {
-        final AircraftRegistration registration = new AircraftRegistration(registrationCode);
-        if (aircraftRepository.containsOfIdentity(registration)) {
-            return;
-        }
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(aircraftModelCode));
-        aircraftRepository.save(aircraft);
-    }
-
-    private void registerFlight(final String flightCode, final String registrationCode) {
-        final FlightId flightId = new FlightId(flightCode);
-        if (flightRepository.containsOfIdentity(flightId)) {
-            return;
-        }
-        final Flight flight = new Flight(flightId, new AircraftRegistration(registrationCode));
-        flightRepository.save(flight);
-    }
-
-    private void registerAirControlArea(String code, double minLat, double maxLat, double minLon, double maxLon, String name, double minFuel) {
+    private void registerAirControlArea(final String code, final double minLat, final double maxLat,
+                                        final double minLon, final double maxLon,
+                                        final String name, final double minFuel) {
         try {
-            AirControlAreaID id = new AirControlAreaID(code);
+            final AirControlAreaID id = new AirControlAreaID(code);
             if (airControlAreaRepository.containsOfIdentity(id)) {
                 LOGGER.info("Air Control Area '{}' already exists in the system.", code);
                 return;
             }
 
-            AirControlAreaBoundary boundaries = new AirControlAreaBoundary(minLat, maxLat, minLon, maxLon);
-            AirControlArea newArea = new AirControlArea(code, boundaries, name, minFuel);
+            final AirControlAreaBoundary boundaries = new AirControlAreaBoundary(minLat, maxLat, minLon, maxLon);
+            final AirControlArea newArea = new AirControlArea(code, boundaries, name, minFuel);
 
             airControlAreaRepository.save(newArea);
             LOGGER.info("Air Control Area '{}' was successfully registered.", code);

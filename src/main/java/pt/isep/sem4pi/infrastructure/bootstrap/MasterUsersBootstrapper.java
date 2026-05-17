@@ -34,10 +34,6 @@ public class MasterUsersBootstrapper {
 //        System.out.println("admin backoffice user exists? " + backofficeUsers.existsByUsername("admin"));
 //        System.out.println("backoffice backoffice user exists? " + backofficeUsers.existsByUsername("backoffice"));
 
-        //Add US056 bootstrappers
-
-        new AircraftModelBootstrapper().execute();
-
         return true;
     }
 
