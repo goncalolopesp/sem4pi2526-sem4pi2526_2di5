@@ -127,7 +127,35 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
         if (engine == null) {
             throw new IllegalArgumentException("Engine cannot be null.");
         }
+        if (!isEngineCompatible(engine)) {
+            throw new IllegalArgumentException("Engine type is not compatible with aircraft model motorization.");
+        }
+        if (isEngineAlreadyCertified(engine)) {
+            throw new IllegalArgumentException("Engine model already certified for this aircraft model.");
+        }
         this.certifiedEngines.add(new CertifiedEngine(engine));
+    }
+
+    private boolean isEngineAlreadyCertified(final EngineModel engine) {
+        return certifiedEngines.stream().anyMatch(certifiedEngine -> certifiedEngine.hasEngineModel(engine));
+    }
+
+    private boolean isEngineCompatible(final EngineModel engine) {
+        final String motorizationValue = motorization == null ? "" : motorization.trim();
+        return !motorizationValue.isEmpty()
+                && motorizationValue.equalsIgnoreCase(engine.type().name());
+    }
+
+    public String modelName() {
+        return modelName;
+    }
+
+    public AircraftType aircraftType() {
+        return aircraftType;
+    }
+
+    public String motorization() {
+        return motorization;
     }
 
     @Override
