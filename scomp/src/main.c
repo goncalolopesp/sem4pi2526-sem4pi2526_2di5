@@ -277,9 +277,19 @@ int main(int argc, char **argv) {
     sigprocmask(SIG_BLOCK, &startup_mask, NULL);
 
     for (int i = 0; i < config.flight_count; ++i) {
-        int fd[2];
-        if (pipe(fd) != 0) {
-            perror("pipe");
+        int update_pipe[2]; // filho -> pai
+        int sync_pipe[2];   // pai -> filho
+
+        if (pipe(update_pipe) != 0) {
+            perror("pipe update_pipe");
+            free_runtimes(runtimes, i);
+            return EXIT_FAILURE;
+        }
+
+        if (pipe(sync_pipe) != 0) {
+            perror("pipe sync_pipe");
+            close(update_pipe[0]);
+            close(update_pipe[1]);
             free_runtimes(runtimes, i);
             return EXIT_FAILURE;
         }
@@ -287,23 +297,32 @@ int main(int argc, char **argv) {
         pid_t pid = fork();
         if (pid < 0) {
             perror("fork");
-            close(fd[0]);
-            close(fd[1]);
+            close(update_pipe[0]);
+            close(update_pipe[1]);
+            close(sync_pipe[0]);
+            close(sync_pipe[1]);
             free_runtimes(runtimes, i);
             return EXIT_FAILURE;
         }
 
         if (pid == 0) {
-            close(fd[0]);
-            run_flight_process(config.flight_files[i], fd[1], &config);
+            close(update_pipe[0]); // filho não lê updates
+            close(sync_pipe[1]);   // filho não escreve comandos de sincronização
+
+            run_flight_process(config.flight_files[i], update_pipe[1], sync_pipe[0], &config);
         }
 
-        close(fd[1]);
+        close(update_pipe[1]); // pai não escreve updates
+        close(sync_pipe[0]);   // pai não lê comandos de sincronização
+
         runtimes[i].pid = pid;
-        runtimes[i].pipe_fd = fd[0];
+        runtimes[i].pipe_fd = update_pipe[0];
+        runtimes[i].sync_fd = sync_pipe[1];
         runtimes[i].active = 1;
+
         snprintf(runtimes[i].flight_id, sizeof(runtimes[i].flight_id), "flight-%d", i + 1);
-        poll_fds[i].fd = fd[0];
+
+        poll_fds[i].fd = update_pipe[0];
         poll_fds[i].events = POLLIN | POLLHUP;
     }
 
@@ -380,7 +399,8 @@ int main(int argc, char **argv) {
         // US103: liberar o próximo passo
         for (int i = 0; i < config.flight_count; ++i) {
             if (runtimes[i].active) {
-                kill(runtimes[i].pid, SIGUSR2);
+                char command = 'N';
+                write(runtimes[i].sync_fd, &command, sizeof(command));
             }
         }
     }
