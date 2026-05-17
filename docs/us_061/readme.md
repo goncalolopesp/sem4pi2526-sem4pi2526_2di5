@@ -4,7 +4,7 @@
 
 ### 1.1 User Story
 
-As a Backoffice Operator, I want to associate a system user as a collaborator of an Air Transport Company so that they can act on behalf of that company within the system.
+As a Backoffice Operator, I want to register a costumer’s collaborator
 
 ---
 
