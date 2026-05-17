@@ -1,0 +1,48 @@
+@startuml US061_SD
+title US061 - Add Air Transport Company Collaborator - Sequence Diagram
+
+actor "Backoffice Operator" as Operator
+
+participant "AddAirTransportCompanyCollaboratorUI" as UI
+participant "AddAirTransportCompanyCollaboratorController" as Controller
+participant "AuthorizationService\n(EAPLI Authz)" as AuthzService
+participant "UserRepository" as UserRepo
+participant "AirTransportCompanyRepository" as CompanyRepo
+participant "AirTransportCompanyCollaboratorRepository" as CollabRepo
+participant "AirTransportCompanyCollaborator" as Collaborator
+
+Operator -> UI : request to add a collaborator
+UI -> Controller : listSystemUsers()
+Controller -> AuthzService : ensureAuthenticatedUserHasAnyOf(BACKOFFICE_OPERATOR, ADMIN)
+AuthzService --> Controller : authorized
+
+Controller -> UserRepo : findAll()
+UserRepo --> Controller : Iterable<SystemUser>
+Controller --> UI : list of system users
+UI --> Operator : present system users
+
+UI -> Controller : listAirTransportCompanies()
+Controller -> CompanyRepo : findAll()
+CompanyRepo --> Controller : Iterable<AirTransportCompany>
+Controller --> UI : list of companies
+UI --> Operator : present companies
+
+Operator -> UI : select system user and company
+UI -> Controller : addCollaborator(systemUser, company)
+
+Controller -> CollabRepo : findBySystemUser(systemUser)
+CollabRepo --> Controller : Optional<AirTransportCompanyCollaborator>
+
+alt collaborator already exists for user
+    Controller --> UI : throw IllegalArgumentException (already assigned)
+    UI --> Operator : show error message
+else
+    Controller -> Collaborator ** : new AirTransportCompanyCollaborator(systemUser, company)
+    Controller -> CollabRepo : save(collaborator)
+    CollabRepo --> Controller : savedCollaborator
+
+    Controller --> UI : savedCollaborator
+    UI --> Operator : show success message with collaborator details
+end
+
+@enduml
