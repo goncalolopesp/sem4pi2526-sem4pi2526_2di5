@@ -45,7 +45,7 @@ public class MainMenu extends AbstractUI {
     private static final int REGISTER_AIRCRAFT_MODEL_OPTION = 2;
     private static final int OPERATOR_OPTION = 4;
     private static final int ADMIN_OPTION = 5;
-    private static final int CERTIFY_ENGINE_MODEL_OPTION = 2;
+    private static final int CERTIFY_ENGINE_MODEL_OPTION = 3;
 
     // AirTransportCompany
     private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 1;

@@ -3,14 +3,12 @@ package pt.isep.sem4pi.infrastructure.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
+import pt.isep.sem4pi.domain.model.aircraftModel.*;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.CustomerCollaboratorBootstrapper;
@@ -52,11 +50,24 @@ public class BackofficeConfigurationBootstrapper {
         registerEngineModel("GENX-1B", "GE", "GEnx-1B", EngineType.TURBOFAN,
                 new BigDecimal("330.00"), FuelType.JET_A1, new BigDecimal("40.80"));
 
-        registerAircraftModel("A320", "AIRBUS", AircraftType.PASSENGER, "A320", "TURBOFAN",
-                new BigDecimal("42000.00"), new BigDecimal("77000.00"), new BigDecimal("62000.00"),
-                new BigDecimal("24000.00"), new BigDecimal("39000.00"), new BigDecimal("828.00"),
-                new BigDecimal("122.60"), new BigDecimal("0.0320"), new BigDecimal("1.5200"),
-                new BigDecimal("6150.00"), new BigDecimal("9.45"), "CFM56-5B");
+        registerAircraftModel(
+                "AIRBUS",                                // manufacturerCode
+                AircraftType.PASSENGER,                  // aircraftType
+                "A320",                                  // modelName
+                MotorizationType.TURBOFAN,               // motorization (enum)
+                new BigDecimal("42000.00"),              // emptyWeight
+                new BigDecimal("62000.00"),              // mzfw  ← confirma ordem
+                new BigDecimal("77000.00"),              // mtow  ← confirma ordem
+                new BigDecimal("24000.00"),              // fuelCapacity
+                new BigDecimal("39000.00"),              // serviceCeiling
+                new BigDecimal("828.00"),                // cruiseSpeed
+                new BigDecimal("122.60"),                // wingArea
+                new BigDecimal("0.0320"),                // dragCoefficient
+                new BigDecimal("1.5200"),                // liftCoefficient
+                new BigDecimal("6150.00"),               // maximumRange
+                new BigDecimal("9.45"),                  // aspectRatio
+                "CFM56-5B"                               // engineModelCode
+        );
 
         // Inicializar Air Control Areas (Critério de Aceitação 3)
         registerAirControlArea("LIS_FIR", 36.0, 42.0, -10.0, -6.0, "Lisbon FIR", 1000.0);
@@ -86,45 +97,63 @@ public class BackofficeConfigurationBootstrapper {
         }
     }
 
-    private void registerAircraftModel(final String modelCode, final String manufacturerCode,
-                                       final AircraftType aircraftType, final String modelName,
-                                       final String motorization, final BigDecimal emptyWeight,
-                                       final BigDecimal maximumTakeoffWeight, final BigDecimal maximumZeroFuelWeight,
-                                       final BigDecimal maximumFuelCapacity, final BigDecimal serviceCeiling,
-                                       final BigDecimal cruiseSpeed, final BigDecimal wingArea,
-                                       final BigDecimal dragCoefficient, final BigDecimal liftCoefficient,
-                                       final BigDecimal maximumRange, final BigDecimal aspectRatio,
+    private void registerAircraftModel(final String manufacturerCode,
+                                       final AircraftType aircraftType,
+                                       final String modelName,
+                                       final MotorizationType motorization,
+                                       final BigDecimal emptyWeight,
+                                       final BigDecimal mzfw,
+                                       final BigDecimal mtow,
+                                       final BigDecimal fuelCapacity,
+                                       final BigDecimal serviceCeiling,
+                                       final BigDecimal cruiseSpeed,
+                                       final BigDecimal wingArea,
+                                       final BigDecimal dragCoefficient,
+                                       final BigDecimal liftCoefficient,
+                                       final BigDecimal maximumRange,
+                                       final BigDecimal aspectRatio,
                                        final String engineModelCode) {
-        final AircraftModelId aircraftModelId = new AircraftModelId(modelCode);
+
+        final ManufacturerId manufacturerId = new ManufacturerId(manufacturerCode);
+        final AircraftModelId aircraftModelId = new AircraftModelId(manufacturerId, modelName);
+
         if (aircraftModelRepository.containsOfIdentity(aircraftModelId)) {
+            LOGGER.info("Aircraft Model '{}' already exists.", aircraftModelId);
             return;
         }
 
-        final AircraftModel aircraftModel = new AircraftModel(
-                aircraftModelId,
-                new pt.isep.sem4pi.domain.model.manufacture.ManufacturerId(manufacturerCode),
-                aircraftType,
-                modelName,
-                motorization,
-                emptyWeight,
-                maximumTakeoffWeight,
-                maximumZeroFuelWeight,
-                maximumFuelCapacity,
-                serviceCeiling,
-                cruiseSpeed,
-                wingArea,
-                dragCoefficient,
-                liftCoefficient,
-                maximumRange,
-                aspectRatio
-        );
+        // Get the engine model BEFORE building the aircraft (the constructor requires at least one)
+        final EngineModel engineModel = engineModelRepository
+                .ofIdentity(new EngineModelId(engineModelCode))
+                .orElse(null);
 
-        final EngineModel engineModel = engineModelRepository.ofIdentity(new EngineModelId(engineModelCode)).orElse(null);
-        if (engineModel != null) {
-            aircraftModel.certifyEngine(engineModel);
+        if (engineModel == null) {
+            LOGGER.warn("Engine Model '{}' not found. Skipping aircraft '{}' bootstrap.",
+                    engineModelCode, modelName);
+            return;
         }
 
+        // Build the value objects expected by the constructor
+        final Weight weight = new Weight(emptyWeight, mzfw, mtow);
+        final Fuel fuel = new Fuel(fuelCapacity);
+        final AircraftPerformance performance = new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange);
+        final WingGeometry wingGeometry = new WingGeometry(wingArea, aspectRatio);
+        final Coefficient aerodynamics = new Coefficient(dragCoefficient, liftCoefficient);
+
+        final AircraftModel aircraftModel = new AircraftModel(
+                aircraftModelId,
+                aircraftType,
+                motorization,
+                weight,
+                aerodynamics,
+                performance,
+                fuel,
+                wingGeometry,
+                java.util.List.of(engineModel)
+        );
+
         aircraftModelRepository.save(aircraftModel);
+        LOGGER.info("Aircraft Model '{}' was successfully registered.", aircraftModelId);
     }
 
     private void registerAirControlArea(String code, double minLat, double maxLat, double minLon, double maxLon, String name, double minFuel) {

@@ -59,23 +59,3 @@ public class AircraftModelId implements ValueObject, Comparable<AircraftModelId>
         return this.manufacturerId.toString() + " - " + this.modelName;
     }
 }
-
-//
-//@Embedded
-//@AttributeOverride(name = "value", column = @Column(name = "manufacturer_id"))
-//private Manufacturer manufacturer;
-//
-//@Column(name = "model_name", nullable = false)
-//private String modelName;
-//
-//protected AircraftModelId() {
-//    // JPA
-//}
-//
-//public AircraftModelId(ManufacturerId manufacturer, String modelName) {
-//    Preconditions.nonNull(manufacturer, "ManufacturerId cannot be null.");
-//    Preconditions.nonEmpty(modelName, "ModelName cannot be empty.");
-//
-//    this.manufacturer = manufacturer;
-//    this.modelName = modelName;
-//}
