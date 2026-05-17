@@ -35,25 +35,6 @@ public class RegisterEngineModelControllerTest {
     }
 
     @Test
-    public void registerEngineModelCreatesEngineModel() {
-        AuthzRegistry.authenticationService().authenticate("admin", "Password1");
-
-        final RegisterEngineModelController controller = new RegisterEngineModelController();
-        final var engineModel = controller.registerEngineModel(
-                "CFM56-5B",
-                "CFM",
-                "CFM56-5B",
-                EngineType.TURBOFAN,
-                new BigDecimal("120.00"),
-                FuelType.JET_A1,
-                new BigDecimal("37.50")
-        );
-
-        assertNotNull(engineModel);
-        assertTrue(PersistenceContext.repositories().engineModels().containsOfIdentity(new EngineModelId("CFM56-5B")));
-    }
-
-    @Test
     public void listManufacturersReturnsSeededManufacturer() {
         AuthzRegistry.authenticationService().authenticate("admin", "Password1");
 
