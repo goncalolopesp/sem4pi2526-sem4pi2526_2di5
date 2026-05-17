@@ -1,0 +1,21 @@
+@startuml US050_SSD
+title US050 - Register an Air Control Area - SSD
+
+actor "Backoffice Operator" as Operator
+participant "SEM4PI Backoffice System" as System
+
+Operator -> System : request to register a new Air Control Area
+System --> Operator : ask for area data (code, name, boundaries, minimum reserve fuel rule)
+
+Operator -> System : provide code, name, minLatitude, maxLatitude, minLongitude, maxLongitude, minimumReserveFuelRule
+System --> Operator : confirmation of registered Air Control Area
+
+alt area code already exists
+    System --> Operator : show error (duplicate code)
+else invalid boundary values
+    System --> Operator : show error (invalid boundaries)
+else not authenticated / not authorized
+    System --> Operator : show access denied message
+end
+
+@enduml
