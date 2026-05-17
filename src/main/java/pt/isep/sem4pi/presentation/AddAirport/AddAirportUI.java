@@ -24,10 +24,10 @@ public class AddAirportUI extends AbstractUI {
             System.out.print("Enter Country: ");
             String country = scanner.nextLine();
 
-            System.out.print("Enter IATA Code (2 letters): ");
+            System.out.print("Enter IATA Code (3 letters): ");
             String iata = scanner.nextLine();
 
-            System.out.print("Enter ICAO Code (3 letters): ");
+            System.out.print("Enter ICAO Code (4 letters): ");
             String icao = scanner.nextLine();
 
             System.out.print("Enter Latitude (-90 to 90): ");
