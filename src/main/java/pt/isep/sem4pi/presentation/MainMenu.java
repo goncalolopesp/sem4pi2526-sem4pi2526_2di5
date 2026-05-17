@@ -15,6 +15,7 @@ import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.AddAirport.AddAirportUI;
 import pt.isep.sem4pi.presentation.aircraft.AddAircraftUI;
 import pt.isep.sem4pi.presentation.aircraft.RetireAircraftAction;
+import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.ListCompanyCollaboratorsAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterCompanyCollaboratorAction;
@@ -174,6 +175,7 @@ public class MainMenu extends AbstractUI {
     private Menu buildBackofficeConfigurationMenu() {
         final var menu = new Menu("Backoffice Configuration >");
         menu.addItem(REGISTER_ENGINE_MODEL_OPTION, "Register Engine Model", new RegisterEngineModelAction());
+        menu.addItem(CERTIFY_ENGINE_MODEL_OPTION, "Certify Engine Model", new CertifyEngineModelAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
     }
