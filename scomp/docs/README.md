@@ -93,16 +93,6 @@ A comunicação entre processos é feita através de estruturas binárias (`stru
 - Alocação dinâmica do histórico;
 - Validação dos parâmetros da simulação.
 
-#### Não Implementado
-
-- Física real de voo;
-- Simulação de vento ou combustível;
-- Deteção de colisões;
-- Esperas em tempo real;
-- Parser JSON genérico;
-- Comunicação através de memória partilhada;
-- Simulação baseada em threads.
-
 #### Limitações Conhecidas
 
 - O parser apenas suporta a estrutura dos ficheiros fornecidos.
@@ -337,14 +327,10 @@ Esta implementação foca a sincronização temporal da simulação da US103. A 
 
 ## Auto-avaliação da Contribuição do Grupo
 
-- Notas: os valores abaixo são uma sugestão calculada a partir da tabela de avaliações existente; favor confirmar com o grupo.
-
-| Membro | Contribuição sugerida |
+| Membro | Contribuição  |
 |---|---:|
 | Mariana Gabriel | 33.3% |
 | Guilherme Tavares | 33.3% |
 | Pedro Soares | 0% |
 | Gonçalo Pinto | 33.3% |
 | João Sousa | 0% |
-
-Confirmar valores com o grupo e ajustar se necessário.
