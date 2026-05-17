@@ -1,9 +1,10 @@
-#include "simulation.h"
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "simulation.h"
 
 /* Parser JSON, escrito à mão para evitar dependências. */
 static char *read_file(const char *path, long *size_out) {
@@ -148,8 +149,6 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
             plan->segment_count++;
         }
 
-        /* Só conto o segmento se Mode, Start e End forem válidos, isso evita
-           segfaults com dados incompletos. */
         *(end + 1) = saved;
         cursor = end + 1;
     }
@@ -162,8 +161,10 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
     return 0;
 }
 
-int parse_departure_time_seconds(const char *path, int *out_seconds, char *err, size_t err_size) {
+int parse_departure_time_seconds(const char *path, int *out_seconds,
+                                 char *err, size_t err_size) {
     if (!path || !out_seconds) return -1;
+
     long size = 0;
     char *buffer = read_file(path, &size);
     if (!buffer) {
@@ -180,8 +181,10 @@ int parse_departure_time_seconds(const char *path, int *out_seconds, char *err, 
 
     int hours = 0;
     int minutes = 0;
-    if (sscanf(value, "%d:%d", &hours, &minutes) != 2 || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-        snprintf(err, err_size, "Flight plan '%s' has invalid DepartureTime '%s'", path, value);
+    if (sscanf(value, "%d:%d", &hours, &minutes) != 2 ||
+        hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        snprintf(err, err_size,
+                 "Flight plan '%s' has invalid DepartureTime '%s'", path, value);
         free(buffer);
         return -1;
     }
