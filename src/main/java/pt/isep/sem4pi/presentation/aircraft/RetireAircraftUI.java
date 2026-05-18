@@ -9,11 +9,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("squid:S106")
+/**
+ * UI da US71: permite retirar uma aeronave ativa da frota.
+ */
 public class RetireAircraftUI extends AbstractUI {
 
     private final RetireAircraftController controller = new RetireAircraftController();
 
     @Override
+    /**
+     * Fluxo principal: listar aeronaves ativas, selecionar e pedir retirada.
+     */
     protected boolean doShow() {
         final List<Aircraft> activeAircraft = controller.listAircraft()
                 .stream()
@@ -54,4 +60,3 @@ public class RetireAircraftUI extends AbstractUI {
         return "Retire Aircraft";
     }
 }
-

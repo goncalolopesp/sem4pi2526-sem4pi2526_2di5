@@ -26,6 +26,9 @@ public class RetireAircraftController {
         this.retirementService = new AircraftRetirementService(aircraftRepository, flightRepository);
     }
 
+    /**
+     * Garante permissao e delega a retirada da aeronave.
+     */
     public Aircraft retireAircraft(final AircraftRegistration registration) {
         authz.ensureAuthenticatedUserHasAnyOf(
                 SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR,
@@ -34,6 +37,9 @@ public class RetireAircraftController {
         return retirementService.retireAircraft(registration);
     }
 
+    /**
+     * Lista aeronaves para selecao na UI.
+     */
     public List<Aircraft> listAircraft() {
         final List<Aircraft> aircraft = new ArrayList<>();
         for (final Aircraft item : aircraftRepository.findAll()) {
@@ -42,4 +48,3 @@ public class RetireAircraftController {
         return aircraft;
     }
 }
-

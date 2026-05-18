@@ -5,6 +5,9 @@ import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 
+/**
+ * Repositorio de modelos de motor com consulta por fabricante+nome (US56).
+ */
 public interface EngineModelRepository extends DomainRepository<EngineModelId, EngineModel> {
     boolean existsWithManufacturerAndName(ManufacturerId manufacturerId, String name);
 }

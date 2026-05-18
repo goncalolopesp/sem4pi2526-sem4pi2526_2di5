@@ -9,10 +9,16 @@ import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import java.util.List;
 
 @SuppressWarnings("squid:S106")
+/**
+ * UI da US57: seleciona modelo de aeronave e motor para certificacao.
+ */
 public class CertifyEngineModelUI extends AbstractUI {
     private final CertifyEngineModelController controller = new CertifyEngineModelController();
 
     @Override
+    /**
+     * Fluxo principal: selecionar modelos e enviar para o controller.
+     */
     protected boolean doShow() {
         final AircraftModel aircraftModel = selectAircraftModel();
         if (aircraftModel == null) {
@@ -38,6 +44,9 @@ public class CertifyEngineModelUI extends AbstractUI {
         return "Certify Engine Model";
     }
 
+    /**
+     * Lista modelos de aeronave e devolve o selecionado.
+     */
     private AircraftModel selectAircraftModel() {
         final List<AircraftModel> models = controller.listAircraftModels();
         if (models.isEmpty()) {
@@ -60,6 +69,9 @@ public class CertifyEngineModelUI extends AbstractUI {
         return models.get(choice - 1);
     }
 
+    /**
+     * Lista modelos de motor e devolve o selecionado.
+     */
     private EngineModel selectEngineModel() {
         final List<EngineModel> models = controller.listEngineModels();
         if (models.isEmpty()) {
@@ -82,4 +94,3 @@ public class CertifyEngineModelUI extends AbstractUI {
         return models.get(choice - 1);
     }
 }
-

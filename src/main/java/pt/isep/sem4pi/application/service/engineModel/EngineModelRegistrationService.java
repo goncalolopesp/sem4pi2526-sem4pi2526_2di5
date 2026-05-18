@@ -21,6 +21,9 @@ public class EngineModelRegistrationService {
         this.manufacturerRepository = manufacturerRepository;
     }
 
+    /**
+     * Regista um novo modelo de motor com validacoes de existencia e unicidade.
+     */
     public EngineModel register(final String engineModelCode, final String manufacturerCode, final String name,
                                 final EngineType type, final BigDecimal power, final FuelType fuelType,
                                 final BigDecimal efficiency) {

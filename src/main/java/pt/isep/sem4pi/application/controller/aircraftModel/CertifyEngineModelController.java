@@ -27,11 +27,17 @@ public class CertifyEngineModelController {
         this.certificationService = new AircraftModelCertificationService(aircraftModelRepository, engineModelRepository);
     }
 
+    /**
+     * Garante permissao e delega a certificacao para o servico.
+     */
     public AircraftModel certifyEngineModel(final AircraftModelId aircraftModelId, final EngineModelId engineModelId) {
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
         return certificationService.certifyEngine(aircraftModelId, engineModelId);
     }
 
+    /**
+     * Lista modelos de aeronave para selecao na UI.
+     */
     public List<AircraftModel> listAircraftModels() {
         final List<AircraftModel> models = new ArrayList<>();
         for (final AircraftModel model : aircraftModelRepository.findAll()) {
@@ -40,6 +46,9 @@ public class CertifyEngineModelController {
         return models;
     }
 
+    /**
+     * Lista modelos de motor para selecao na UI.
+     */
     public List<EngineModel> listEngineModels() {
         final List<EngineModel> models = new ArrayList<>();
         for (final EngineModel model : engineModelRepository.findAll()) {
@@ -48,4 +57,3 @@ public class CertifyEngineModelController {
         return models;
     }
 }
-

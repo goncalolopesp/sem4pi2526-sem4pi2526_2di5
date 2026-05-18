@@ -12,10 +12,16 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @SuppressWarnings("squid:S106")
+/**
+ * UI da US56: recolhe dados do modelo de motor e pede o registo ao controller.
+ */
 public class RegisterEngineModelUI extends AbstractUI {
     private final RegisterEngineModelController controller = new RegisterEngineModelController();
 
     @Override
+    /**
+     * Fluxo principal: ler dados, selecionar fabricante, validar entradas e submeter.
+     */
     protected boolean doShow() {
         final String modelCode = Console.readNonEmptyLine("Engine model code:", "Code is required.");
         final Manufacturer manufacturer = selectManufacturer();
@@ -44,6 +50,9 @@ public class RegisterEngineModelUI extends AbstractUI {
         return "Register Engine Model";
     }
 
+    /**
+     * Le e valida valores numericos positivos para potencia/eficiencia.
+     */
     private BigDecimal readPositiveDecimal(final String label) {
         while (true) {
             final String rawValue = Console.readNonEmptyLine(label, "A numeric value is required.");
@@ -60,6 +69,9 @@ public class RegisterEngineModelUI extends AbstractUI {
         }
     }
 
+    /**
+     * Lista fabricantes existentes e devolve o selecionado (ou null para cancelar).
+     */
     private Manufacturer selectManufacturer() {
         final List<Manufacturer> manufacturers = controller.listManufacturers();
         if (manufacturers.isEmpty()) {
@@ -81,6 +93,9 @@ public class RegisterEngineModelUI extends AbstractUI {
         return manufacturers.get(choice - 1);
     }
 
+    /**
+     * Ajuda de selecao generica para enums (tipo de motor, combustivel, etc.).
+     */
     private <T extends Enum<T>> T selectEnum(final String label, final T[] values) {
         System.out.println(label);
         for (int i = 0; i < values.length; i++) {

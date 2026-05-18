@@ -22,6 +22,9 @@ import java.math.BigDecimal;
 @Table(name = "engine_model", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"manufacturer_id", "name"})
 })
+/**
+ * Entidade de dominio do modelo de motor (US56) com invariantes de negocio.
+ */
 public class EngineModel implements AggregateRoot<EngineModelId>, Serializable {
 
     @EmbeddedId
@@ -55,6 +58,9 @@ public class EngineModel implements AggregateRoot<EngineModelId>, Serializable {
         // for ORM
     }
 
+    /**
+     * Cria um modelo de motor validando campos obrigatorios e limites de negocio.
+     */
     public EngineModel(EngineModelId id, Manufacturer manufacturer, String name, EngineType type, BigDecimal power,
                        FuelType fuelType, BigDecimal efficiency) {
         Preconditions.noneNull(id, manufacturer, type, fuelType, power, efficiency);
@@ -98,6 +104,9 @@ public class EngineModel implements AggregateRoot<EngineModelId>, Serializable {
         return manufacturer.identity();
     }
 
+    /**
+     * Verifica a regra de unicidade fabricante + nome (case-insensitive).
+     */
     public boolean hasManufacturerAndName(final ManufacturerId manufacturerId, final String name) {
         if (manufacturerId == null || name == null || name.trim().isEmpty()) {
             return false;

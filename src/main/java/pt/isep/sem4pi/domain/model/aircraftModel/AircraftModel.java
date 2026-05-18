@@ -14,6 +14,9 @@ import java.util.List;
  * Class AircraftModel, an aggregate root of the Domain Model
  */
 
+/**
+ * Agregado AircraftModel com regra de certificacao de motores (US57).
+ */
 @Entity
 public class AircraftModel implements AggregateRoot<AircraftModelId> {
     @EmbeddedId
@@ -122,7 +125,9 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
         if (value.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException(fieldName + " must be non-negative");
     }
 
-    // Business method to ensure invariants
+    /**
+     * Regra de negocio: valida compatibilidade e evita duplicados.
+     */
     public void certifyEngine(EngineModel engine) {
         if (engine == null) {
             throw new IllegalArgumentException("Engine cannot be null.");
@@ -136,10 +141,16 @@ public class AircraftModel implements AggregateRoot<AircraftModelId> {
         this.certifiedEngines.add(new CertifiedEngine(engine));
     }
 
+    /**
+     * Deteccao de duplicados por modelo de motor.
+     */
     private boolean isEngineAlreadyCertified(final EngineModel engine) {
         return certifiedEngines.stream().anyMatch(certifiedEngine -> certifiedEngine.hasEngineModel(engine));
     }
 
+    /**
+     * Compatibilidade baseada na motorization do modelo vs tipo do motor.
+     */
     private boolean isEngineCompatible(final EngineModel engine) {
         final String motorizationValue = motorization == null ? "" : motorization.trim();
         return !motorizationValue.isEmpty()

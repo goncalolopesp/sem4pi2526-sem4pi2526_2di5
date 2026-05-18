@@ -28,6 +28,9 @@ public class RegisterEngineModelController {
         );
     }
 
+    /**
+     * Orquestra o registo e valida permissao de Backoffice/Admin.
+     */
     public EngineModel registerEngineModel(final String engineModelCode, final String manufacturerCode,
                                            final String name, final EngineType type, final BigDecimal power,
                                            final FuelType fuelType, final BigDecimal efficiency) {
@@ -35,6 +38,9 @@ public class RegisterEngineModelController {
         return registrationService.register(engineModelCode, manufacturerCode, name, type, power, fuelType, efficiency);
     }
 
+    /**
+     * Lista fabricantes para apresentacao na UI.
+     */
     public List<Manufacturer> listManufacturers() {
         final List<Manufacturer> manufacturers = new ArrayList<>();
         for (final Manufacturer manufacturer : manufacturerRepository.findAll()) {

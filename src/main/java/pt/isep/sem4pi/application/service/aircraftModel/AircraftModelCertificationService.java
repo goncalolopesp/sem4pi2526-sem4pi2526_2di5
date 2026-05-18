@@ -17,6 +17,9 @@ public class AircraftModelCertificationService {
         this.engineModelRepository = engineModelRepository;
     }
 
+    /**
+     * Certifica um motor num modelo de aeronave, aplicando regras do agregado.
+     */
     public AircraftModel certifyEngine(final AircraftModelId aircraftModelId, final EngineModelId engineModelId) {
         final AircraftModel aircraftModel = aircraftModelRepository.ofIdentity(aircraftModelId)
                 .orElseThrow(() -> new IllegalArgumentException("The aircraft model does not exist."));
@@ -27,4 +30,3 @@ public class AircraftModelCertificationService {
         return aircraftModelRepository.save(aircraftModel);
     }
 }
-

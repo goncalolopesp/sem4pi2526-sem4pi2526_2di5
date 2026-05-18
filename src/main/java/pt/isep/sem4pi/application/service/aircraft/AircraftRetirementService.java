@@ -16,6 +16,9 @@ public class AircraftRetirementService {
         this.flightRepository = flightRepository;
     }
 
+    /**
+     * Retira a aeronave se nao existirem voos pendentes.
+     */
     public Aircraft retireAircraft(final AircraftRegistration registration) {
         final Aircraft aircraft = aircraftRepository.ofIdentity(registration)
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft not found."));
@@ -28,4 +31,3 @@ public class AircraftRetirementService {
         return aircraftRepository.save(aircraft);
     }
 }
-
