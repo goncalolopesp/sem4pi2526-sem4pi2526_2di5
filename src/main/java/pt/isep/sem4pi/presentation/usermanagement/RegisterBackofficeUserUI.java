@@ -8,12 +8,21 @@ import pt.isep.sem4pi.application.service.usermanagment.PasswordStrengthService;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
+/**
+ * UI da US31: recolhe dados de registo de backoffice e delega no controller.
+ *
+ * Faz validacoes basicas de formato (email, datas) e feedback imediato de policy de password.
+ * A validacao final e a criacao efetiva sao do controller/servico.
+ */
 public class RegisterBackofficeUserUI extends AbstractUI {
 
     private final RegisterBackofficeUserController controller = new RegisterBackofficeUserController();
     private final PasswordStrengthService passwordStrengthService = new PasswordStrengthService();
 
     @Override
+    /**
+     * Fluxo principal: validar inputs, normalizar email e pedir registo ao controller.
+     */
     protected boolean doShow() {
         try {
             controller.ensureAdmin();

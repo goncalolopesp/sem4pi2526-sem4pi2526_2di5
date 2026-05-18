@@ -12,6 +12,12 @@ import jakarta.persistence.Version;
 import java.time.LocalDate;
 import java.util.Objects;
 
+/**
+ * Entidade de dominio que representa o perfil de negocio de um utilizador backoffice.
+ *
+ * Contem dados de negocio (nome, email, telefone e datas) e nao inclui credenciais.
+ * A autenticacao/estado ativo e gerida pelo SystemUser do framework (US30/US32).
+ */
 @Entity
 public class BackofficeUser implements AggregateRoot<String> {
 

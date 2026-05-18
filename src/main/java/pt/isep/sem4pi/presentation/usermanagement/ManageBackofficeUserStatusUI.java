@@ -7,11 +7,19 @@ import pt.isep.sem4pi.application.service.usermanagment.UserStatusService;
 
 import java.util.List;
 
+/**
+ * UI da US32: lista utilizadores e permite ativar/desativar.
+ *
+ * A lista inclui o estado atual (ativo/inativo) e a operacao e delegada no controller.
+ */
 public class ManageBackofficeUserStatusUI extends AbstractUI {
 
     private final ManageBackofficeUserStatusController controller = new ManageBackofficeUserStatusController();
 
     @Override
+    /**
+     * Fluxo principal: listar utilizadores, selecionar e aplicar enable/disable.
+     */
     protected boolean doShow() {
         try {
             final List<UserStatusService.BackofficeUserStatus> users = controller.listAllWithStatus();

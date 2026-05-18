@@ -17,6 +17,13 @@ public class UserAccessService {
         this.userRepository = PersistenceContext.repositories().users();
     }
 
+    /**
+     * Verifica se um utilizador pode autenticar:
+     * - existe no repositorio do framework;
+     * - esta marcado como ativo.
+     *
+     * Usado pelo fluxo de login para bloquear utilizadores desativados.
+     */
     public boolean canUserAccess(final String username) {
         Preconditions.nonEmpty(username, "Username must not be empty");
         Preconditions.nonNull(userRepository, "User repository must be available");

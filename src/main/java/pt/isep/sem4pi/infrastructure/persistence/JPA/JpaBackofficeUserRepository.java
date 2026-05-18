@@ -10,6 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Implementacao JPA do repositorio de BackofficeUser.
+ *
+ * Baseia-se no JpaAutoTxRepository e usa o campo "username" como chave.
+ */
 public class JpaBackofficeUserRepository
         extends JpaAutoTxRepository<BackofficeUser, String, String>
         implements BackofficeUserRepository {

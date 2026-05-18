@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Ponto central para obter repositorios (in-memory ou JPA) via RepositoryFactory.
+ *
+ * Resolve a factory a partir de properties ou override por JVM property.
+ */
 public final class PersistenceContext {
 
     private static RepositoryFactory theFactory;
@@ -14,6 +19,9 @@ public final class PersistenceContext {
         // utility
     }
 
+    /**
+     * Devolve a factory de repositorios configurada para a aplicacao.
+     */
     public static RepositoryFactory repositories() {
         if (theFactory == null) {
             theFactory = buildRepositoryFactory();

@@ -12,8 +12,16 @@ import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 import java.time.LocalDate;
 
+/**
+ * Bootstrap que cria utilizadores default (admin e backoffice) se nao existirem.
+ *
+ * Cria SystemUser (framework) e BackofficeUser (perfil de negocio) em separado.
+ */
 public class MasterUsersBootstrapper {
 
+    /**
+     * Executa a criacao dos utilizadores default, evitando duplicados.
+     */
     public boolean execute() {
         final UserRepository users = PersistenceContext.repositories().users();
         final BackofficeUserRepository backofficeUsers = PersistenceContext.repositories().backofficeUsers();

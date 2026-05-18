@@ -5,11 +5,19 @@ import pt.isep.sem4pi.application.service.usermanagment.UserStatusService;
 
 import java.util.List;
 
+/**
+ * UI da US32: lista utilizadores backoffice com o estado atual.
+ *
+ * Apenas apresenta informacao (nao altera estado).
+ */
 public class ListBackofficeUsersUI extends AbstractUI {
 
     private final UserStatusService service = new UserStatusService();
 
     @Override
+    /**
+     * Fluxo principal: listar utilizadores e respetivo estado.
+     */
     protected boolean doShow() {
         try {
             final List<UserStatusService.BackofficeUserStatus> users = service.listAllWithStatus();
