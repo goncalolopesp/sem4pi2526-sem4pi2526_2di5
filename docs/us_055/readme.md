@@ -5,7 +5,7 @@ Implementation of the functionality that allows a `BACKOFFICE_OPERATOR` to regis
 
 ## 2. Architecture / Organization
 - `domain.model.aircraftModel`: `AircraftModel`, `AircraftModelId`, `AircraftType`, `MotorizationType`, `Weight`, `WingGeometry`, `Fuel`, `AircraftPerformance`, `Coefficient`.
-- `domain.model.engineModel`: `CertifiedEngine` (entity owned by `AircraftModel`, holding a reference to an `EngineModel`).
+- `domain.model.engineModel`: `CertifiedEngine`.
 - `application`: `AddAircraftModelController`.
 - `infrastructure.bootstrap`: `BackofficeConfigurationBootstrapper` (integrated bootstrap of Manufacturers, Engine Models, Aircraft Models and Air Control Areas).
 - `infrastructure.persistence`: `InMemoryAircraftModelRepository` and `JpaAircraftModelRepository`.
