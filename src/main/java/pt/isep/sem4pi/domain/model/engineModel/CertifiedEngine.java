@@ -23,6 +23,10 @@ public class CertifiedEngine {
         // for ORM
     }
 
+    public EngineModel engineModel() {
+        return engineModel;
+    }
+
     public CertifiedEngine(final EngineModel engineModel) {
         Preconditions.nonNull(engineModel, "Engine Model cannot be null.");
         this.engineModel = engineModel;

@@ -44,9 +44,9 @@ public class AddAircraftService {
             throw new IllegalStateException("An aircraft with this registration already exists.");
         }
 
-        AircraftModelId id = new AircraftModelId(modelId);
-        Aircraft newAircraft = new Aircraft(registration, id);
-        company.addAircraftToFleet(newAircraft);
+//        AircraftModelId id = new AircraftModelId(modelId);
+//        Aircraft newAircraft = new Aircraft(registration, id);
+//        company.addAircraftToFleet(newAircraft);
 
         companyRepo.save(company);
     }

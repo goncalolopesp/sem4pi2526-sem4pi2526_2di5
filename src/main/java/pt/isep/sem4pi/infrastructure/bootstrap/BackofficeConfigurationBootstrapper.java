@@ -107,36 +107,36 @@ public class BackofficeConfigurationBootstrapper {
                                        final BigDecimal dragCoefficient, final BigDecimal liftCoefficient,
                                        final BigDecimal maximumRange, final BigDecimal aspectRatio,
                                        final String engineModelCode) {
-        final AircraftModelId aircraftModelId = new AircraftModelId(modelCode);
-        if (aircraftModelRepository.containsOfIdentity(aircraftModelId)) {
-            return;
-        }
+//        final AircraftModelId aircraftModelId = new AircraftModelId(modelCode);
+//        if (aircraftModelRepository.containsOfIdentity(aircraftModelId)) {
+//            return;
+//        }
 
-        final AircraftModel aircraftModel = new AircraftModel(
-                aircraftModelId,
-                new pt.isep.sem4pi.domain.model.manufacture.ManufacturerId(manufacturerCode),
-                aircraftType,
-                modelName,
-                motorization,
-                emptyWeight,
-                maximumTakeoffWeight,
-                maximumZeroFuelWeight,
-                maximumFuelCapacity,
-                serviceCeiling,
-                cruiseSpeed,
-                wingArea,
-                dragCoefficient,
-                liftCoefficient,
-                maximumRange,
-                aspectRatio
-        );
+//        final AircraftModel aircraftModel = new AircraftModel(
+//                aircraftModelId,
+//                new pt.isep.sem4pi.domain.model.manufacture.ManufacturerId(manufacturerCode),
+//                aircraftType,
+//                modelName,
+//                motorization,
+//                emptyWeight,
+//                maximumTakeoffWeight,
+//                maximumZeroFuelWeight,
+//                maximumFuelCapacity,
+//                serviceCeiling,
+//                cruiseSpeed,
+//                wingArea,
+//                dragCoefficient,
+//                liftCoefficient,
+//                maximumRange,
+//                aspectRatio
+//        );
 
-        final EngineModel engineModel = engineModelRepository.ofIdentity(new EngineModelId(engineModelCode)).orElse(null);
-        if (engineModel != null) {
-            aircraftModel.certifyEngine(engineModel);
-        }
-
-        aircraftModelRepository.save(aircraftModel);
+//        final EngineModel engineModel = engineModelRepository.ofIdentity(new EngineModelId(engineModelCode)).orElse(null);
+//        if (engineModel != null) {
+//            aircraftModel.certifyEngine(engineModel);
+//        }
+//
+//        aircraftModelRepository.save(aircraftModel);
     }
 
     private void registerAircraft(final String registrationCode, final String aircraftModelCode) {
@@ -144,8 +144,8 @@ public class BackofficeConfigurationBootstrapper {
         if (aircraftRepository.containsOfIdentity(registration)) {
             return;
         }
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(aircraftModelCode));
-        aircraftRepository.save(aircraft);
+//        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(aircraftModelCode));
+//        aircraftRepository.save(aircraft);
     }
 
     private void registerFlight(final String flightCode, final String registrationCode) {
