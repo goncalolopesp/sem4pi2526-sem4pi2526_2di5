@@ -1,7 +1,8 @@
-#include "simulation.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "simulation.h"
 
 void tracker_init(PositionTracker *tracker) {
     memset(tracker, 0, sizeof(*tracker));
