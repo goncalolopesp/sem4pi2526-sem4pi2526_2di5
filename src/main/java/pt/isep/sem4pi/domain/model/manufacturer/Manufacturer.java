@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.model.manufacture;
+package pt.isep.sem4pi.domain.model.manufacturer;
 
 import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.validations.Preconditions;
@@ -56,5 +56,15 @@ public class Manufacturer implements AggregateRoot<ManufacturerId> {
 
     public String country() {
         return country;
+    }
+
+    @Override
+    public String toString() {
+        return "Manufacturer{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", country='" + country + '\'' +
+                ", version=" + version +
+                '}';
     }
 }

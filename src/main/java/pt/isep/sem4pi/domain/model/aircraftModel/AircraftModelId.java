@@ -6,7 +6,7 @@ import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
-import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 
 /**
  * The ID for Aircraft Model, which is a value object that uniquely identifies an Aircraft Model by its manufacturerId and modelName. It implements Comparable to allow sorting by code.

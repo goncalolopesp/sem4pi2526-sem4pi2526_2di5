@@ -5,6 +5,7 @@ import eapli.framework.validations.Preconditions;
 import jakarta.persistence.*;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.CertifiedEngine;
+import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 
 import java.util.ArrayList;
 import java.util.List;

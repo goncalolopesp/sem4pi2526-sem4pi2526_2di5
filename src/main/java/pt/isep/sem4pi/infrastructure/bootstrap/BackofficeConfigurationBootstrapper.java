@@ -3,8 +3,9 @@ package pt.isep.sem4pi.infrastructure.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
-import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
-import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.aircraftModel.*;
+import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
@@ -14,9 +15,6 @@ import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.CustomerCollaboratorBootstrapper;
@@ -29,6 +27,7 @@ import eapli.framework.domain.repositories.ConcurrencyException;
 import eapli.framework.domain.repositories.IntegrityViolationException;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.FuelType;
@@ -66,8 +65,8 @@ public class BackofficeConfigurationBootstrapper {
                 new BigDecimal("122.60"), new BigDecimal("0.0320"), new BigDecimal("1.5200"),
                 new BigDecimal("6150.00"), new BigDecimal("9.45"), "CFM56-5B");
 
-        registerAircraft("CS-TST", "A320");
-        registerAircraft("CS-RET", "A320");
+        registerAircraft("CS-TST", "AIRBUS", "A320");
+        registerAircraft("CS-RET", "AIRBUS", "A320");
         registerFlight("TP100", "CS-TST");
 
         // Inicializar Air Control Areas (Critério de Aceitação 3)
@@ -107,45 +106,44 @@ public class BackofficeConfigurationBootstrapper {
                                        final BigDecimal dragCoefficient, final BigDecimal liftCoefficient,
                                        final BigDecimal maximumRange, final BigDecimal aspectRatio,
                                        final String engineModelCode) {
-//        final AircraftModelId aircraftModelId = new AircraftModelId(modelCode);
-//        if (aircraftModelRepository.containsOfIdentity(aircraftModelId)) {
-//            return;
-//        }
+        final AircraftModelId aircraftModelId = new AircraftModelId(new ManufacturerId(manufacturerCode), modelCode);
+        if (aircraftModelRepository.containsOfIdentity(aircraftModelId)) {
+            return;
+        }
 
-//        final AircraftModel aircraftModel = new AircraftModel(
-//                aircraftModelId,
-//                new pt.isep.sem4pi.domain.model.manufacture.ManufacturerId(manufacturerCode),
-//                aircraftType,
-//                modelName,
-//                motorization,
-//                emptyWeight,
-//                maximumTakeoffWeight,
-//                maximumZeroFuelWeight,
-//                maximumFuelCapacity,
-//                serviceCeiling,
-//                cruiseSpeed,
-//                wingArea,
-//                dragCoefficient,
-//                liftCoefficient,
-//                maximumRange,
-//                aspectRatio
-//        );
+        // Resolve engine model first; constructor requires at least one EngineModel
+        final EngineModel engineModel = engineModelRepository.ofIdentity(new EngineModelId(engineModelCode)).orElse(null);
+        if (engineModel == null) {
+            LOGGER.warn("Engine model '{}' not found. Skipping registration of aircraft model {}.", engineModelCode, aircraftModelId);
+            return;
+        }
 
-//        final EngineModel engineModel = engineModelRepository.ofIdentity(new EngineModelId(engineModelCode)).orElse(null);
-//        if (engineModel != null) {
-//            aircraftModel.certifyEngine(engineModel);
-//        }
-//
-//        aircraftModelRepository.save(aircraftModel);
+        // Use provided motorization string to build the EngineType enum
+        final EngineType motorizationEnum = EngineType.valueOf(motorization);
+
+        final AircraftModel aircraftModel = new AircraftModel(
+                aircraftModelId,
+                aircraftType,
+                motorizationEnum,
+                new Weight(emptyWeight, maximumZeroFuelWeight, maximumTakeoffWeight),
+                new Coefficient(dragCoefficient, liftCoefficient),
+                new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange),
+                new Fuel(maximumFuelCapacity),
+                new WingGeometry(wingArea, aspectRatio),
+                Collections.singletonList(engineModel)
+        );
+
+        aircraftModelRepository.save(aircraftModel);
     }
 
-    private void registerAircraft(final String registrationCode, final String aircraftModelCode) {
+    private void registerAircraft(final String registrationCode, final String manufacturerCode, final String aircraftModelCode) {
         final AircraftRegistration registration = new AircraftRegistration(registrationCode);
         if (aircraftRepository.containsOfIdentity(registration)) {
             return;
         }
-//        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(aircraftModelCode));
-//        aircraftRepository.save(aircraft);
+        final AircraftModelId modelId = new AircraftModelId(new ManufacturerId(manufacturerCode), aircraftModelCode);
+        final Aircraft aircraft = new Aircraft(registration, modelId);
+        aircraftRepository.save(aircraft);
     }
 
     private void registerFlight(final String flightCode, final String registrationCode) {

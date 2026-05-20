@@ -6,6 +6,7 @@ import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryFlightRepository;
 
@@ -20,7 +21,7 @@ public class AircraftRetirementServiceTest {
         final AircraftRetirementService service = new AircraftRetirementService(aircraftRepository, flightRepository);
 
         final AircraftRegistration registration = new AircraftRegistration("CS-OK");
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId("A320"));
+        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(new ManufacturerId("Airbus"),"A320"));
         aircraftRepository.save(aircraft);
 
         final Aircraft retired = service.retireAircraft(registration);
@@ -35,7 +36,7 @@ public class AircraftRetirementServiceTest {
         final AircraftRetirementService service = new AircraftRetirementService(aircraftRepository, flightRepository);
 
         final AircraftRegistration registration = new AircraftRegistration("CS-BLOCK");
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId("A320"));
+        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(new ManufacturerId("Airbus"),"A320"));
         aircraftRepository.save(aircraft);
 
         final Flight flight = new Flight(new FlightId("TP200"), registration);
