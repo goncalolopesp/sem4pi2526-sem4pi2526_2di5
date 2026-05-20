@@ -2,8 +2,10 @@ package pt.isep.sem4pi.application.service.usermanagment;
 
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import pt.isep.sem4pi.application.controller.usermanagement.ManageBackofficeUserStatusController;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
@@ -24,6 +26,16 @@ public class UserStatusServiceTest {
         }
 
         AuthzRegistry.authenticationService().authenticate("admin", "Password1");
+        new ManageBackofficeUserStatusController().enableUser("bo");
+        AuthzRegistry.authorizationService().clearSession();
+        AuthzRegistry.authenticationService().authenticate("admin", "Password1");
+    }
+
+    @After
+    public void tearDown() {
+        if (AuthzRegistry.authorizationService().hasSession()) {
+            AuthzRegistry.authorizationService().clearSession();
+        }
     }
 
     @Test
@@ -60,5 +72,25 @@ public class UserStatusServiceTest {
         final UserStatusService service = new UserStatusService();
 
         service.disableUser("admin");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void listAllWithStatusRequiresAdminSession() {
+        AuthzRegistry.authorizationService().clearSession();
+
+        final UserStatusService service = new UserStatusService();
+        service.listAllWithStatus();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void enableUnknownUserThrows() {
+        final UserStatusService service = new UserStatusService();
+        service.enableUser("unknown-" + System.nanoTime());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void disableUnknownUserThrows() {
+        final UserStatusService service = new UserStatusService();
+        service.disableUser("unknown-" + System.nanoTime());
     }
 }

@@ -46,7 +46,7 @@ public class LoginUI extends AbstractUI {
 
         while (attempt <= maxAttempts) {
             final String username = Console.readNonEmptyLine("Username:", "Please provide a username");
-            final String password = Console.readLine("Password:");
+            final String password = Console.readNonEmptyLine("Password:", "Please provide a password");
 
             final AuthenticationController.LoginResult result =
                     controller.login(username, password, onlyWithThis);
