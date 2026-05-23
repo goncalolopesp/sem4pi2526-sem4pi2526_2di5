@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.application;
+package pt.isep.sem4pi.application.controller.usermanagement;
 
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
@@ -46,7 +46,6 @@ public class ListUsersController {
         List<SystemUser> backofficeUsers = new ArrayList<>();
 
         for (SystemUser user : allUsers) {
-            // Verifica se o utilizador tem pelo menos uma role de backoffice
             if (user.hasAny(SEM4PIRoles.ADMIN, SEM4PIRoles.BACKOFFICE_OPERATOR)) {
                 backofficeUsers.add(user);
             }

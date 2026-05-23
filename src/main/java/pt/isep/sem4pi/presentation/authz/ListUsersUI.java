@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.authz;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import eapli.framework.presentation.console.AbstractUI;
-import pt.isep.sem4pi.application.ListUsersController;
+import pt.isep.sem4pi.application.controller.usermanagement.ListUsersController;
 
 import java.util.stream.Collectors;
 
