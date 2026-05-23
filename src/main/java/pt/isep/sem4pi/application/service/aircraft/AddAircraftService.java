@@ -1,14 +1,17 @@
 package pt.isep.sem4pi.application.service.aircraft;
 
+import pt.isep.sem4pi.application.viadto.AircraftModelDTORepresentationBuilder;
 import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
-import pt.isep.sem4pi.domain.model.aircraft.AircraftModelTemp;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.aircraft.CabinConfiguration;
+import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
+import pt.isep.sem4pi.domain.model.aircraftModel.DTO.AircraftModelDTO;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
-import pt.isep.sem4pi.domain.repositories.AircraftModelTempRepository;
+import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,14 +19,14 @@ import java.util.List;
 public class AddAircraftService {
 
     private final AirTransportCompanyRepository companyRepo;
-    private final AircraftModelTempRepository modelRepo;
+    private final AircraftModelRepository modelRepo;
 
-    public AddAircraftService(AirTransportCompanyRepository companyRepo, AircraftModelTempRepository modelRepo) {
+    public AddAircraftService(AirTransportCompanyRepository companyRepo, AircraftModelRepository modelRepo) {
         this.companyRepo = companyRepo;
         this.modelRepo = modelRepo;
     }
 
-    public void addAircraftToFleet(String companyIataStr, String regStr, String modelId,
+    public void addAircraftToFleet(String companyIataStr, String regStr, String manufacturerStr, String modelNameStr,
                                    String country, int eco, int bus, int first) {
 
         IataCode companyIata = new IataCode(companyIataStr);
@@ -33,19 +36,22 @@ public class AddAircraftService {
         AirTransportCompany company = companyRepo.findByIataCode(companyIata)
                 .orElseThrow(() -> new IllegalArgumentException("Company not found."));
 
-        AircraftModelTemp model = modelRepo.findById(modelId)
+        AircraftModelId realId = new AircraftModelId(new ManufacturerId(manufacturerStr), modelNameStr);
+        AircraftModel model = modelRepo.ofIdentity(realId)
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft Model not found in system."));
 
-        if (seats.getTotalCapacity() > model.getMaximumCapacity()) {
-            throw new IllegalStateException("Total seats exceed the maximum capacity for model " + modelId);
+        AircraftModelDTORepresentationBuilder builder = new AircraftModelDTORepresentationBuilder();
+        AircraftModelDTO modelDto = model.buildRepresentation(builder);
+
+        if (seats.getTotalCapacity() > modelDto.getMaximumCapacity()) {
+            throw new IllegalStateException("Total seats exceed the maximum capacity for model " + modelNameStr);
         }
 
         if (companyRepo.existsByAircraftRegistration(registration)) {
             throw new IllegalStateException("An aircraft with this registration already exists.");
         }
 
-        AircraftModelId id = new AircraftModelId(modelId);
-        Aircraft newAircraft = new Aircraft(registration, id);
+        Aircraft newAircraft = new Aircraft(registration, realId, seats, country);
         company.addAircraftToFleet(newAircraft);
 
         companyRepo.save(company);
