@@ -1,6 +1,8 @@
 package pt.isep.sem4pi.application.controller.aircraftmodel;
 
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
+import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.application.controller.aircraftModel.AddAircraftModelController;
@@ -15,6 +17,8 @@ import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
+import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
+import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftModelRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryManufacturerRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryEngineModelRepository;
@@ -68,7 +72,6 @@ public class AddAircraftModelControllerTests {
     public void addAircraftModel() {
         long initialCount = ((InMemoryAircraftModelRepository) aircraftRepo).count();
 
-        // Adicionado o parâmetro '180' (maximumCapacity) no final
         AircraftModelDTO result = controller.addAircraftModel(
                 dummyManufacturer, "PASSENGER", "B737", EngineType.TURBOFAN,
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"),
@@ -89,7 +92,6 @@ public class AddAircraftModelControllerTests {
     public void ensureCannotAddDuplicateModelNameForSameManufacturer() {
         long initialCount = ((InMemoryAircraftModelRepository) aircraftRepo).count();
 
-        // Adicionado o parâmetro '180' (maximumCapacity) no final
         controller.addAircraftModel(
                 dummyManufacturer, "PASSENGER", "A320", EngineType.TURBOFAN,
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"),
@@ -99,7 +101,6 @@ public class AddAircraftModelControllerTests {
         );
 
         try {
-            // Adicionado o parâmetro '180' (maximumCapacity) no final
             controller.addAircraftModel(
                     dummyManufacturer, "PASSENGER", "A320", EngineType.TURBOFAN,
                     new BigDecimal("40000"), new BigDecimal("70000"), new BigDecimal("80000"),
@@ -118,7 +119,6 @@ public class AddAircraftModelControllerTests {
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureCannotAddAircraftModelWithoutAnyEngine() {
-        // Adicionado o parâmetro '180' (maximumCapacity) no final
         controller.addAircraftModel(
                 dummyManufacturer, "PASSENGER", "B747", EngineType.TURBOFAN,
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"),
@@ -126,5 +126,44 @@ public class AddAircraftModelControllerTests {
                 new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
                 new BigDecimal("5000"), new BigDecimal("9.5"), Collections.emptyList(), 180
         );
+    }
+
+    @Test
+    public void ensureDefaultConstructorWorks() {
+        System.setProperty("persistence.repositoryFactory",
+                "pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory");
+
+        AuthzRegistry.configure(
+                PersistenceContext.repositories().users(),
+                new SEM4PIPasswordPolicy(),
+                new PlainTextEncoder()
+        );
+
+        AddAircraftModelController defaultController = new AddAircraftModelController();
+
+        assertNotNull(defaultController);
+    }
+
+    @Test
+    public void ensureGetManufacturersReturnsData() {
+        Manufacturer realMan = new Manufacturer(new ManufacturerId("BOEING"), "Boeing", "USA");
+        manufacturerRepo.save(realMan);
+
+        Iterable<Manufacturer> result = controller.getManufacturers();
+        List<Manufacturer> list = new ArrayList<>();
+        result.forEach(list::add);
+
+        assertFalse(list.isEmpty());
+        assertEquals("BOEING", list.get(0).identity().toString());
+    }
+
+    @Test
+    public void ensureGetEngineModelsReturnsData() {
+        Iterable<EngineModel> result = controller.getEngineModels();
+        List<EngineModel> list = new ArrayList<>();
+        result.forEach(list::add);
+
+        assertFalse(list.isEmpty());
+        assertEquals("CFM56", list.get(0).identity().toString());
     }
 }

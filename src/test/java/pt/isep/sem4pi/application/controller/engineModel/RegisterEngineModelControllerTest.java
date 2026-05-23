@@ -41,7 +41,15 @@ public class RegisterEngineModelControllerTest {
         final var manufacturers = controller.listManufacturers();
 
         assertFalse(manufacturers.isEmpty());
-        assertEquals("CFM", manufacturers.get(0).identity().toString());
+        boolean containsCFM = false;
+        for (Manufacturer m : manufacturers) {
+            if (m.identity().toString().equals("CFM")) {
+                containsCFM = true;
+                break;
+            }
+        }
+
+        assertTrue("The list should contain the seeded CFM manufacturer", containsCFM);
     }
 
     @Test

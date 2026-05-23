@@ -60,11 +60,6 @@ public class Manufacturer implements AggregateRoot<ManufacturerId> {
 
     @Override
     public String toString() {
-        return "Manufacturer{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", country='" + country + '\'' +
-                ", version=" + version +
-                '}';
+        return name + " (" + country + ")";
     }
 }
