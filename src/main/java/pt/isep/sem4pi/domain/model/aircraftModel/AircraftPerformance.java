@@ -67,6 +67,10 @@ public class AircraftPerformance implements ValueObject {
         }
     }
 
+    public BigDecimal serviceCeiling() {return serviceCeiling;}
+    public BigDecimal cruiseSpeed() {return cruiseSpeed;}
+    public BigDecimal maximumRangeKm() {return maximumRangeKm;}
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -34,6 +34,14 @@ public class AircraftModelId implements ValueObject, Comparable<AircraftModelId>
         this.modelName = modelName;
     }
 
+    public ManufacturerId manufacturerId() {
+        return manufacturerId;
+    }
+
+    public String modelName() {
+        return modelName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

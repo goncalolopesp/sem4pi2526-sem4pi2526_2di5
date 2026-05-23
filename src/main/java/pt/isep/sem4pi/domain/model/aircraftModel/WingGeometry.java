@@ -75,6 +75,9 @@ public class WingGeometry implements ValueObject {
         }
     }
 
+    public BigDecimal wingArea() { return wingArea; }
+    public BigDecimal aspectRatio() { return aspectRatio; }
+
     /**
      * Compares this WingGeometry object with another object for equality.
      * Two WingGeometry objects are equal if their wing area and aspect ratio are numerically equal.

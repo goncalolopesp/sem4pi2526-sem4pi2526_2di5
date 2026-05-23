@@ -31,6 +31,8 @@ public class Fuel implements ValueObject {
         }
     }
 
+    public BigDecimal maxFuelCapacity() {return this.maxFuelCapacity;}
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

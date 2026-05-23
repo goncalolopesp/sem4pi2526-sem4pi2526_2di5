@@ -4,6 +4,7 @@ import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import eapli.framework.presentation.console.SelectWidget;
 import pt.isep.sem4pi.application.controller.aircraftModel.AddAircraftModelController;
+import pt.isep.sem4pi.domain.model.aircraftModel.DTO.AircraftModelDTO;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
@@ -15,26 +16,11 @@ import java.util.List;
 
 /**
  * User interface for adding a new aircraft model.
- * <p>This class extends AbstractUI and provides a console-based interface
- * for users to input details of a new aircraft model, including manufacturer,
- * basic data, weights, performance parameters, and associated engines.
- * It interacts with the AddAircraftModelController to persist the data.</p>
  */
 public class AddAircraftModelUI extends AbstractUI {
 
-    /**
-     * The controller used to handle the business logic for adding aircraft models.
-     */
     private final AddAircraftModelController controller = new AddAircraftModelController();
 
-    /**
-     * Displays the user interface for adding a new aircraft model.
-     * <p>This method guides the user through selecting a manufacturer, entering
-     * model details, inputting numerical parameters, and selecting engines.
-     * It then attempts to create and save the aircraft model.</p>
-     *
-     * @return false to indicate the UI should not loop (single execution)
-     */
     @Override
     protected boolean doShow() {
         /// 1. Choose Manufacturer
@@ -71,28 +57,43 @@ public class AddAircraftModelUI extends AbstractUI {
             return false;
         }
 
-        /// 3. Collect BigDecimal values
+        Iterable<EngineModel> allEngines = controller.getEngineModels();
+        List<EngineModel> compatibleEngines = new ArrayList<>();
+
+        for (EngineModel engine : allEngines) {
+            if (engine.type() == motorization) {
+                compatibleEngines.add(engine);
+            }
+        }
+
+        if (compatibleEngines.isEmpty()) {
+            System.out.println("\n[ERROR] There are no " + motorization.name() + " engines registered in the system.");
+            System.out.println("Operation cancelled. Please register a compatible engine first.");
+            return false;
+        }
+
+        /// 3. Collect BigDecimal values and Capacity with Domain Validations
         BigDecimal emptyWeight = readBigDecimal("Empty Weight (kg): ");
-        BigDecimal mzfw = readBigDecimal("MZFW (Maximum Zero Fuel Weight, kg): ");
-        BigDecimal mtow = readBigDecimal("MTOW (Maximum Take-Off Weight, kg): ");
+        BigDecimal mzfw = readMzfw(emptyWeight);
+        BigDecimal mtow = readMtow(mzfw);
         BigDecimal fuelCap = readBigDecimal("Fuel Capacity (liters): ");
         BigDecimal ceiling = readBigDecimal("Service Ceiling (feet): ");
         BigDecimal speed = readBigDecimal("Cruise Speed (knots): ");
         BigDecimal wingArea = readBigDecimal("Wing Area (m²): ");
-        BigDecimal drag = readBigDecimal("Drag Coefficient: ");
-        BigDecimal lift = readBigDecimal("Lift Coefficient: ");
+        BigDecimal drag = readDrag();
+        BigDecimal lift = readLift();
         BigDecimal range = readBigDecimal("Maximum Range (km): ");
         BigDecimal aspectRatio = readBigDecimal("Aspect Ratio: ");
 
-        /// 4. Choose Engines
+        Integer maximumCapacity = Console.readInteger("Maximum Capacity (number of seats): ");
+
         /// 4. Choose Engines
         List<EngineModel> selectedEngines = new ArrayList<>();
-        Iterable<EngineModel> availableEngines = controller.getEngineModels();
 
         boolean addMore = true;
         while (addMore) {
             SelectWidget<EngineModel> selectorEngine =
-                    new SelectWidget<>("Available Engines (select one or 0 to stop):", availableEngines);
+                    new SelectWidget<>("Available Compatible Engines (select one or 0 to stop):", compatibleEngines);
             selectorEngine.show();
             EngineModel selectedEngine = selectorEngine.selectedElement();
 
@@ -119,10 +120,10 @@ public class AddAircraftModelUI extends AbstractUI {
 
         /// 5. Send to the Controller
         try {
-            controller.addAircraftModel(selectedMan, selectedType, name, motorization,
-                    emptyWeight, mzfw, mtow, fuelCap, ceiling, speed, wingArea, drag, lift, range, aspectRatio, selectedEngines);
+            AircraftModelDTO dto = controller.addAircraftModel(selectedMan, selectedType, name, motorization,
+                    emptyWeight, mzfw, mtow, fuelCap, ceiling, speed, wingArea, drag, lift, range, aspectRatio, selectedEngines, maximumCapacity);
 
-            System.out.println("\nAircraft Model successfully created and saved!");
+            System.out.println("\nAircraft Model " + dto.getModelName() + " successfully created and saved (Version: " + dto.getVersion() + ")!");
 
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("\nERROR: " + e.getMessage());
@@ -133,14 +134,6 @@ public class AddAircraftModelUI extends AbstractUI {
         return false;
     }
 
-    /**
-     * Reads a BigDecimal value from the console with error handling.
-     * <p>This method prompts the user for a decimal input and retries
-     * until a valid number is entered.</p>
-     *
-     * @param prompt the prompt message to display to the user
-     * @return the BigDecimal value entered by the user
-     */
     private BigDecimal readBigDecimal(String prompt) {
         while (true) {
             try {
@@ -153,10 +146,40 @@ public class AddAircraftModelUI extends AbstractUI {
     }
 
     /**
-     * Returns the headline for this UI.
-     *
-     * @return the headline string
+     * Helper methods to enforce domain rules immediately during UI input.
      */
+    private BigDecimal readMzfw(BigDecimal emptyWeight) {
+        while (true) {
+            BigDecimal mzfw = readBigDecimal("MZFW (Maximum Zero Fuel Weight, kg): ");
+            if (mzfw.compareTo(emptyWeight) > 0) return mzfw;
+            System.out.println("[ERROR] MZFW must be strictly greater than Empty Weight (" + emptyWeight + ").");
+        }
+    }
+
+    private BigDecimal readMtow(BigDecimal mzfw) {
+        while (true) {
+            BigDecimal mtow = readBigDecimal("MTOW (Maximum Take-Off Weight, kg): ");
+            if (mtow.compareTo(mzfw) > 0) return mtow;
+            System.out.println("[ERROR] MTOW must be strictly greater than MZFW (" + mzfw + ").");
+        }
+    }
+
+    private BigDecimal readDrag() {
+        while (true) {
+            BigDecimal drag = readBigDecimal("Drag Coefficient: ");
+            if (drag.compareTo(BigDecimal.ZERO) > 0 && drag.compareTo(new BigDecimal("1.0")) <= 0) return drag;
+            System.out.println("[ERROR] Drag Coefficient must be strictly > 0 and <= 1.0.");
+        }
+    }
+
+    private BigDecimal readLift() {
+        while (true) {
+            BigDecimal lift = readBigDecimal("Lift Coefficient: ");
+            if (lift.compareTo(BigDecimal.ZERO) > 0 && lift.compareTo(new BigDecimal("4.0")) <= 0) return lift;
+            System.out.println("[ERROR] Lift Coefficient must be strictly > 0 and <= 4.0.");
+        }
+    }
+
     @Override
     public String headline() {
         return "Add New Aircraft Model";

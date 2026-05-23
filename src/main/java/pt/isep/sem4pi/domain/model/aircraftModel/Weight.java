@@ -106,6 +106,10 @@ public class Weight implements ValueObject {
             throw new IllegalArgumentException("Max take off weight must be strictly greater than zero.");
     }
 
+    public BigDecimal maxTakeOffWeight() {return this.maxTakeOffWeight;}
+    public BigDecimal maxZeroFuelWeight() {return this.maxZeroFuelWeight;}
+    public BigDecimal emptyWeight() {return emptyWeight;}
+
     /**
      * Compares this Weight object with another object for equality.
      * Two Weight objects are equal if their empty weight, maximum zero fuel weight,

@@ -13,6 +13,7 @@ import pt.isep.sem4pi.domain.repositories.AircraftRepository;
 import pt.isep.sem4pi.domain.repositories.FlightRepository;
 import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.aircraft.CabinConfiguration;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
@@ -63,17 +64,15 @@ public class BackofficeConfigurationBootstrapper {
                 new BigDecimal("42000.00"), new BigDecimal("77000.00"), new BigDecimal("62000.00"),
                 new BigDecimal("24000.00"), new BigDecimal("39000.00"), new BigDecimal("828.00"),
                 new BigDecimal("122.60"), new BigDecimal("0.0320"), new BigDecimal("1.5200"),
-                new BigDecimal("6150.00"), new BigDecimal("9.45"), "CFM56-5B");
+                new BigDecimal("6150.00"), new BigDecimal("9.45"), "CFM56-5B", 180);
 
-        registerAircraft("CS-TST", "AIRBUS", "A320");
-        registerAircraft("CS-RET", "AIRBUS", "A320");
+        registerAircraft("CS-TST", "AIRBUS", "A320", 150, 20, 0, "Portugal");
+        registerAircraft("CS-RET", "AIRBUS", "A320", 150, 20, 0, "Portugal");
         registerFlight("TP100", "CS-TST");
 
-        // Inicializar Air Control Areas (Critério de Aceitação 3)
         registerAirControlArea("LIS_FIR", 36.0, 42.0, -10.0, -6.0, "Lisbon FIR", 1000.0);
         registerAirControlArea("MAD_FIR", 35.0, 43.0, -5.0, 0.0, "Madrid FIR", 1200.0);
 
-        //Executar o Bootstrap dos Customer Collaborators
         CustomerCollaboratorBootstrapper ccb = new CustomerCollaboratorBootstrapper();
         ccb.execute();
 
@@ -105,7 +104,7 @@ public class BackofficeConfigurationBootstrapper {
                                        final BigDecimal cruiseSpeed, final BigDecimal wingArea,
                                        final BigDecimal dragCoefficient, final BigDecimal liftCoefficient,
                                        final BigDecimal maximumRange, final BigDecimal aspectRatio,
-                                       final String engineModelCode) {
+                                       final String engineModelCode, final Integer maximumCapacity) {
         final AircraftModelId aircraftModelId = new AircraftModelId(new ManufacturerId(manufacturerCode), modelCode);
         if (aircraftModelRepository.containsOfIdentity(aircraftModelId)) {
             return;
@@ -130,19 +129,23 @@ public class BackofficeConfigurationBootstrapper {
                 new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange),
                 new Fuel(maximumFuelCapacity),
                 new WingGeometry(wingArea, aspectRatio),
-                Collections.singletonList(engineModel)
+                Collections.singletonList(engineModel),
+                maximumCapacity
         );
 
         aircraftModelRepository.save(aircraftModel);
     }
 
-    private void registerAircraft(final String registrationCode, final String manufacturerCode, final String aircraftModelCode) {
+    private void registerAircraft(final String registrationCode, final String manufacturerCode, final String aircraftModelCode,
+                                  final int eco, final int bus, final int first, final String country) {
         final AircraftRegistration registration = new AircraftRegistration(registrationCode);
         if (aircraftRepository.containsOfIdentity(registration)) {
             return;
         }
+
+        final CabinConfiguration seats = new CabinConfiguration(eco, bus, first);
         final AircraftModelId modelId = new AircraftModelId(new ManufacturerId(manufacturerCode), aircraftModelCode);
-        final Aircraft aircraft = new Aircraft(registration, modelId);
+        final Aircraft aircraft = new Aircraft(registration, modelId, seats, country);
         aircraftRepository.save(aircraft);
     }
 

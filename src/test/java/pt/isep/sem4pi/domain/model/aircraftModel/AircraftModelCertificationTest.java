@@ -39,8 +39,7 @@ public class AircraftModelCertificationTest {
     }
 
     private AircraftModel buildAircraftModel(final String motorization) {
-        // Build an initial engine (different from the one used in tests) because the AircraftModel constructor
-        // requires at least one EngineModel. Tests will still exercise certifyEngine by adding other engines.
+        // Build an initial engine to satisfy the AircraftModel constructor preconditions
         final EngineModel initEngine = buildEngineModel("INIT-ENG", EngineType.valueOf(motorization));
 
         return new AircraftModel(
@@ -52,7 +51,8 @@ public class AircraftModelCertificationTest {
                 new AircraftPerformance(new BigDecimal("39000.00"), new BigDecimal("828.00"), new BigDecimal("6150.00")),
                 new Fuel(new BigDecimal("24000.00")),
                 new WingGeometry(new BigDecimal("122.60"), new BigDecimal("9.45")),
-                Collections.singletonList(initEngine)
+                Collections.singletonList(initEngine),
+                180
         );
     }
 
@@ -69,4 +69,3 @@ public class AircraftModelCertificationTest {
         );
     }
 }
-

@@ -4,14 +4,14 @@ import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.application.controller.aircraftModel.AddAircraftModelController;
+import pt.isep.sem4pi.application.service.aircraftModel.AddAircraftModelService;
+import pt.isep.sem4pi.domain.model.aircraftModel.DTO.AircraftModelDTO;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.FuelType;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
@@ -34,6 +34,7 @@ public class AddAircraftModelControllerTests {
     private AircraftModelRepository aircraftRepo;
     private ManufacturerRepository manufacturerRepo;
     private EngineModelRepository engineRepo;
+    private AddAircraftModelService addAircraftModelService;
     private Manufacturer dummyManufacturer;
     private List<EngineModel> dummyEngineModels;
 
@@ -45,8 +46,10 @@ public class AddAircraftModelControllerTests {
 
         AuthorizationService authzMock = mock(AuthorizationService.class);
 
+        addAircraftModelService = new AddAircraftModelService(authzMock, aircraftRepo, engineRepo);
+
         controller = new AddAircraftModelController(
-                authzMock, aircraftRepo, manufacturerRepo, engineRepo);
+                authzMock, aircraftRepo, manufacturerRepo, engineRepo, addAircraftModelService);
 
         dummyManufacturer = mock(Manufacturer.class);
         when(dummyManufacturer.identity()).thenReturn(new ManufacturerId("AIRBUS"));
@@ -57,24 +60,28 @@ public class AddAircraftModelControllerTests {
                 EngineType.TURBOFAN, new BigDecimal("10000"),
                 FuelType.JET_A1, new BigDecimal("0.80"));
         dummyEngineModels.add(engine);
+
+        engineRepo.save(engine);
     }
 
     @Test
     public void addAircraftModel() {
         long initialCount = ((InMemoryAircraftModelRepository) aircraftRepo).count();
 
-        AircraftModel result = controller.addAircraftModel(
+        // Adicionado o parâmetro '180' (maximumCapacity) no final
+        AircraftModelDTO result = controller.addAircraftModel(
                 dummyManufacturer, "PASSENGER", "B737", EngineType.TURBOFAN,
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"),
                 new BigDecimal("12000"), new BigDecimal("12000"), new BigDecimal("800"),
                 new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
-                new BigDecimal("5000"), new BigDecimal("9.5"), dummyEngineModels
+                new BigDecimal("5000"), new BigDecimal("9.5"), dummyEngineModels, 180
         );
 
         assertNotNull(result);
 
-        AircraftModelId expectedId = new AircraftModelId(new ManufacturerId("AIRBUS"), "B737");
-        assertEquals(expectedId, result.identity());
+        assertEquals("AIRBUS", result.getManufacturerId());
+        assertEquals("B737", result.getModelName());
+
         assertEquals(1, ((InMemoryAircraftModelRepository) aircraftRepo).count() - initialCount);
     }
 
@@ -82,21 +89,23 @@ public class AddAircraftModelControllerTests {
     public void ensureCannotAddDuplicateModelNameForSameManufacturer() {
         long initialCount = ((InMemoryAircraftModelRepository) aircraftRepo).count();
 
+        // Adicionado o parâmetro '180' (maximumCapacity) no final
         controller.addAircraftModel(
                 dummyManufacturer, "PASSENGER", "A320", EngineType.TURBOFAN,
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"),
                 new BigDecimal("12000"), new BigDecimal("12000"), new BigDecimal("800"),
                 new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
-                new BigDecimal("5000"), new BigDecimal("9.5"), dummyEngineModels
+                new BigDecimal("5000"), new BigDecimal("9.5"), dummyEngineModels, 180
         );
 
         try {
+            // Adicionado o parâmetro '180' (maximumCapacity) no final
             controller.addAircraftModel(
                     dummyManufacturer, "PASSENGER", "A320", EngineType.TURBOFAN,
                     new BigDecimal("40000"), new BigDecimal("70000"), new BigDecimal("80000"),
                     new BigDecimal("12000"), new BigDecimal("12000"), new BigDecimal("800"),
                     new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
-                    new BigDecimal("5000"), new BigDecimal("9.5"), dummyEngineModels
+                    new BigDecimal("5000"), new BigDecimal("9.5"), dummyEngineModels, 180
             );
             fail("Expected IllegalArgumentException");
         } catch (IllegalArgumentException exception) {
@@ -109,12 +118,13 @@ public class AddAircraftModelControllerTests {
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureCannotAddAircraftModelWithoutAnyEngine() {
+        // Adicionado o parâmetro '180' (maximumCapacity) no final
         controller.addAircraftModel(
                 dummyManufacturer, "PASSENGER", "B747", EngineType.TURBOFAN,
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"),
                 new BigDecimal("12000"), new BigDecimal("12000"), new BigDecimal("800"),
                 new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
-                new BigDecimal("5000"), new BigDecimal("9.5"), Collections.emptyList()
+                new BigDecimal("5000"), new BigDecimal("9.5"), Collections.emptyList(), 180
         );
     }
 }

@@ -86,6 +86,11 @@ public class EngineModel implements AggregateRoot<EngineModelId>, Serializable {
         return id;
     }
 
+    @Override
+    public String toString() {
+        return this.name + ", type: " + this.type.name();
+    }
+
     public EngineType type() {
         return type;
     }

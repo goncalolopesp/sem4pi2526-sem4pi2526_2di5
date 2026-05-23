@@ -34,6 +34,7 @@ public class AircraftModelTests {
     private Fuel fuel;
     private WingGeometry wingGeometry;
     private List<EngineModel> engineModels;
+    private Integer maximumCapacity; // <-- Nova variável adicionada
 
     @Before
     public void setUp() {
@@ -62,6 +63,8 @@ public class AircraftModelTests {
                 new BigDecimal("9.45")
         );
 
+        maximumCapacity = 180; // <-- Capacidade Fictícia configurada
+
         // Mock manufacturer of the engine (CFM)
         engineManufacturerId = new ManufacturerId("CFM");
         engineManufacturer = mock(Manufacturer.class);
@@ -84,10 +87,11 @@ public class AircraftModelTests {
         );
     }
 
+    // <-- Adicionado o parâmetro 'maximumCapacity' na criação
     private AircraftModel buildAircraftModel() {
         return new AircraftModel(
                 aircraftModelId, aircraftType, motorization,
-                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels
+                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels, maximumCapacity
         );
     }
 
@@ -102,62 +106,76 @@ public class AircraftModelTests {
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullAircraftModelId() {
         new AircraftModel(null, aircraftType, motorization,
-                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels);
+                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels, maximumCapacity);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullAircraftType() {
         new AircraftModel(aircraftModelId, null, motorization,
-                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels);
+                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels, maximumCapacity);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullMotorization() {
         new AircraftModel(aircraftModelId, aircraftType, null,
-                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels);
+                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels, maximumCapacity);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullWeightLimits() {
         new AircraftModel(aircraftModelId, aircraftType, motorization,
-                null, aerodynamics, performance, fuel, wingGeometry, engineModels);
+                null, aerodynamics, performance, fuel, wingGeometry, engineModels, maximumCapacity);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullAerodynamics() {
         new AircraftModel(aircraftModelId, aircraftType, motorization,
-                weightLimits, null, performance, fuel, wingGeometry, engineModels);
+                weightLimits, null, performance, fuel, wingGeometry, engineModels, maximumCapacity);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullPerformance() {
         new AircraftModel(aircraftModelId, aircraftType, motorization,
-                weightLimits, aerodynamics, null, fuel, wingGeometry, engineModels);
+                weightLimits, aerodynamics, null, fuel, wingGeometry, engineModels, maximumCapacity);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullFuel() {
         new AircraftModel(aircraftModelId, aircraftType, motorization,
-                weightLimits, aerodynamics, performance, null, wingGeometry, engineModels);
+                weightLimits, aerodynamics, performance, null, wingGeometry, engineModels, maximumCapacity);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullWingGeometry() {
         new AircraftModel(aircraftModelId, aircraftType, motorization,
-                weightLimits, aerodynamics, performance, fuel, null, engineModels);
+                weightLimits, aerodynamics, performance, fuel, null, engineModels, maximumCapacity);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullEngineModels() {
         new AircraftModel(aircraftModelId, aircraftType, motorization,
-                weightLimits, aerodynamics, performance, fuel, wingGeometry, null);
+                weightLimits, aerodynamics, performance, fuel, wingGeometry, null, maximumCapacity);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorEmptyEngineModels() {
         new AircraftModel(aircraftModelId, aircraftType, motorization,
                 weightLimits, aerodynamics, performance, fuel, wingGeometry,
-                new ArrayList<>());
+                new ArrayList<>(), maximumCapacity);
+    }
+
+    // --- NOVO TESTE: Garantir rejeição de Lotação Nula ---
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorNullMaximumCapacity() {
+        new AircraftModel(aircraftModelId, aircraftType, motorization,
+                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels, null);
+    }
+
+    // --- NOVO TESTE: Garantir rejeição de Lotação Negativa ---
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorNegativeMaximumCapacity() {
+        new AircraftModel(aircraftModelId, aircraftType, motorization,
+                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels, -10);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -201,7 +219,7 @@ public class AircraftModelTests {
         AircraftModelId differentId = new AircraftModelId(manufacturerId, "B737");
         AircraftModel am2 = new AircraftModel(
                 differentId, aircraftType, motorization,
-                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels
+                weightLimits, aerodynamics, performance, fuel, wingGeometry, engineModels, maximumCapacity
         );
 
         assertFalse(am1.sameAs(am2));

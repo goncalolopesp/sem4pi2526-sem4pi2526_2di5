@@ -58,6 +58,9 @@ public class Coefficient implements ValueObject {
         }
     }
 
+    public BigDecimal dragCoefficient() {return dragCoefficient;}
+    public BigDecimal liftCoefficient() {return liftCoefficient;}
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

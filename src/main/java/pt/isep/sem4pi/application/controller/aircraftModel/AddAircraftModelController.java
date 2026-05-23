@@ -3,7 +3,12 @@ package pt.isep.sem4pi.application.controller.aircraftModel;
 import eapli.framework.application.UseCaseController;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+import pt.isep.sem4pi.application.service.aircraftModel.AddAircraftModelService;
+import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
+import pt.isep.sem4pi.application.viadto.AircraftModelDTORepresentationBuilder;
+import pt.isep.sem4pi.domain.model.aircraftModel.DTO.AircraftModelDTO;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
+import pt.isep.sem4pi.domain.model.engineModel.FuelType;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.aircraftModel.*;
@@ -15,10 +20,11 @@ import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Controller to add a new Aircraft Model to the system. Only users with BACKOFFICE_OPERATOR role can perform this action.
+ * Controller to add a new Aircraft Model to the system. Only users with BACKOFFICE_OPERATOR and ADMIN role can perform this action.
  * The controller interacts with the repositories to fetch necessary data and save the new Aircraft Model.
  */
 
@@ -29,9 +35,7 @@ public class AddAircraftModelController {
     private final AircraftModelRepository aircraftRepo;
     private final ManufacturerRepository manufacturerRepo;
     private final EngineModelRepository engineRepo;
-
-    private ManufacturerId airbus = new ManufacturerId("AIRBUS");
-    private ManufacturerId boeing = new ManufacturerId("BOEING");
+    private final AddAircraftModelService  addAircraftModelService;
 
     // Constructor for production (uses EAPLI factories)
     public AddAircraftModelController() {
@@ -39,15 +43,41 @@ public class AddAircraftModelController {
         this.aircraftRepo = PersistenceContext.repositories().aircraftModels();
         this.manufacturerRepo = PersistenceContext.repositories().manufacturers();
         this.engineRepo = PersistenceContext.repositories().engineModels();
+
+        // Pass engineRepo to the service
+        this.addAircraftModelService = new AddAircraftModelService(authz, aircraftRepo, engineRepo);
     }
 
     // Constructor for testing (allows Mockito to inject fake repositories)
     public AddAircraftModelController(AuthorizationService authz, AircraftModelRepository aircraftRepo,
-                                      ManufacturerRepository manufacturerRepo, EngineModelRepository engineRepo) {
+                                      ManufacturerRepository manufacturerRepo, EngineModelRepository engineRepo, AddAircraftModelService addAircraftModelService) {
         this.authz = authz;
         this.aircraftRepo = aircraftRepo;
         this.manufacturerRepo = manufacturerRepo;
         this.engineRepo = engineRepo;
+        this.addAircraftModelService = addAircraftModelService;
+    }
+
+    public AircraftModelDTO addAircraftModel(Manufacturer manufacturer, String type, String name,
+                                             EngineType motorization, BigDecimal emptyWeight, BigDecimal mzfw, BigDecimal mtow,
+                                             BigDecimal fuelCap, BigDecimal ceiling, BigDecimal speed,
+                                             BigDecimal wingArea, BigDecimal drag, BigDecimal lift,
+                                             BigDecimal range, BigDecimal aspectRatio, List<EngineModel> engine,
+                                             Integer maximumCapacity) {
+
+        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
+
+        AircraftModel aircraftModel = addAircraftModelService.addAircraftModel(manufacturer, type, name, motorization, emptyWeight, mzfw, mtow, fuelCap, ceiling, speed, wingArea, drag, lift, range, aspectRatio, engine, maximumCapacity);
+
+        AircraftModel savedAircraft = aircraftRepo.save(aircraftModel);
+
+        AircraftModelDTORepresentationBuilder builder = new AircraftModelDTORepresentationBuilder();
+
+        AircraftModelDTO dto = aircraftModel.buildRepresentation(builder);
+
+        dto.setVersion(savedAircraft.version());
+
+        return dto;
     }
 
     public Iterable<Manufacturer> getManufacturers() {
@@ -58,34 +88,5 @@ public class AddAircraftModelController {
     public Iterable<EngineModel> getEngineModels() {
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
         return engineRepo.findAll();
-    }
-
-    public AircraftModel addAircraftModel(Manufacturer manufacturer, String type, String name,
-                                          EngineType motorization, BigDecimal emptyWeight, BigDecimal mzfw, BigDecimal mtow,
-                                          BigDecimal fuelCap, BigDecimal ceiling, BigDecimal speed,
-                                          BigDecimal wingArea, BigDecimal drag, BigDecimal lift,
-                                          BigDecimal range, BigDecimal aspectRatio, List<EngineModel> engine) {
-
-        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
-
-        ManufacturerId manId = manufacturer.identity();
-        AircraftModelId modelId = new AircraftModelId(manId, name);
-
-        if (aircraftRepo.containsOfIdentity(modelId)) {
-            throw new IllegalArgumentException("Already exists a model with this name for this manufacturer.");
-        }
-
-        AircraftType aircraftType = AircraftType.valueOf(type.toUpperCase());
-
-        Weight weight = new Weight(emptyWeight, mzfw, mtow);
-        Fuel fuel = new Fuel(fuelCap);
-        AircraftPerformance performance = new AircraftPerformance(ceiling, speed, range);
-        WingGeometry geometry = new WingGeometry(wingArea, aspectRatio);
-        Coefficient aerodynamics = new Coefficient(drag, lift);
-
-        AircraftModel newAircraft = new AircraftModel(modelId, aircraftType, motorization,
-                weight, aerodynamics, performance, fuel, geometry, engine);
-
-        return aircraftRepo.save(newAircraft);
     }
 }
