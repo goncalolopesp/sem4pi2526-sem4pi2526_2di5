@@ -120,7 +120,8 @@ void run_flight_process(const char *flight_file,
     }
 
     int departure_time = config->start_time;
-    if (parse_departure_time_seconds(flight_file, &departure_time, err, sizeof(err)) != 0) {
+    if (!config->start_time_provided &&
+        parse_departure_time_seconds(flight_file, &departure_time, err, sizeof(err)) != 0) {
         dprintf(STDERR_FILENO, "Flight process error: %s\n", err);
         close(update_write_fd);
         close(sync_read_fd);

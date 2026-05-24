@@ -358,10 +358,11 @@ int main(int argc, char **argv) {
         int departure_time = config.start_time;
         char departure_err[256];
 
-        if (parse_departure_time_seconds(config.flight_files[i],
-                                         &departure_time,
-                                         departure_err,
-                                         sizeof(departure_err)) != 0) {
+        if (!config.start_time_provided &&
+            parse_departure_time_seconds(config.flight_files[i],
+                                        &departure_time,
+                                        departure_err,
+                                        sizeof(departure_err)) != 0) {
             fprintf(stderr, "Validation error: %s\n", departure_err);
             sigprocmask(SIG_SETMASK, &previous_mask, NULL);
             free_runtimes(runtimes, i);
