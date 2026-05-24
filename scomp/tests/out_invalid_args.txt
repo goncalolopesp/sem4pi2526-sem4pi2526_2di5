@@ -1,0 +1,3 @@
+Invalid argument: data/Flight_Plan_v0a.json
+Usage: ./flight_simulator --area <minLat> <maxLat> <minLon> <maxLon> --start <sec> --end <sec> --step <sec> --weather <clear|rain|storm|fog> --safety-min-sep <nm> --safety-min-alt <m> --perf-max-flights <n> --flight <file> [--flight <file> ...]
+Example: ./flight_simulator --area 39 43 -9 -3 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json

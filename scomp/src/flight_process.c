@@ -52,8 +52,8 @@ static int send_update(int fd, const FlightPlan *plan, int t, Position p, int st
     /* Garante flight_id único por processo: <id_do_plano>-<pid>
        Isto evita que múltiplos processos com o mesmo plano sejam fundidos
        no PositionTracker — crítico para a deteção de violações da US102. */
-    snprintf(update.flight_id, sizeof(update.flight_id), "%s-%d",
-             plan->flight_id, getpid());
+    snprintf(update.flight_id, sizeof(update.flight_id), "%.48s-%d",
+         plan->flight_id, getpid());
     ssize_t written = write(fd, &update, sizeof(update));
     return written == (ssize_t)sizeof(update) ? 0 : -1;
 }
