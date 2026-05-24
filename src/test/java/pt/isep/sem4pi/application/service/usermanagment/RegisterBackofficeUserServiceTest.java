@@ -25,6 +25,7 @@ import java.util.Optional;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class RegisterBackofficeUserServiceTest {
 
@@ -220,5 +221,98 @@ public class RegisterBackofficeUserServiceTest {
                 LocalDate.now().plusYears(1),
                 LocalDate.now()
         );
+    }
+
+    @Test
+    public void inMemoryTransactional_successfulRegistration() {
+        final pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory memFactory = new pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory();
+        final RegisterBackofficeUserService svc = new RegisterBackofficeUserService(memFactory);
+
+        final String username = "txuser" + System.nanoTime();
+        final String email = username + "@example.org";
+
+        final BackofficeUser result = svc.register(
+                username,
+                "Password1",
+                "New",
+                "User",
+                email,
+                "+351900000000",
+                LocalDate.now().plusYears(1),
+                LocalDate.now()
+        );
+
+        assertNotNull(result);
+        assertTrue(memFactory.backofficeUsers().existsByUsername(username));
+        assertTrue(memFactory.users().ofIdentity(Username.valueOf(username)).isPresent());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void inMemoryTransactional_backofficeSaveFailure_rollsBackSystemUser() {
+        final pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory memFactory = new pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory();
+
+        final eapli.framework.infrastructure.authz.domain.repositories.UserRepository userRepo = memFactory.users();
+        final BackofficeUserRepository failingBo = Mockito.spy(new InMemoryBackofficeUserRepository());
+        Mockito.doThrow(new RuntimeException("simulated failure")).when(failingBo).save(Mockito.any());
+
+        final RepositoryFactory customFactory = new RepositoryFactory() {
+            @Override
+            public TransactionalContext newTransactionalContext() {
+                return memFactory.newTransactionalContext();
+            }
+
+            @Override
+            public UserRepository users(TransactionalContext tx) {
+                return memFactory.users(tx);
+            }
+
+            @Override
+            public UserRepository users() {
+                return userRepo;
+            }
+
+            @Override
+            public BackofficeUserRepository backofficeUsers(TransactionalContext tx) {
+                // return failing repo for the tx
+                return failingBo;
+            }
+
+            @Override
+            public BackofficeUserRepository backofficeUsers() {
+                return failingBo;
+            }
+
+            @Override public pt.isep.sem4pi.domain.repositories.AircraftModelRepository aircraftModels() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.EngineModelRepository engineModels() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.ManufacturerRepository manufacturers() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.AirControlAreaRepository airControlAreas() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.AirControlAreaRepository airControlAreas(final TransactionalContext tx) { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository airTransportCompanies() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository airTransportCompanyCollaborators() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.AircraftRepository aircrafts() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.FlightRepository flights() { return null; }
+        };
+
+        final RegisterBackofficeUserService svc = new RegisterBackofficeUserService(customFactory);
+
+        final String username = "txfail" + System.nanoTime();
+        final String email = username + "@example.org";
+
+        try {
+            svc.register(
+                    username,
+                    "Password1",
+                    "Fail",
+                    "Bo",
+                    email,
+                    "+351900000006",
+                    LocalDate.now().plusYears(1),
+                    LocalDate.now()
+            );
+        } finally {
+            // after rollback, system user must not exist
+            assertFalse(memFactory.users().ofIdentity(Username.valueOf(username)).isPresent());
+            assertFalse(memFactory.backofficeUsers().existsByUsername(username));
+        }
     }
 }

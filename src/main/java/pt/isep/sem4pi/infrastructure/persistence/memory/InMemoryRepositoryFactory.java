@@ -192,7 +192,7 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
                     "bo",
                     "Backoffice User",
                     Email.valueOf("bo@example.org"),
-                    PhoneNumber.valueOf("+351000000000"),
+                    PhoneNumber.valueOf("+351900000000"),
                     LocalDate.now().plusYears(1),
                     LocalDate.now()
             );

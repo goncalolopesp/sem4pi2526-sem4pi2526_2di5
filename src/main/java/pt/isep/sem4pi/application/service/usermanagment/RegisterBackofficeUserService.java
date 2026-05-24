@@ -18,31 +18,31 @@ import java.time.LocalDate;
 
 /**
  * Serviço aplicacional para o caso de uso "Registar utilizador backoffice".
- * <p>
+ *
  * Mantém o controller fino e centraliza a coordenação entre repositórios e
  * framework authz (SystemUser).
  */
 public class RegisterBackofficeUserService {
 
-    private final RepositoryFactory repoFactory;
+    private final RepositoryFactory repositoryFactory;
 
-    public RegisterBackofficeUserService(final RepositoryFactory repoFactory) {
-        Preconditions.nonNull(repoFactory, "RepositoryFactory is required");
-        this.repoFactory = repoFactory;
+    public RegisterBackofficeUserService(final RepositoryFactory repositoryFactory) {
+        Preconditions.nonNull(repositoryFactory, "RepositoryFactory is required");
+        this.repositoryFactory = repositoryFactory;
     }
 
     /**
      * Regista um novo utilizador backoffice.
-     * <p>
+     *
      * Regras aplicadas (nível aplicacional):
      * - Unicidade de username e email (SystemUser + BackofficeUser).
      * - Criação do SystemUser (framework) + BackofficeUser (perfil de negócio).
      */
     public BackofficeUser register(final String username, final String password,
-                                   final String firstName, final String lastName,
-                                   final String email, final String phoneNumber,
-                                   final LocalDate securityClearanceExpirationDate,
-                                   final LocalDate skillsAssessmentDate) {
+                                  final String firstName, final String lastName,
+                                  final String email, final String phoneNumber,
+                                  final LocalDate securityClearanceExpirationDate,
+                                  final LocalDate skillsAssessmentDate) {
 
         Preconditions.nonEmpty(username, "username is required");
         Preconditions.nonEmpty(password, "password is required");
@@ -54,26 +54,28 @@ public class RegisterBackofficeUserService {
         final Email emailVo = Email.valueOf(emailNorm);
         final PhoneNumber phoneVo = PhoneNumber.valueOf(phoneNumber);
 
-        final TransactionalContext tx = repoFactory.newTransactionalContext();
-
+        final TransactionalContext tx = repositoryFactory.newTransactionalContext();
+        tx.beginTransaction();
+        SystemUser createdSysUser = null;
+        UserRepository usersRepo = null;
         try {
-            tx.beginTransaction();
+            usersRepo = repositoryFactory.users(tx);
+            final BackofficeUserRepository backofficeRepo = repositoryFactory.backofficeUsers(tx);
 
-            final UserRepository users = repoFactory.users(tx);
-            final BackofficeUserRepository backoffice = repoFactory.backofficeUsers(tx);
-
-            if (backoffice.existsByUsername(uname)) {
+            // Unicidade: perfil
+            if (backofficeRepo.existsByUsername(uname)) {
                 throw new IllegalArgumentException("username already exists");
             }
-
-            if (backoffice.existsByEmail(emailVo)) {
+            if (backofficeRepo.existsByEmail(emailVo)) {
                 throw new IllegalArgumentException("email already exists");
             }
 
-            if (users.ofIdentity(Username.valueOf(uname)).isPresent()) {
+            // Unicidade: SystemUser (framework)
+            if (usersRepo.ofIdentity(Username.valueOf(uname)).isPresent()) {
                 throw new IllegalArgumentException("username already exists");
             }
 
+            // Criação do SystemUser valida automaticamente password policy via builder helper
             final SystemUserBuilder userBuilder = UserBuilderHelper.builder();
             userBuilder.withUsername(uname)
                     .withPassword(password)
@@ -82,11 +84,10 @@ public class RegisterBackofficeUserService {
                     .withRoles(SEM4PIRoles.BACKOFFICE_OPERATOR);
 
             final SystemUser sysUser = userBuilder.build();
+            usersRepo.save(sysUser);
+            createdSysUser = sysUser;
 
-            final String fullName = ((firstName == null ? "" : firstName)
-                    + " "
-                    + (lastName == null ? "" : lastName)).trim();
-
+            final String fullName = ((firstName == null ? "" : firstName) + " " + (lastName == null ? "" : lastName)).trim();
             final BackofficeUser profile = new BackofficeUser(
                     uname,
                     fullName,
@@ -95,20 +96,38 @@ public class RegisterBackofficeUserService {
                     securityClearanceExpirationDate,
                     skillsAssessmentDate
             );
-
-            users.save(sysUser);
-            backoffice.save(profile);
+            backofficeRepo.save(profile);
 
             tx.commit();
             return profile;
-
         } catch (final RuntimeException | Error e) {
             try {
                 tx.rollback();
-            } catch (final Exception ignored) {
-                // rollback best effort
+            } catch (final Exception ex) {
+                // swallow rollback exceptions but log if required
             }
+
+            if (createdSysUser != null) {
+                try {
+                    // attempt compensating delete using same repo instance used in the transaction
+                    if (usersRepo != null) {
+                        usersRepo.delete(createdSysUser);
+                    } else {
+                        // fallback: use repository factory
+                        repositoryFactory.users().delete(createdSysUser);
+                    }
+                } catch (final Exception ex) {
+                    // swallow - best-effort compensating action
+                }
+            }
+
             throw e;
+        } finally {
+            try {
+                tx.close();
+            } catch (final Exception ex) {
+                // swallow close exceptions
+            }
         }
     }
 }
