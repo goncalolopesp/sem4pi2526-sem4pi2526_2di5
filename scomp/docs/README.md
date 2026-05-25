@@ -1,439 +1,592 @@
-# SCOMP – Sprint 3
+# Flight Simulation System
 
-## Component Diagram
+## Índice
 
-```plantuml
-@startuml
-title Component Diagram - flight_simulator
-actor "Terminal" as T
-rectangle "Main Process\n(flight_simulator)" as Main
-folder "PositionTracker / History" as Tracker
-package "Flight Processes (1..N)" {
-  rectangle "Flight Process" as Flight
-}
-database "data/Flight_Plan_v0a.json" as FP
-file "simulation_report.txt" as Report
-T --> Main : start / params
-Main --> FP : read plans
-Main --> Flight : fork + SIGUSR1 (start)
-Main --> Flight : sync pipe (parent->child) : 'N' (next step)
-Flight --> Main : update pipe (child->parent) : PositionUpdate
-Main --> Tracker : tracker_update()
-Main --> Report : write history
-note right of Main: poll() on update pipes\nwrite 'N' on sync pipes to advance
-@enduml
-```
+1. Introdução
+2. Arquitetura Geral
+3. Evolução da Arquitetura entre Sprints
+4. US100 - Simulate flights in a given area
+5. US102 - Detect safety violations
+6. US103 - Synchronize simulation steps
+7. US109 - Generate simulation report
+8. Estruturas Principais
+9. Decisões Técnicas
+10. Testes
+11. Build e Execução
+12. Diagrama de Componentes
 
-## User Stories Implementadas
+---
 
-### US100 – Simulação Base de Voos
+# 1. Introdução
 
-#### Abordagem Seguida
+Este projeto implementa um sistema concorrente de simulação de voos utilizando processos POSIX, pipes, sinais e mecanismos de sincronização.
 
-A solução foi implementada em C utilizando mecanismos POSIX de gestão de processos e comunicação interprocessos.
+A solução foi desenvolvida em C e organizada de forma modular para suportar:
+
+- simulação concorrente;
+- monitorização de posições;
+- sincronização temporal;
+- deteção de violações de segurança;
+- geração de relatórios.
+
+A arquitetura foi evoluindo incrementalmente ao longo dos sprints, mantendo separação clara entre responsabilidades.
+
+---
+
+# 2. Arquitetura Geral
+
+A solução encontra-se dividida nos seguintes componentes principais:
+
+| Componente | Responsabilidade |
+|---|---|
+| `main.c` | Coordenação global da simulação |
+| `flight_process.c` | Execução individual de cada voo |
+| `flight_plan_parser.c` | Carregamento e parsing de planos de voo |
+| `position_tracker.c` | Histórico temporal das posições |
+| `safety_monitor.c` | Validação de segurança |
+| `simulation.h` | Estruturas e contratos partilhados |
+| `tests/` | Testes unitários e testes de integração |
+| `data/` | Ficheiros de planos de voo usados na simulação e nos testes |
+
+Cada voo executa num processo independente criado através de `fork()`.
+
+A comunicação entre processos é realizada utilizando:
+
+- pipes POSIX;
+- sinais POSIX;
+- sincronização passo-a-passo.
+
+---
+
+# 3. Evolução da Arquitetura entre Sprints
+
+## Sprint 2
+
+O objetivo inicial consistia em criar a base concorrente da simulação:
+
+- criação de processos;
+- comunicação por pipes;
+- sinais POSIX;
+- envio de posições;
+- histórico temporal.
+
+## Sprint 3
+
+Durante o Sprint 3 foram introduzidas melhorias importantes:
+
+- sincronização mais segura;
+- suporte a múltiplos voos simultâneos;
+- suporte a diferentes `DepartureTime`;
+- melhor coordenação entre processos;
+- melhoria da gestão de recursos;
+- sincronização determinística passo-a-passo;
+- testes unitários;
+- testes de integração.
+
+A arquitetura principal foi mantida, sendo introduzidas melhorias incrementais na robustez da implementação.
+
+---
+
+# 4. US100 - Simulate flights in a given area
+
+## Objetivo
+
+Simular voos concorrentes numa determinada área geográfica utilizando processos independentes.
+
+## Responsabilidades do processo principal
+
+- validar parâmetros;
+- criar pipes;
+- criar processos filho;
+- coordenar os voos;
+- iniciar os processos através de `SIGUSR2`;
+- monitorizar múltiplos pipes com `poll()`;
+- receber `PositionUpdate`;
+- atualizar o histórico de posições;
+- terminar processos corretamente;
+- aguardar processos filho com `waitpid()`;
+- gerar o relatório final.
+
+## Responsabilidades dos processos filho
+
+- carregar o plano de voo;
+- instalar signal handlers;
+- aguardar sincronização com `sigsuspend()`;
+- executar segmentos do voo;
+- interpolar posições;
+- enviar atualizações;
+- terminar corretamente;
+- reagir a notificações de segurança através de `SIGUSR1`.
+
+## Melhorias introduzidas no Sprint 3
+
+### Substituição de `pause()` por `sigsuspend()`
+
+A sincronização passou a utilizar:
+
+- `sigprocmask()`;
+- `sigsuspend()`.
+
+Isto evita race conditions durante o arranque concorrente.
+
+### Bloqueio explícito de sinais antes do `fork()`
+
+O processo pai bloqueia `SIGUSR2` antes da criação dos filhos.
+
+Os filhos herdam essa máscara, instalam os handlers necessários e apenas depois desbloqueiam temporariamente o sinal através de `sigsuspend()`.
+
+### Alteração do sinal de arranque
+
+O arranque da simulação passou a utilizar:
+
+- `SIGUSR2` para arranque;
+- `SIGUSR1` para violações de segurança.
+
+### Gestão segura de runtime
+
+Foi criada uma função dedicada para:
+
+- fechar pipes;
+- limpar `pollfd`;
+- desativar voos;
+- evitar fechos duplicados.
+
+### Suporte a `DepartureTime`
+
+Cada voo possui agora o seu próprio `DepartureTime`.
+
+Quando `--start` não é fornecido, o processo principal usa o `DepartureTime` do plano de voo.
+
+Quando `--start` é fornecido, a simulação usa o valor indicado pelo utilizador como início explícito.
+
+---
+
+# 5. US102 - Detect safety violations
+
+## Objetivo
+
+Detetar violações básicas de segurança durante a simulação.
+
+## Responsabilidades
+
+- analisar posições recebidas;
+- verificar separação mínima;
+- validar altitude mínima;
+- registar eventos de segurança;
+- notificar processos de voo envolvidos através de sinais;
+- permitir terminação antecipada se o número de violações exceder o threshold configurado.
+
+## Integração
+
+O `SafetyMonitor` é executado pelo processo principal após receção dos updates de cada timestep.
+
+Quando é detetada uma violação, o processo de voo envolvido pode ser notificado através de `SIGUSR1`.
+
+---
+
+# 6. US103 - Synchronize simulation steps
+
+## Objetivo
+
+Garantir sincronização temporal entre todos os voos da simulação.
+
+## Modelo de sincronização
+
+A implementação utiliza um modelo híbrido:
+
+| Mecanismo | Responsabilidade |
+|---|---|
+| sinais POSIX | controlo do ciclo de vida |
+| pipes | sincronização passo-a-passo e envio de updates |
+| `poll()` | multiplexagem eficiente |
+
+## Funcionamento
+
+### Processo principal
 
 O processo principal:
-- valida os parâmetros da simulação;
-- cria um pipe e um processo filho por cada voo usando `fork()`;
-- inicia todas as simulações através de `SIGUSR1`;
-- recebe atualizações de posição dos voos usando `poll()`;
-- guarda o histórico recebido em memória;
-- gera um relatório final da simulação.
 
-Cada processo filho:
-- lê o ficheiro do plano de voo;
-- espera pelo sinal de início;
-- simula o percurso segmento a segmento;
-- calcula posições intermédias através de interpolação linear;
-- envia atualizações para o processo principal através do pipe.
+1. cria os processos;
+2. envia o sinal inicial;
+3. controla o timestep global;
+4. autoriza os filhos a avançar;
+5. recolhe updates sincronizados;
+6. processa todos os updates esperados antes de avançar.
 
-A comunicação entre processos é feita através de estruturas binárias (`struct PositionUpdate`) em vez de mensagens de texto.
+### Processos filho
 
-#### Principais Decisões Técnicas
+Os processos filho:
 
-- Utilização de `fork()` para criar um processo independente por avião.
-- Utilização de pipes POSIX para comunicação unidirecional entre processos.
-- Utilização de `poll()` para monitorizar múltiplos pipes sem bloqueios.
-- Utilização de sinais UNIX (`SIGUSR1`, `SIGTERM`, `SIGINT`) para controlo dos processos.
-- Utilização de tempo lógico de simulação em vez de tempo real.
-- Implementação de um parser simples adaptado ao formato fornecido dos planos de voo.
+1. aguardam sincronização;
+2. executam apenas o timestep autorizado;
+3. enviam posições;
+4. aguardam nova autorização.
 
-#### Estrutura Principal do Código
+## Melhorias introduzidas
 
-- `main.c`
-  - controlo principal da simulação;
-  - validação de parâmetros;
-  - criação de processos;
-  - gestão da comunicação;
-  - geração do relatório final.
+### Suporte a múltiplos voos concorrentes
 
-- `flight_process.c`
-  - lógica de execução dos voos;
-  - tratamento de sinais;
-  - interpolação das posições;
-  - envio de atualizações.
+A sincronização foi reorganizada para suportar:
 
-- `flight_plan_parser.c`
-  - leitura e parsing dos ficheiros de plano de voo.
+- múltiplos pipes;
+- múltiplos processos ativos;
+- diferentes tempos de partida.
 
-- `simulation.h`
-  - estruturas partilhadas;
-  - constantes;
-  - declarações de funções.
+### Integração de `poll()`
 
-#### Implementado com Sucesso
+O processo principal utiliza `poll()` para monitorizar múltiplos descritores sem busy waiting.
 
-- Arquitetura com um processo por voo;
-- Comunicação entre processos através de pipes;
-- Sincronização com sinais;
-- Execução concorrente de múltiplos voos;
-- Simulação baseada em tempo lógico;
-- Histórico de posições;
-- Geração de relatório final;
-- Alocação dinâmica do histórico;
-- Validação dos parâmetros da simulação.
+### Separação entre controlo e dados
 
-#### Limitações Conhecidas
+- sinais para controlo;
+- pipes para transmissão de dados e sincronização.
 
-- O parser apenas suporta a estrutura dos ficheiros fornecidos.
-- O movimento dos aviões é simplificado através de interpolação linear.
-- A simulação utiliza apenas tempo lógico.
-- `poll()` é suficiente para a escala atual, mas poderia necessitar de otimizações para um número muito elevado de voos.
+Esta separação melhora clareza e robustez.
 
 ---
 
-## Compilação e Execução
-
-### Compilar
-
-```bash
-make
-```
-
-## Executar
-
-```bash
-make run
-```
-
-Ou manualmente:
-
-```bash
-./flight_simulator --area 39 43 -9 -3 --start 0 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
-```
-
-Sem --start (usa DepartureTime do plano):
-```bash
-./flight_simulator --area 39 43 -9 -3 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
-```
-
-## Parâmetros
-
-```bash
---area <minLat> <maxLat> <minLon> <maxLon>
---start <segundos>   (opcional se existir DepartureTime no plano)
---end <segundos>     (se --start for omitido, é tratado como duração)
---step <segundos>
---weather <clear|rain|storm|fog>
---safety-min-sep <nm>
---safety-min-alt <m>
---perf-max-flights <n>
---flight <ficheiro>
-```
-
-É possível indicar vários `--flight`, sendo criado um processo para cada ficheiro (limitado por `--perf-max-flights`).
-
-### Limpar
-
-```bash
-make clean
-```
-
----
-
-## Output
-
-A simulação gera:
-- atualizações no terminal durante a execução;
-- um ficheiro `simulation_report.txt` contendo:
-  - informação dos voos;
-  - número de updates recebidos;
-  - posições ao longo do tempo;
-  - estado final de cada voo.
-
----
-
-### US101 - Capture and process flight movements
-
-## 1. Analysis
-
-### User Story
-
-As a simulation process, I want to receive movement commands from flight processes so that I can track aircraft positions over time.
-
-### Acceptance Criteria Addressed
-
-1. Each flight process sends position updates to the main process via pipe.
-2. The main process tracks the current position of each aircraft.
-3. The system stores past positions to anticipate and detect potential safety violations.
-
-## 2. Design
-
-### Main Process
-
-Added responsibilities compared to US100:
-
-- initialize the `PositionTracker` before launching flight processes;
-- call `tracker_update` for each `PositionUpdate` received via pipe;
-- provide the complete position history to the violation detection module (US102);
-- print the tracker summary at the end of the simulation;
-- destroy the tracker and free memory before terminating.
-
-### Tracking Module (`position_tracker.c`)
-
-Responsibilities:
-
-- maintain a table of entries, one per active flight;
-- create a flight entry on the first received message;
-- update the current position and most recent time step for each update;
-- add each position to the dynamic history buffer of the corresponding entry;
-- expose the current position of any flight by `flight_id` for external query.
-
-## 3. Main Structures
-
-- `TrackPoint`: an instant in a flight's history — time step, position and status.
-- `TrackEntry`: complete state of a tracked flight — current position, latest time step, status and dynamic buffer of `TrackPoint`.
-- `PositionTracker`: table with up to `MAX_TRACKED_FLIGHTS` entries, maintained by the main process.
-
-## 4. Implementation Decisions
-
-- The history buffer of each `TrackEntry` grows by duplication, guaranteeing amortized O(1) cost per insertion and avoiding frequent reallocations.
-- Searching for entries by `flight_id` is linear over the number of active flights, which is sufficient given the `MAX_TRACKED_FLIGHTS` limit.
-- The module is isolated in `position_tracker.c` to facilitate independent replacement or extension in the following US.
-
-## 5. Assumed Limitations
-
-This implementation does not handle conflict detection between aircraft, as this belongs to US102. The history stored in `TrackEntry` was designed to be directly consumed by that module. Global synchronization by time step belongs to US103.
-
----
-
-### US102
-
----
-
-### US103 - Synchronized flight simulation
+# 7. US109 - Generate simulation report
 
 ## Objetivo
 
-Implementação em C da US103. O componente sincroniza a simulação de múltiplos voos através de processos, pipes e sinais UNIX, garantindo que todos os voos avançam de forma coordenada por time steps.
+Gerar um relatório simples da execução da simulação.
 
-Cada processo filho executa um voo e envia uma atualização de posição ao processo principal. O processo principal apenas permite o avanço para o próximo passo depois de receber os updates de todos os voos ativos.
+## Informação apresentada
 
-## Relação com os critérios de aceitação
-
-- Implementado em C.
-- Usa `fork()` para criar um processo por voo.
-- Usa `pipe()` para comunicação entre cada processo de voo e o processo principal.
-- Usa sinais:
-  - `SIGUSR1` inicia a execução sincronizada dos voos.
-  - sincronização por pipe: o processo principal escreve o caractere `'N'` no `sync_pipe` para autorizar cada filho a avançar ao próximo time step (implementação por pipe usada no código; o uso de `SIGUSR2` encontra-se comentado).
-  - `SIGTERM`/`SIGINT` pedem terminação limpa.
-- Cada processo de voo executa o seu plano de voo e envia uma atualização por ciclo.
-- O processo principal mantém histórico de posições por voo numa estrutura dinâmica (`HistoryEntry`).
-- O processo principal sincroniza todos os voos antes de avançar a simulação.
-- Os parâmetros obrigatórios são validados antes da execução, incluindo weather, safety thresholds e performance settings.
-
-## Funcionamento da sincronização
-
-Fluxo simplificado da simulação:
-
-```text
-Processo principal cria os processos filhos
-↓
-SIGUSR1 inicia todos os voos
-↓
-Cada voo envia um PositionUpdate
-↓
-Cada voo fica bloqueado à espera de um comando no `sync_pipe` (leitura de um `char`)
-↓
-O processo principal recebe os updates de todos os voos
-↓
-O processo principal escreve `'N'` no `sync_pipe` de cada filho para autorizar o próximo time step
-↓
-Todos os voos avançam para o próximo time step
-````
-
-A sincronização é feita utilizando `poll()` no processo principal e `pause()` nos processos filhos.
-
-## Dados usados
-
-O ficheiro `data/Flight_Plan_v0a.json` foi incluído como exemplo. O parser é simples e foi feito para suportar o formato fornecido: lê `ID`, `Segments`, `Mode`, `Start`, `End`, `Latitude`, `Longitude` e altitude em metros.
-
-## Compilar
-
-```bash
-make
-```
-
-## Executar exemplo
-
-```bash
-make run
-```
-
-Ou manualmente:
-
-```bash
-./flight_simulator --area 39 43 -9 -3 --start 0 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
-```
-
-Sem `--start` (usa `DepartureTime` do plano):
-
-```bash
-./flight_simulator --area 39 43 -9 -3 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
-```
-
-## Parâmetros
-
-```bash
---area <minLat> <maxLat> <minLon> <maxLon>
---start <segundos>   (opcional se existir DepartureTime no plano)
---end <segundos>     (se --start for omitido, é tratado como duração)
---step <segundos>
---weather <clear|rain|storm|fog>
---safety-min-sep <nm>
---safety-min-alt <m>
---perf-max-flights <n>
---flight <ficheiro>
-```
-
-É possível indicar vários `--flight`, sendo criado um processo para cada ficheiro (limitado por `--perf-max-flights`).
-
-## Output
-
-Durante a execução, o processo principal imprime as posições recebidas por step sincronizado.
-
-No fim, é criado o ficheiro:
-
-```text
-simulation_report.txt
-```
-
-com o histórico completo de posições por voo.
-
-## Nota de integração
-
-Esta implementação foca a sincronização temporal da simulação da US103. A deteção de conflitos entre aeronaves e alterações automáticas de voo pertence à US102.
+- voos processados;
+- posições recebidas;
+- eventos de segurança;
+- estados finais dos voos;
+- resumo da execução;
+- resultado final da simulação.
 
 ---
 
-### US109 - Generate and store final simulation report
+# 8. Estruturas Principais
 
-## Objetivo
+## `SimulationConfig`
 
-Gerar automaticamente um relatório final completo da simulação após a execução de todos os voos.
+Parâmetros globais da simulação:
 
-## Funcionalidades implementadas
+- área;
+- intervalo temporal;
+- ficheiros de voo;
+- weather;
+- thresholds de segurança;
+- performance settings;
+- indicação se `--start` foi fornecido.
 
-- geração automática do ficheiro `simulation_report.txt`;
-- armazenamento do histórico completo de posições por voo;
-- integração com o `PositionTracker`;
-- integração com o módulo de violações da US102;
-- registo do estado final de cada voo;
-- resumo global da simulação.
+## `FlightPlan`
 
-## Informação presente no relatório
+Representação interna do plano de voo.
 
-O relatório final inclui:
+## `Segment`
 
-- configuração da simulação;
-- número total de voos;
-- histórico temporal de posições;
-- estado final dos voos;
-- resumo do Position Tracker;
-- violações de segurança detetadas.
+Representa um segmento entre dois pontos.
 
-## Implementação
+## `PositionUpdate`
 
-A geração do relatório foi implementada na função:
+Mensagem enviada pelos filhos:
+
+- posição;
+- timestamp;
+- altitude;
+- velocidade;
+- estado;
+- identificador do voo.
+
+## `FlightRuntime`
+
+Estado de runtime de cada voo:
+
+- PID;
+- pipes;
+- estado ativo;
+- `DepartureTime`.
+
+## `HistoryEntry`
+
+Entrada do histórico temporal.
+
+## `PositionTracker`
+
+Estrutura global de tracking das posições.
+
+## `SafetyLog`
+
+Estrutura de registo das violações de segurança.
+
+---
+
+# 9. Decisões Técnicas
+
+## Um processo por voo
+
+Permite:
+
+- isolamento;
+- concorrência;
+- melhor escalabilidade;
+- alinhamento com o requisito de criação de um processo por voo.
+
+## Uso de pipes
+
+Os pipes permitem comunicação simples e eficiente entre processos.
+
+São usados para:
+
+- envio de `PositionUpdate`;
+- sincronização passo-a-passo.
+
+## Uso de `poll()`
+
+`poll()` evita busy waiting e permite acompanhar múltiplos voos simultaneamente.
+
+## Uso de sinais POSIX
+
+Os sinais são utilizados para:
+
+- sincronização inicial;
+- arranque;
+- notificação de violações;
+- terminação.
+
+## Compatibilidade POSIX
+
+Foi utilizada:
 
 ```c
-static void write_report(...)
+#define _POSIX_C_SOURCE 200809L
 ```
 
-localizada em `main.c`.
-
-O relatório é produzido automaticamente no final da execução da simulação e guardado no ficheiro:
-
-```text
-simulation_report.txt
-```
+para garantir compatibilidade com APIs POSIX.
 
 ---
 
-## Compilação e Execução
+# 10. Testes
 
-### Compilar
+A pasta `tests/` contém testes unitários e testes de integração.
+
+```text
+tests/
+├── test_position_tracker.c
+├── test_safety_monitor.c
+├── run_tests.sh
+└── run_integration_tests.sh
+```
+
+## 10.1 Testes unitários
+
+### `test_position_tracker.c`
+
+Valida que o `PositionTracker`:
+
+- inicializa corretamente;
+- guarda um update;
+- mantém a última posição;
+- regista o histórico.
+
+### `test_safety_monitor.c`
+
+Valida que o `SafetyMonitor`:
+
+- deteta altitude abaixo do limite mínimo;
+- regista a violação no log;
+- devolve violações quando aplicável.
+
+### Execução
+
+```bash
+chmod +x tests/run_tests.sh
+./tests/run_tests.sh
+```
+
+Resultado esperado:
+
+```text
+Compiling tests...
+
+test_position_tracker OK
+test_safety_monitor OK
+
+All tests passed
+```
+
+## 10.2 Testes de integração
+
+O script `run_integration_tests.sh` valida o executável completo.
+
+Cenários testados:
+
+1. Simulação com um voo.
+2. Simulação com dois voos diferentes.
+3. Criação do ficheiro `simulation_report.txt`.
+4. Validação de argumentos inválidos.
+5. Execução sem deixar processos pendurados.
+
+### Execução
+
+```bash
+chmod +x tests/run_integration_tests.sh
+./tests/run_integration_tests.sh
+```
+
+Resultado esperado:
+
+```text
+Building simulator...
+Running integration tests...
+All integration tests passed
+```
+
+## 10.3 Verificações finais realizadas
+
+### Processos pendurados
+
+Foi executado:
+
+```bash
+ps -ef | grep flight_simulator
+```
+
+Resultado esperado:
+
+```text
+grep flight_simulator
+```
+
+Isto confirma que não ficaram processos `flight_simulator` pendurados.
+
+### Execução sem `--start`
+
+Foi testado o comportamento em que o sistema usa o `DepartureTime` do ficheiro JSON.
+
+Comando:
+
+```bash
+./flight_simulator \
+  --area 39 43 -9 -3 \
+  --end 3600 \
+  --step 60 \
+  --flight data/Flight_Plan_v0a.json
+```
+
+Resultado validado:
+
+- a simulação começou no segundo `32400`;
+- `32400` corresponde a `09:00`;
+- foram gerados 61 pontos;
+- o relatório final foi criado.
+
+### Compilação com warnings agressivos
+
+Foi executado:
+
+```bash
+gcc -Wall -Wextra -Wpedantic -Wshadow -Wconversion \
+  -std=c11 -D_DEFAULT_SOURCE \
+  src/main.c \
+  src/flight_process.c \
+  src/flight_plan_parser.c \
+  src/position_tracker.c \
+  src/safety_monitor.c \
+  -o flight_simulator \
+  -lm
+```
+
+Resultado validado:
+
+- compilação sem erros;
+- compilação sem warnings.
+
+---
+
+# 11. Build e Execução
+
+## Compilação
 
 ```bash
 make
 ```
 
-## Executar
+## Execução
 
 ```bash
-make run
+./flight_simulator \
+  --area 39 43 -9 -3 \
+  --start 0 \
+  --end 3600 \
+  --step 60 \
+  --flight data/Flight_Plan_v0a.json
 ```
 
-Ou manualmente:
+## Exemplo com múltiplos voos
 
 ```bash
-./flight_simulator --area 39 43 -9 -3 --start 0 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
+./flight_simulator \
+  --area 38 43 -10 3 \
+  --start 0 \
+  --end 3600 \
+  --step 60 \
+  --flight data/Flight_Plan_v0a.json \
+  --flight data/Flight_Plan_v0c.json
 ```
 
-Sem `--start` (usa `DepartureTime` do plano):
+## Nota sobre múltiplos ficheiros
+
+Cada ficheiro deve ser precedido de `--flight`.
+
+Correto:
 
 ```bash
-./flight_simulator --area 39 43 -9 -3 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json
+--flight data/Flight_Plan_v0a.json --flight data/Flight_Plan_v0c.json
 ```
 
-## Parâmetros
+Incorreto:
 
 ```bash
---area <minLat> <maxLat> <minLon> <maxLon>
---start <segundos>
---end <segundos>
---step <segundos>
---weather <clear|rain|storm|fog>
---safety-min-sep <nm>
---safety-min-alt <m>
---perf-max-flights <n>
---flight <ficheiro>
+--flight data/Flight_Plan_v0a.json data/Flight_Plan_v0c.json
 ```
 
-### Limpar
+---
 
-```bash
-make clean
+# 12. Diagrama de Componentes
+
+O diagrama foi atualizado apenas para incluir o bloco de testes e os ficheiros de dados usados na validação.
+
+A arquitetura principal não mudou devido aos testes.
+
+```puml
+@startuml
+
+skinparam componentStyle rectangle
+
+package "Flight Simulation System" {
+
+    [Simulation Controller\nmain.c] as Main
+    [Flight Process\nflight_process.c] as FlightProcess
+    [Flight Plan Parser\nflight_plan_parser.c] as Parser
+    [Position Tracker\nposition_tracker.c] as Tracker
+    [Safety Monitor\nsafety_monitor.c] as Safety
+    [Report Generator] as Report
+
+    database "Flight Plan Files\nJSON" as Json
+    file "simulation_report.txt" as ReportFile
+}
+
+Main --> FlightProcess : fork()
+Main --> FlightProcess : SIGUSR2 / SIGTERM
+Main --> FlightProcess : sync pipe
+FlightProcess --> Main : PositionUpdate pipe
+
+FlightProcess --> Parser : loads plan
+Parser --> Json : reads
+
+Main --> Tracker : stores position history
+Main --> Safety : checks violations
+Safety --> FlightProcess : SIGUSR1
+Main --> Report : creates summary
+Report --> ReportFile : writes
+
+@enduml
 ```
-
-## Output
-
-A simulação gera:
-- atualizações no terminal durante a execução;
-- um ficheiro `simulation_report.txt` contendo:
-  - informação dos voos;
-  - número de updates recebidos;
-  - posições ao longo do tempo;
-  - estado final de cada voo;
-  - histórico completo do tracker;
-  - violações de segurança detetadas.
-## Auto-avaliação da Contribuição do Grupo
-
-| Membro | Contribuição  |
-|---|---|
-| Mariana Gabriel | 20% |
-| Guilherme Tavares | 20% |
-| Pedro Soares | 20% |
-| Gonçalo Pinto | 20% |
-| João Sousa | 20% |
