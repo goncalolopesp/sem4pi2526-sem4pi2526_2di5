@@ -88,6 +88,7 @@ typedef struct {
     int pipe_fd;        /* filho -> pai: PositionUpdate */
     int sync_fd;        /* pai -> filho: autoriza próximo passo (US103) */
     int active;
+    int departure_time; /* hora de partida do plano, em segundos */
     HistoryEntry *history;
     size_t history_count;
     size_t history_capacity;

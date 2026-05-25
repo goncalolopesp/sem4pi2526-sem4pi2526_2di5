@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include "simulation.h"
 #include <ctype.h>
 #include <errno.h>
@@ -182,6 +183,27 @@ static void free_runtimes(FlightRuntime *runtimes, int count) {
     for (int i = 0; i < count; ++i) free(runtimes[i].history);
 }
 
+static void deactivate_runtime(FlightRuntime *runtime, struct pollfd *poll_fd) {
+    if (!runtime || !runtime->active) return;
+
+    if (runtime->pipe_fd >= 0) {
+        close(runtime->pipe_fd);
+        runtime->pipe_fd = -1;
+    }
+
+    if (runtime->sync_fd >= 0) {
+        close(runtime->sync_fd);
+        runtime->sync_fd = -1;
+    }
+
+    runtime->active = 0;
+    if (poll_fd) {
+        poll_fd->fd = -1;
+        poll_fd->events = 0;
+        poll_fd->revents = 0;
+    }
+}
+
 static void write_report(const FlightRuntime *runtimes, int count,
                          const SimulationConfig *config,
                          const PositionTracker *tracker,
@@ -314,21 +336,54 @@ int main(int argc, char **argv) {
     printf("Safety thresholds: separation=%.2f NM, altitude=%.1f m, violation threshold=%d.\n",
            config.safety_min_sep_nm, config.safety_min_alt_m, VIOLATION_THRESHOLD);
 
+    /*
+     * Bloqueia SIGUSR2 antes do fork.
+     * Os filhos herdam a máscara, instalam o handler e esperam com sigsuspend().
+     * Assim evitamos perder o sinal de arranque se o pai o enviar demasiado cedo.
+     */
+    sigset_t start_mask;
+    sigset_t previous_mask;
+    sigemptyset(&start_mask);
+    sigaddset(&start_mask, SIGUSR2);
+    if (sigprocmask(SIG_BLOCK, &start_mask, &previous_mask) != 0) {
+        perror("sigprocmask");
+        tracker_destroy(&tracker);
+        return EXIT_FAILURE;
+    }
+
     /* Criação dos processos filhos */
     for (int i = 0; i < config.flight_count; ++i) {
         int update_pipe[2]; /* filho -> pai */
         int sync_pipe[2];   /* pai -> filho */
+        int departure_time = config.start_time;
+        char departure_err[256];
+
+        if (!config.start_time_provided &&
+            parse_departure_time_seconds(config.flight_files[i],
+                                        &departure_time,
+                                        departure_err,
+                                        sizeof(departure_err)) != 0) {
+            fprintf(stderr, "Validation error: %s\n", departure_err);
+            sigprocmask(SIG_SETMASK, &previous_mask, NULL);
+            free_runtimes(runtimes, i);
+            tracker_destroy(&tracker);
+            return EXIT_FAILURE;
+        }
 
         if (pipe(update_pipe) != 0) {
             perror("pipe update_pipe");
+            sigprocmask(SIG_SETMASK, &previous_mask, NULL);
             free_runtimes(runtimes, i);
+            tracker_destroy(&tracker);
             return EXIT_FAILURE;
         }
         if (pipe(sync_pipe) != 0) {
             perror("pipe sync_pipe");
             close(update_pipe[0]);
             close(update_pipe[1]);
+            sigprocmask(SIG_SETMASK, &previous_mask, NULL);
             free_runtimes(runtimes, i);
+            tracker_destroy(&tracker);
             return EXIT_FAILURE;
         }
 
@@ -337,7 +392,9 @@ int main(int argc, char **argv) {
             perror("fork");
             close(update_pipe[0]); close(update_pipe[1]);
             close(sync_pipe[0]);   close(sync_pipe[1]);
+            sigprocmask(SIG_SETMASK, &previous_mask, NULL);
             free_runtimes(runtimes, i);
+            tracker_destroy(&tracker);
             return EXIT_FAILURE;
         }
 
@@ -354,10 +411,11 @@ int main(int argc, char **argv) {
         close(update_pipe[1]); /* não escreve updates */
         close(sync_pipe[0]);   /* não lê sync */
 
-        runtimes[i].pid     = pid;
-        runtimes[i].pipe_fd = update_pipe[0];
-        runtimes[i].sync_fd = sync_pipe[1];
-        runtimes[i].active  = 1;
+        runtimes[i].pid            = pid;
+        runtimes[i].pipe_fd        = update_pipe[0];
+        runtimes[i].sync_fd        = sync_pipe[1];
+        runtimes[i].active         = 1;
+        runtimes[i].departure_time = departure_time;
 
         /* Nome temporário; é atualizado quando o primeiro update chega
            (no filho, o flight_id passou a incluir o PID). */
@@ -368,8 +426,10 @@ int main(int argc, char **argv) {
         poll_fds[i].events = POLLIN | POLLHUP;
     }
 
-    /* US102: dispara o arranque com SIGCONT (SIGUSR1 está reservado para violações) */
-    usleep(100000);  /* 100 ms */
+    /* Pai volta à máscara original antes de enviar o sinal de arranque. */
+    sigprocmask(SIG_SETMASK, &previous_mask, NULL);
+
+    /* US100/US103: dispara o arranque. SIGUSR1 está reservado para violações. */
     for (int i = 0; i < config.flight_count; ++i) {
         kill(runtimes[i].pid, SIGUSR2);
     }
@@ -381,7 +441,12 @@ int main(int argc, char **argv) {
          current_step <= config.end_time && active > 0 && !stop_requested;
          current_step += config.step_seconds) {
 
-        int expected = active;
+        int expected = 0;
+        for (int i = 0; i < config.flight_count; ++i) {
+            if (runtimes[i].active && runtimes[i].departure_time <= current_step) {
+                expected++;
+            }
+        }
         int received = 0;
 
         /* Recolhe um update por cada voo ativo neste passo */
@@ -394,7 +459,7 @@ int main(int argc, char **argv) {
             }
 
             for (int i = 0; i < config.flight_count; ++i) {
-                if (!runtimes[i].active) continue;
+                if (!runtimes[i].active || runtimes[i].departure_time > current_step) continue;
 
                 if (poll_fds[i].revents & POLLIN) {
                     PositionUpdate update;
@@ -417,28 +482,24 @@ int main(int argc, char **argv) {
                         received++;
 
                         if (update.status == STATUS_FINISHED || update.status == STATUS_ABORTED) {
-                            close(runtimes[i].pipe_fd);
-                            runtimes[i].active = 0;
-                            poll_fds[i].fd = -1;
+                            deactivate_runtime(&runtimes[i], &poll_fds[i]);
                             active--;
                             if (expected > 0) expected--;
                         }
                     } else if (n == 0) {
-                        close(runtimes[i].pipe_fd);
-                        runtimes[i].active = 0;
-                        poll_fds[i].fd = -1;
+                        deactivate_runtime(&runtimes[i], &poll_fds[i]);
                         active--;
                         if (expected > 0) expected--;
                     }
                 }
 
-                if (poll_fds[i].revents & POLLHUP) {
-                    close(runtimes[i].pipe_fd);
-                    runtimes[i].active = 0;
-                    poll_fds[i].fd = -1;
+                if (runtimes[i].active && (poll_fds[i].revents & POLLHUP)) {
+                    deactivate_runtime(&runtimes[i], &poll_fds[i]);
                     active--;
                     if (expected > 0) expected--;
                 }
+
+                poll_fds[i].revents = 0;
             }
         }
 

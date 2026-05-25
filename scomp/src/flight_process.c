@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include "simulation.h"
 #include <signal.h>
 #include <stdio.h>
@@ -6,7 +7,7 @@
 #include <unistd.h>
 
 /* Processo filho que simula um voo.
- * - Recebe SIGCONT para arrancar (US100/US101)
+ * - Recebe SIGUSR2 para arrancar (US100/US101)
  * - Recebe SIGUSR1 quando ATC deteta violação de segurança (US102)
  * - Recebe SIGTERM/SIGINT para terminar com cleanup
  */
@@ -51,8 +52,8 @@ static int send_update(int fd, const FlightPlan *plan, int t, Position p, int st
     /* Garante flight_id único por processo: <id_do_plano>-<pid>
        Isto evita que múltiplos processos com o mesmo plano sejam fundidos
        no PositionTracker — crítico para a deteção de violações da US102. */
-    snprintf(update.flight_id, sizeof(update.flight_id), "%s-%d",
-             plan->flight_id, getpid());
+    snprintf(update.flight_id, sizeof(update.flight_id), "%.48s-%d",
+         plan->flight_id, getpid());
     ssize_t written = write(fd, &update, sizeof(update));
     return written == (ssize_t)sizeof(update) ? 0 : -1;
 }
@@ -62,7 +63,7 @@ void run_flight_process(const char *flight_file,
                         int sync_read_fd,
                         const SimulationConfig *config) {
 
-    /* ---- Handler de arranque (SIGCONT) ---- */
+    /* ---- Handler de arranque (SIGUSR2) ---- */
     struct sigaction start_action;
     memset(&start_action, 0, sizeof(start_action));
     start_action.sa_handler = handle_start;
@@ -100,21 +101,57 @@ void run_flight_process(const char *flight_file,
         _exit(EXIT_FAILURE);
     }
 
-    /* ---- Espera pelo sinal de arranque ---- */
-    while (!start_requested && !terminate_requested) pause();
+    /* ---- Espera segura pelo sinal de arranque ----
+     * SIGUSR2 foi bloqueado pelo pai antes do fork e essa máscara foi herdada
+     * pelo filho. Com sigsuspend(), o filho desbloqueia temporariamente o sinal
+     * enquanto dorme, evitando a race condition típica do pause(). */
+    sigset_t wait_mask;
+    sigprocmask(SIG_SETMASK, NULL, &wait_mask);
+    sigdelset(&wait_mask, SIGUSR2);
+
+    while (!start_requested && !terminate_requested) {
+        sigsuspend(&wait_mask);
+    }
+
     if (terminate_requested) {
         close(update_write_fd);
         close(sync_read_fd);
         _exit(EXIT_SUCCESS);
     }
 
+    int departure_time = config->start_time;
+    if (!config->start_time_provided &&
+        parse_departure_time_seconds(flight_file, &departure_time, err, sizeof(err)) != 0) {
+        dprintf(STDERR_FILENO, "Flight process error: %s\n", err);
+        close(update_write_fd);
+        close(sync_read_fd);
+        _exit(EXIT_FAILURE);
+    }
+
+    /* Se a simulação global começar antes deste voo, o processo fica sincronizado
+     * com o pai e só começa a emitir posições a partir da sua DepartureTime. */
+    int current_time = config->start_time;
+    while (current_time < departure_time && current_time <= config->end_time && !terminate_requested) {
+        char command;
+        ssize_t n = read(sync_read_fd, &command, sizeof(command));
+        if (n <= 0 || command != 'N') {
+            terminate_requested = 1;
+            break;
+        }
+        current_time += config->step_seconds;
+    }
+
+    if (terminate_requested || current_time > config->end_time) {
+        close(update_write_fd);
+        close(sync_read_fd);
+        _exit(EXIT_SUCCESS);
+    }
+
     /* ---- Cálculo do número de passos ---- */
-    int total_steps = (config->end_time - config->start_time) / config->step_seconds;
+    int total_steps = (config->end_time - current_time) / config->step_seconds;
     if (total_steps < plan.segment_count) total_steps = plan.segment_count;
     int steps_per_segment = total_steps / plan.segment_count;
     if (steps_per_segment <= 0) steps_per_segment = 1;
-
-    int current_time = config->start_time;
 
     /* ---- Loop principal da simulação ---- */
     for (int i = 0; i < plan.segment_count && !terminate_requested; ++i) {
