@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.application.controller.aircraftmodel;
+package pt.isep.sem4pi.application.controller.aircraftModel;
 
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
@@ -97,24 +97,26 @@ public class AddAircraftModelControllerTests {
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"),
                 new BigDecimal("12000"), new BigDecimal("12000"), new BigDecimal("800"),
                 new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
-                new BigDecimal("5000"), new BigDecimal("9.5"), dummyEngineModels, 180
+                new BigDecimal("5000"), new BigDecimal("9.5"),
+                dummyEngineModels, 180
         );
 
-        try {
-            controller.addAircraftModel(
-                    dummyManufacturer, "PASSENGER", "A320", EngineType.TURBOFAN,
-                    new BigDecimal("40000"), new BigDecimal("70000"), new BigDecimal("80000"),
-                    new BigDecimal("12000"), new BigDecimal("12000"), new BigDecimal("800"),
-                    new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
-                    new BigDecimal("5000"), new BigDecimal("9.5"), dummyEngineModels, 180
-            );
-            fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException exception) {
-            assertEquals("Already exists a model with this name for this manufacturer.",
-                    exception.getMessage());
-        }
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.addAircraftModel(
+                        dummyManufacturer, "PASSENGER", "A320", EngineType.TURBOFAN,
+                        new BigDecimal("40000"), new BigDecimal("70000"), new BigDecimal("80000"),
+                        new BigDecimal("12000"), new BigDecimal("12000"), new BigDecimal("800"),
+                        new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
+                        new BigDecimal("5000"), new BigDecimal("9.5"),
+                        dummyEngineModels, 180
+                )
+        );
 
-        assertEquals(initialCount + 1, ((InMemoryAircraftModelRepository) aircraftRepo).count());
+        assertEquals(
+                initialCount + 1,
+                ((InMemoryAircraftModelRepository) aircraftRepo).count()
+        );
     }
 
     @Test(expected = IllegalArgumentException.class)

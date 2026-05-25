@@ -10,7 +10,16 @@ import java.time.format.DateTimeParseException;
 
 public class RegisterBackofficeUserUI extends AbstractUI {
 
-    private final RegisterBackofficeUserController controller = new RegisterBackofficeUserController();
+    private final RegisterBackofficeUserController controller;
+
+    public RegisterBackofficeUserUI() {
+        this(new RegisterBackofficeUserController());
+    }
+
+    RegisterBackofficeUserUI(final RegisterBackofficeUserController controller) {
+        this.controller = controller;
+    }
+
     private final PasswordStrengthService passwordStrengthService = new PasswordStrengthService();
 
     @Override
