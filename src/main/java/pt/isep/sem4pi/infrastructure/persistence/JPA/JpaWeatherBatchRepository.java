@@ -29,4 +29,14 @@ public class JpaWeatherBatchRepository implements WeatherBatchRepository {
         em.close();
         return results;
     }
+
+    @Override
+    public long totalWeatherRecords() {
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<Long> query = em.createQuery(
+                "SELECT COALESCE(SUM(b.importedRecords), 0) FROM WeatherImportBatch b", Long.class);
+        Long total = query.getSingleResult();
+        em.close();
+        return total == null ? 0L : total;
+    }
 }

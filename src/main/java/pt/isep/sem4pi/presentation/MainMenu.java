@@ -21,11 +21,12 @@ import pt.isep.sem4pi.presentation.airtransportcompany.ListCompanyCollaboratorsA
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterCompanyCollaboratorAction;
 import pt.isep.sem4pi.presentation.authz.ListUsersAction;
-import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
+import pt.isep.sem4pi.presentation.weatherdata.ImportWeatherDataUI;
+import pt.isep.sem4pi.presentation.weatherdata.WeatherDataTotalsUI;
 
 /**
  * Menu principal da aplicacao SEM4PI.
@@ -60,6 +61,8 @@ public class MainMenu extends AbstractUI {
 
     // Weather Data
     private static final int REGISTER_WEATHER_DATA_OPTIONS = 1;
+    private static final int IMPORT_WEATHER_DATA_OPTIONS = 2;
+    private static final int VIEW_WEATHER_TOTALS_OPTIONS = 3;
 
     //Air Control Area
     private static final int ADD_AIR_CONTROL_AREA_OPTIONS = 1;
@@ -220,6 +223,8 @@ public class MainMenu extends AbstractUI {
         final var menu = new Menu("Weather Data >");
 
         menu.addItem(REGISTER_WEATHER_DATA_OPTIONS, "Register Weather Data", new RegisterWeatherUI()::show);
+        menu.addItem(IMPORT_WEATHER_DATA_OPTIONS, "Import Weather Data", new ImportWeatherDataUI()::show);
+        menu.addItem(VIEW_WEATHER_TOTALS_OPTIONS, "View Weather Data Totals", new WeatherDataTotalsUI()::show);
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;
