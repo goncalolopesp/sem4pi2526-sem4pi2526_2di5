@@ -81,4 +81,14 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     public FlightRepository flights() {
         return new JpaFlightRepository(PERSISTENCE_UNIT_NAME);
     }
+
+    @Override
+    public SimulationRepository simulations() {
+        return new JpaSimulationRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public SimulationRepository simulations(final TransactionalContext tx) {
+        return new JpaSimulationRepository(PERSISTENCE_UNIT_NAME);
+    }
 }
