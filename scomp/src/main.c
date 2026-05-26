@@ -14,90 +14,132 @@
 
 static volatile sig_atomic_t stop_requested = 0;
 
-static void handle_interrupt(int signo) {
+static void handle_interrupt(int signo)
+{
     (void)signo;
     stop_requested = 1;
 }
 
-static int equals_ignore_case(const char *a, const char *b) {
-    if (!a || !b) return 0;
-    while (*a && *b) {
+static int equals_ignore_case(const char *a, const char *b)
+{
+    if (!a || !b)
+        return 0;
+    while (*a && *b)
+    {
         unsigned char ca = (unsigned char)*a;
         unsigned char cb = (unsigned char)*b;
-        if (tolower(ca) != tolower(cb)) return 0;
-        ++a; ++b;
+        if (tolower(ca) != tolower(cb))
+            return 0;
+        ++a;
+        ++b;
     }
     return *a == '\0' && *b == '\0';
 }
 
-static int parse_weather_code(const char *value) {
-    if (equals_ignore_case(value, "clear")) return WEATHER_CLEAR;
-    if (equals_ignore_case(value, "rain"))  return WEATHER_RAIN;
-    if (equals_ignore_case(value, "storm")) return WEATHER_STORM;
-    if (equals_ignore_case(value, "fog"))   return WEATHER_FOG;
+static int parse_weather_code(const char *value)
+{
+    if (equals_ignore_case(value, "clear"))
+        return WEATHER_CLEAR;
+    if (equals_ignore_case(value, "rain"))
+        return WEATHER_RAIN;
+    if (equals_ignore_case(value, "storm"))
+        return WEATHER_STORM;
+    if (equals_ignore_case(value, "fog"))
+        return WEATHER_FOG;
     return 0;
 }
 
-void print_usage(const char *program) {
+void print_usage(const char *program)
+{
     fprintf(stderr,
-        "Usage: %s --area <minLat> <maxLat> <minLon> <maxLon> --start <sec> --end <sec> --step <sec> --weather <clear|rain|storm|fog> --safety-min-sep <nm> --safety-min-alt <m> --perf-max-flights <n> --flight <file> [--flight <file> ...]\n"
-        "Example: %s --area 39 43 -9 -3 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json\n",
-        program, program);
+            "Usage: %s --area <minLat> <maxLat> <minLon> <maxLon> --start <sec> --end <sec> --step <sec> --weather <clear|rain|storm|fog> --safety-min-sep <nm> --safety-min-alt <m> --perf-max-flights <n> --flight <file> [--flight <file> ...]\n"
+            "Example: %s --area 39 43 -9 -3 --end 3600 --step 60 --weather clear --safety-min-sep 3 --safety-min-alt 300 --perf-max-flights 10 --flight data/Flight_Plan_v0a.json\n",
+            program, program);
 }
 
-int parse_args(int argc, char **argv, SimulationConfig *config) {
+int parse_args(int argc, char **argv, SimulationConfig *config)
+{
     memset(config, 0, sizeof(*config));
-    config->start_time          = -1;
+    config->start_time = -1;
     config->start_time_provided = 0;
-    config->step_seconds        = 60;
-    config->end_time            = -1;
-    config->weather_code        = WEATHER_CLEAR;
-    config->safety_min_sep_nm   = 3.0;
-    config->safety_min_alt_m    = 300.0;
-    config->perf_max_flights    = MAX_FLIGHTS;
+    config->step_seconds = 60;
+    config->end_time = -1;
+    config->weather_code = WEATHER_CLEAR;
+    config->safety_min_sep_nm = 3.0;
+    config->safety_min_alt_m = 300.0;
+    config->perf_max_flights = MAX_FLIGHTS;
+    snprintf(config->output_file, MAX_PATH, "simulation_report.txt");
 
-    for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "--area") == 0 && i + 4 < argc) {
+    for (int i = 1; i < argc; ++i)
+    {
+        if (strcmp(argv[i], "--area") == 0 && i + 4 < argc)
+        {
             config->min_lat = atof(argv[++i]);
             config->max_lat = atof(argv[++i]);
             config->min_lon = atof(argv[++i]);
             config->max_lon = atof(argv[++i]);
-        } else if (strcmp(argv[i], "--start") == 0 && i + 1 < argc) {
+        }
+        else if (strcmp(argv[i], "--start") == 0 && i + 1 < argc)
+        {
             config->start_time = atoi(argv[++i]);
             config->start_time_provided = 1;
-        } else if (strcmp(argv[i], "--end") == 0 && i + 1 < argc) {
+        }
+        else if (strcmp(argv[i], "--end") == 0 && i + 1 < argc)
+        {
             config->end_time = atoi(argv[++i]);
-        } else if (strcmp(argv[i], "--step") == 0 && i + 1 < argc) {
+        }
+        else if (strcmp(argv[i], "--step") == 0 && i + 1 < argc)
+        {
             config->step_seconds = atoi(argv[++i]);
-        } else if (strcmp(argv[i], "--weather") == 0 && i + 1 < argc) {
+        }
+        else if (strcmp(argv[i], "--weather") == 0 && i + 1 < argc)
+        {
             config->weather_code = parse_weather_code(argv[++i]);
-        } else if (strcmp(argv[i], "--safety-min-sep") == 0 && i + 1 < argc) {
+        }
+        else if (strcmp(argv[i], "--safety-min-sep") == 0 && i + 1 < argc)
+        {
             config->safety_min_sep_nm = atof(argv[++i]);
-        } else if (strcmp(argv[i], "--safety-min-alt") == 0 && i + 1 < argc) {
+        }
+        else if (strcmp(argv[i], "--safety-min-alt") == 0 && i + 1 < argc)
+        {
             config->safety_min_alt_m = atof(argv[++i]);
-        } else if (strcmp(argv[i], "--perf-max-flights") == 0 && i + 1 < argc) {
+        }
+        else if (strcmp(argv[i], "--perf-max-flights") == 0 && i + 1 < argc)
+        {
             config->perf_max_flights = atoi(argv[++i]);
-        } else if (strcmp(argv[i], "--flight") == 0 && i + 1 < argc) {
-            if (config->flight_count >= MAX_FLIGHTS) {
+        }
+        else if (strcmp(argv[i], "--output") == 0 && i + 1 < argc)
+        {
+            snprintf(config->output_file, MAX_PATH, "%s", argv[++i]);
+        }
+        else if (strcmp(argv[i], "--flight") == 0 && i + 1 < argc)
+        {
+            if (config->flight_count >= MAX_FLIGHTS)
+            {
                 fprintf(stderr, "Too many flight files. Maximum: %d\n", MAX_FLIGHTS);
                 return -1;
             }
             snprintf(config->flight_files[config->flight_count++], MAX_PATH, "%s", argv[++i]);
-        } else {
+        }
+        else
+        {
             fprintf(stderr, "Invalid argument: %s\n", argv[i]);
             return -1;
         }
     }
 
-    if (!config->start_time_provided && config->flight_count > 0) {
+    if (!config->start_time_provided && config->flight_count > 0)
+    {
         char err[256];
         int seconds = 0;
-        if (parse_departure_time_seconds(config->flight_files[0], &seconds, err, sizeof(err)) != 0) {
+        if (parse_departure_time_seconds(config->flight_files[0], &seconds, err, sizeof(err)) != 0)
+        {
             fprintf(stderr, "Validation error: %s\n", err);
             return -1;
         }
         config->start_time = seconds;
-        if (config->end_time >= 0 && config->end_time <= config->start_time) {
+        if (config->end_time >= 0 && config->end_time <= config->start_time)
+        {
             config->end_time = config->start_time + config->end_time;
         }
     }
@@ -105,53 +147,67 @@ int parse_args(int argc, char **argv, SimulationConfig *config) {
     return validate_config(config);
 }
 
-int validate_config(const SimulationConfig *config) {
-    if (config->flight_count <= 0) {
+int validate_config(const SimulationConfig *config)
+{
+    if (config->flight_count <= 0)
+    {
         fprintf(stderr, "Validation error: at least one --flight is required.\n");
         return -1;
     }
-    if (config->start_time < 0) {
+    if (config->start_time < 0)
+    {
         fprintf(stderr, "Validation error: missing --start or DepartureTime in flight plan.\n");
         return -1;
     }
-    if (config->end_time <= config->start_time) {
+    if (config->end_time <= config->start_time)
+    {
         fprintf(stderr, "Validation error: --end must be greater than --start.\n");
         return -1;
     }
-    if (config->step_seconds <= 0) {
+    if (config->step_seconds <= 0)
+    {
         fprintf(stderr, "Validation error: --step must be positive.\n");
         return -1;
     }
-    if (config->weather_code == 0) {
+    if (config->weather_code == 0)
+    {
         fprintf(stderr, "Validation error: --weather must be clear, rain, storm, or fog.\n");
         return -1;
     }
-    if (config->safety_min_sep_nm <= 0.0) {
+    if (config->safety_min_sep_nm <= 0.0)
+    {
         fprintf(stderr, "Validation error: --safety-min-sep must be positive.\n");
         return -1;
     }
-    if (config->safety_min_alt_m <= 0.0) {
+    if (config->safety_min_alt_m <= 0.0)
+    {
         fprintf(stderr, "Validation error: --safety-min-alt must be positive.\n");
         return -1;
     }
-    if (config->perf_max_flights <= 0 || config->perf_max_flights > MAX_FLIGHTS) {
+    if (config->perf_max_flights <= 0 || config->perf_max_flights > MAX_FLIGHTS)
+    {
         fprintf(stderr, "Validation error: --perf-max-flights must be between 1 and %d.\n", MAX_FLIGHTS);
         return -1;
     }
-    if (config->flight_count > config->perf_max_flights) {
+    if (config->flight_count > config->perf_max_flights)
+    {
         fprintf(stderr, "Validation error: number of flights exceeds --perf-max-flights.\n");
         return -1;
     }
-    if (config->min_lat < -90 || config->max_lat > 90 || config->min_lat >= config->max_lat) {
+    if (config->min_lat < -90 || config->max_lat > 90 || config->min_lat >= config->max_lat)
+    {
         fprintf(stderr, "Validation error: invalid latitude range.\n");
         return -1;
     }
-    if (config->min_lon < -180 || config->max_lon > 180 || config->min_lon >= config->max_lon) {
+    if (config->min_lon < -180 || config->max_lon > 180 || config->min_lon >= config->max_lon)
+    {
         fprintf(stderr, "Validation error: invalid longitude range.\n");
         return -1;
     }
-    for (int i = 0; i < config->flight_count; ++i) {
-        if (access(config->flight_files[i], R_OK) != 0) {
+    for (int i = 0; i < config->flight_count; ++i)
+    {
+        if (access(config->flight_files[i], R_OK) != 0)
+        {
             fprintf(stderr, "Validation error: cannot read flight file '%s'.\n", config->flight_files[i]);
             return -1;
         }
@@ -159,45 +215,56 @@ int validate_config(const SimulationConfig *config) {
     return 0;
 }
 
-int position_inside_area(Position p, const SimulationConfig *config) {
-    return p.latitude  >= config->min_lat && p.latitude  <= config->max_lat &&
+int position_inside_area(Position p, const SimulationConfig *config)
+{
+    return p.latitude >= config->min_lat && p.latitude <= config->max_lat &&
            p.longitude >= config->min_lon && p.longitude <= config->max_lon;
 }
 
-int append_history(FlightRuntime *runtime, const PositionUpdate *update) {
-    if (runtime->history_count == runtime->history_capacity) {
+int append_history(FlightRuntime *runtime, const PositionUpdate *update)
+{
+    if (runtime->history_count == runtime->history_capacity)
+    {
         size_t new_capacity = runtime->history_capacity == 0 ? 16 : runtime->history_capacity * 2;
         HistoryEntry *new_history = realloc(runtime->history, new_capacity * sizeof(*new_history));
-        if (!new_history) return -1;
+        if (!new_history)
+            return -1;
         runtime->history = new_history;
         runtime->history_capacity = new_capacity;
     }
     HistoryEntry *entry = &runtime->history[runtime->history_count++];
     entry->time_step = update->time_step;
-    entry->position  = update->position;
-    entry->status    = update->status;
+    entry->position = update->position;
+    entry->status = update->status;
     return 0;
 }
 
-static void free_runtimes(FlightRuntime *runtimes, int count) {
-    for (int i = 0; i < count; ++i) free(runtimes[i].history);
+static void free_runtimes(FlightRuntime *runtimes, int count)
+{
+    for (int i = 0; i < count; ++i)
+        free(runtimes[i].history);
 }
 
-static void deactivate_runtime(FlightRuntime *runtime, struct pollfd *poll_fd) {
-    if (!runtime || !runtime->active) return;
+static void deactivate_runtime(FlightRuntime *runtime, struct pollfd *poll_fd)
+{
+    if (!runtime || !runtime->active)
+        return;
 
-    if (runtime->pipe_fd >= 0) {
+    if (runtime->pipe_fd >= 0)
+    {
         close(runtime->pipe_fd);
         runtime->pipe_fd = -1;
     }
 
-    if (runtime->sync_fd >= 0) {
+    if (runtime->sync_fd >= 0)
+    {
         close(runtime->sync_fd);
         runtime->sync_fd = -1;
     }
 
     runtime->active = 0;
-    if (poll_fd) {
+    if (poll_fd)
+    {
         poll_fd->fd = -1;
         poll_fd->events = 0;
         poll_fd->revents = 0;
@@ -207,9 +274,11 @@ static void deactivate_runtime(FlightRuntime *runtime, struct pollfd *poll_fd) {
 static void write_report(const FlightRuntime *runtimes, int count,
                          const SimulationConfig *config,
                          const PositionTracker *tracker,
-                         const SafetyLog *safety_log) {
-    FILE *report = fopen("simulation_report.txt", "w");
-    if (!report) return;
+                         const SafetyLog *safety_log)
+{
+    FILE *report = fopen(config->output_file, "w");
+    if (!report)
+        return;
 
     fprintf(report, "US100/US101/US102 Simulation Report\n");
     fprintf(report, "Area: lat [%.6f, %.6f], lon [%.6f, %.6f]\n",
@@ -221,10 +290,12 @@ static void write_report(const FlightRuntime *runtimes, int count,
     fprintf(report, "Total flights: %d\n\n", count);
 
     /* Secção 1: histórico por runtime (US100) */
-    for (int i = 0; i < count; ++i) {
+    for (int i = 0; i < count; ++i)
+    {
         fprintf(report, "Flight %s, PID %d, updates %zu\n",
                 runtimes[i].flight_id, runtimes[i].pid, runtimes[i].history_count);
-        for (size_t j = 0; j < runtimes[i].history_count; ++j) {
+        for (size_t j = 0; j < runtimes[i].history_count; ++j)
+        {
             const HistoryEntry *h = &runtimes[i].history[j];
             fprintf(report, "  t=%d lat=%.6f lon=%.6f alt=%.2f status=%d\n",
                     h->time_step, h->position.latitude, h->position.longitude,
@@ -235,11 +306,12 @@ static void write_report(const FlightRuntime *runtimes, int count,
 
     /* Secção 2: resumo do Position Tracker (US101) */
     fprintf(report, "=== US101 Position Tracker (%d entries) ===\n", tracker->entry_count);
-    for (int i = 0; i < tracker->entry_count; ++i) {
+    for (int i = 0; i < tracker->entry_count; ++i)
+    {
         const TrackEntry *e = &tracker->entries[i];
-        const char *st = e->status == STATUS_RUNNING  ? "RUNNING"  :
-                         e->status == STATUS_FINISHED ? "FINISHED" :
-                         e->status == STATUS_ABORTED  ? "ABORTED"  : "UNKNOWN";
+        const char *st = e->status == STATUS_RUNNING ? "RUNNING" : e->status == STATUS_FINISHED ? "FINISHED"
+                                                               : e->status == STATUS_ABORTED    ? "ABORTED"
+                                                                                                : "UNKNOWN";
         fprintf(report,
                 "  [%s] pid=%d final_pos=(%.6f, %.6f, %.1fm) status=%s history=%zu pts\n",
                 e->flight_id, e->pid,
@@ -248,7 +320,8 @@ static void write_report(const FlightRuntime *runtimes, int count,
                 e->current_position.altitude_m,
                 st, e->history_count);
 
-        for (size_t j = 0; j < e->history_count; ++j) {
+        for (size_t j = 0; j < e->history_count; ++j)
+        {
             const TrackPoint *tp = &e->history[j];
             fprintf(report, "    t=%d lat=%.6f lon=%.6f alt=%.2f status=%d\n",
                     tp->time_step,
@@ -263,17 +336,22 @@ static void write_report(const FlightRuntime *runtimes, int count,
     /* Secção 3: violações de segurança (US102) */
     fprintf(report, "=== US102 Safety Violations (%d shown / %d total) ===\n",
             safety_log->count, safety_log->total_detected);
-    if (safety_log->total_detected > safety_log->count) {
+    if (safety_log->total_detected > safety_log->count)
+    {
         fprintf(report, "(NOTE: %d additional violations occurred but were not stored due to MAX_VIOLATIONS limit)\n",
                 safety_log->total_detected - safety_log->count);
     }
-    for (int i = 0; i < safety_log->count; ++i) {
+    for (int i = 0; i < safety_log->count; ++i)
+    {
         const SafetyViolation *v = &safety_log->events[i];
-        if (v->type == VIOLATION_ALTITUDE) {
+        if (v->type == VIOLATION_ALTITUDE)
+        {
             fprintf(report, "  t=%d ALTITUDE  flight=%s pid=%d alt=%.1fm (min=%.1fm)\n",
                     v->time_step, v->flight_a, v->pid_a,
                     v->altitude_m, config->safety_min_alt_m);
-        } else {
+        }
+        else
+        {
             fprintf(report, "  t=%d SEPARATION %s(pid=%d) <-> %s(pid=%d) dist=%.2f NM (min=%.2f NM)\n",
                     v->time_step,
                     v->flight_a, v->pid_a,
@@ -285,8 +363,10 @@ static void write_report(const FlightRuntime *runtimes, int count,
 
     int failed = 0;
 
-    for (int i = 0; i < tracker->entry_count; ++i) {
-        if (tracker->entries[i].status == STATUS_ABORTED) {
+    for (int i = 0; i < tracker->entry_count; ++i)
+    {
+        if (tracker->entries[i].status == STATUS_ABORTED)
+        {
             failed = 1;
             break;
         }
@@ -300,9 +380,11 @@ static void write_report(const FlightRuntime *runtimes, int count,
     fclose(report);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     SimulationConfig config;
-    if (parse_args(argc, argv, &config) != 0) {
+    if (parse_args(argc, argv, &config) != 0)
+    {
         print_usage(argv[0]);
         return EXIT_FAILURE;
     }
@@ -313,7 +395,7 @@ int main(int argc, char **argv) {
     interrupt_action.sa_handler = handle_interrupt;
     sigemptyset(&interrupt_action.sa_mask);
     interrupt_action.sa_flags = SA_RESTART;
-    sigaction(SIGINT,  &interrupt_action, NULL);
+    sigaction(SIGINT, &interrupt_action, NULL);
     sigaction(SIGTERM, &interrupt_action, NULL);
 
     /* O pai ignora SIGPIPE — evita morrer se um filho terminar antes de
@@ -345,14 +427,16 @@ int main(int argc, char **argv) {
     sigset_t previous_mask;
     sigemptyset(&start_mask);
     sigaddset(&start_mask, SIGUSR2);
-    if (sigprocmask(SIG_BLOCK, &start_mask, &previous_mask) != 0) {
+    if (sigprocmask(SIG_BLOCK, &start_mask, &previous_mask) != 0)
+    {
         perror("sigprocmask");
         tracker_destroy(&tracker);
         return EXIT_FAILURE;
     }
 
     /* Criação dos processos filhos */
-    for (int i = 0; i < config.flight_count; ++i) {
+    for (int i = 0; i < config.flight_count; ++i)
+    {
         int update_pipe[2]; /* filho -> pai */
         int sync_pipe[2];   /* pai -> filho */
         int departure_time = config.start_time;
@@ -360,9 +444,10 @@ int main(int argc, char **argv) {
 
         if (!config.start_time_provided &&
             parse_departure_time_seconds(config.flight_files[i],
-                                        &departure_time,
-                                        departure_err,
-                                        sizeof(departure_err)) != 0) {
+                                         &departure_time,
+                                         departure_err,
+                                         sizeof(departure_err)) != 0)
+        {
             fprintf(stderr, "Validation error: %s\n", departure_err);
             sigprocmask(SIG_SETMASK, &previous_mask, NULL);
             free_runtimes(runtimes, i);
@@ -370,14 +455,16 @@ int main(int argc, char **argv) {
             return EXIT_FAILURE;
         }
 
-        if (pipe(update_pipe) != 0) {
+        if (pipe(update_pipe) != 0)
+        {
             perror("pipe update_pipe");
             sigprocmask(SIG_SETMASK, &previous_mask, NULL);
             free_runtimes(runtimes, i);
             tracker_destroy(&tracker);
             return EXIT_FAILURE;
         }
-        if (pipe(sync_pipe) != 0) {
+        if (pipe(sync_pipe) != 0)
+        {
             perror("pipe sync_pipe");
             close(update_pipe[0]);
             close(update_pipe[1]);
@@ -388,17 +475,21 @@ int main(int argc, char **argv) {
         }
 
         pid_t pid = fork();
-        if (pid < 0) {
+        if (pid < 0)
+        {
             perror("fork");
-            close(update_pipe[0]); close(update_pipe[1]);
-            close(sync_pipe[0]);   close(sync_pipe[1]);
+            close(update_pipe[0]);
+            close(update_pipe[1]);
+            close(sync_pipe[0]);
+            close(sync_pipe[1]);
             sigprocmask(SIG_SETMASK, &previous_mask, NULL);
             free_runtimes(runtimes, i);
             tracker_destroy(&tracker);
             return EXIT_FAILURE;
         }
 
-        if (pid == 0) {
+        if (pid == 0)
+        {
             /* Filho */
             close(update_pipe[0]); /* não lê updates */
             close(sync_pipe[1]);   /* não escreve sync */
@@ -411,10 +502,10 @@ int main(int argc, char **argv) {
         close(update_pipe[1]); /* não escreve updates */
         close(sync_pipe[0]);   /* não lê sync */
 
-        runtimes[i].pid            = pid;
-        runtimes[i].pipe_fd        = update_pipe[0];
-        runtimes[i].sync_fd        = sync_pipe[1];
-        runtimes[i].active         = 1;
+        runtimes[i].pid = pid;
+        runtimes[i].pipe_fd = update_pipe[0];
+        runtimes[i].sync_fd = sync_pipe[1];
+        runtimes[i].active = 1;
         runtimes[i].departure_time = departure_time;
 
         /* Nome temporário; é atualizado quando o primeiro update chega
@@ -422,7 +513,7 @@ int main(int argc, char **argv) {
         snprintf(runtimes[i].flight_id, sizeof(runtimes[i].flight_id),
                  "flight-%d", i + 1);
 
-        poll_fds[i].fd     = update_pipe[0];
+        poll_fds[i].fd = update_pipe[0];
         poll_fds[i].events = POLLIN | POLLHUP;
     }
 
@@ -430,7 +521,8 @@ int main(int argc, char **argv) {
     sigprocmask(SIG_SETMASK, &previous_mask, NULL);
 
     /* US100/US103: dispara o arranque. SIGUSR1 está reservado para violações. */
-    for (int i = 0; i < config.flight_count; ++i) {
+    for (int i = 0; i < config.flight_count; ++i)
+    {
         kill(runtimes[i].pid, SIGUSR2);
     }
 
@@ -439,32 +531,42 @@ int main(int argc, char **argv) {
     /* Loop principal: passo a passo */
     for (int current_step = config.start_time;
          current_step <= config.end_time && active > 0 && !stop_requested;
-         current_step += config.step_seconds) {
+         current_step += config.step_seconds)
+    {
 
         int expected = 0;
-        for (int i = 0; i < config.flight_count; ++i) {
-            if (runtimes[i].active && runtimes[i].departure_time <= current_step) {
+        for (int i = 0; i < config.flight_count; ++i)
+        {
+            if (runtimes[i].active && runtimes[i].departure_time <= current_step)
+            {
                 expected++;
             }
         }
         int received = 0;
 
         /* Recolhe um update por cada voo ativo neste passo */
-        while (received < expected && !stop_requested) {
+        while (received < expected && !stop_requested)
+        {
             int ready = poll(poll_fds, (nfds_t)config.flight_count, -1);
-            if (ready < 0) {
-                if (errno == EINTR) continue;
+            if (ready < 0)
+            {
+                if (errno == EINTR)
+                    continue;
                 perror("poll");
                 break;
             }
 
-            for (int i = 0; i < config.flight_count; ++i) {
-                if (!runtimes[i].active || runtimes[i].departure_time > current_step) continue;
+            for (int i = 0; i < config.flight_count; ++i)
+            {
+                if (!runtimes[i].active || runtimes[i].departure_time > current_step)
+                    continue;
 
-                if (poll_fds[i].revents & POLLIN) {
+                if (poll_fds[i].revents & POLLIN)
+                {
                     PositionUpdate update;
                     ssize_t n = read(runtimes[i].pipe_fd, &update, sizeof(update));
-                    if (n == (ssize_t)sizeof(update)) {
+                    if (n == (ssize_t)sizeof(update))
+                    {
                         /* Atualiza o flight_id real (vem com PID anexado) */
                         snprintf(runtimes[i].flight_id, sizeof(runtimes[i].flight_id),
                                  "%s", update.flight_id);
@@ -473,7 +575,8 @@ int main(int argc, char **argv) {
                         tracker_update(&tracker, &update);
 
                         const char *scope = position_inside_area(update.position, &config)
-                                          ? "inside" : "outside";
+                                                ? "inside"
+                                                : "outside";
                         printf("[%s] step=%d pid=%d lat=%.6f lon=%.6f alt=%.1f status=%d (%s area)\n",
                                update.flight_id, update.time_step, update.pid,
                                update.position.latitude, update.position.longitude,
@@ -481,22 +584,29 @@ int main(int argc, char **argv) {
 
                         received++;
 
-                        if (update.status == STATUS_FINISHED || update.status == STATUS_ABORTED) {
+                        if (update.status == STATUS_FINISHED || update.status == STATUS_ABORTED)
+                        {
                             deactivate_runtime(&runtimes[i], &poll_fds[i]);
                             active--;
-                            if (expected > 0) expected--;
+                            if (expected > 0)
+                                expected--;
                         }
-                    } else if (n == 0) {
+                    }
+                    else if (n == 0)
+                    {
                         deactivate_runtime(&runtimes[i], &poll_fds[i]);
                         active--;
-                        if (expected > 0) expected--;
+                        if (expected > 0)
+                            expected--;
                     }
                 }
 
-                if (runtimes[i].active && (poll_fds[i].revents & POLLHUP)) {
+                if (runtimes[i].active && (poll_fds[i].revents & POLLHUP))
+                {
                     deactivate_runtime(&runtimes[i], &poll_fds[i]);
                     active--;
-                    if (expected > 0) expected--;
+                    if (expected > 0)
+                        expected--;
                 }
 
                 poll_fds[i].revents = 0;
@@ -506,13 +616,15 @@ int main(int argc, char **argv) {
         /* ===== US102: deteção de violações de segurança ===== */
         int new_v = safety_check_step(&tracker, &config, current_step,
                                       &safety_log, runtimes, config.flight_count);
-        if (new_v > 0) {
+        if (new_v > 0)
+        {
             fprintf(stderr, "[ATC] step=%d: %d new safety violation(s) detected. Total=%d\n",
                     current_step, new_v, safety_log.total_detected);
         }
 
         /* Threshold: termina antecipadamente se exceder */
-        if (safety_log.total_detected >= VIOLATION_THRESHOLD) {
+        if (safety_log.total_detected >= VIOLATION_THRESHOLD)
+        {
             fprintf(stderr,
                     "[ATC] Violation threshold (%d) exceeded. Aborting simulation.\n",
                     VIOLATION_THRESHOLD);
@@ -520,11 +632,15 @@ int main(int argc, char **argv) {
         }
 
         /* US103: liberta o próximo passo para os filhos ainda ativos */
-        if (!stop_requested) {
-            for (int i = 0; i < config.flight_count; ++i) {
-                if (runtimes[i].active) {
+        if (!stop_requested)
+        {
+            for (int i = 0; i < config.flight_count; ++i)
+            {
+                if (runtimes[i].active)
+                {
                     char command = 'N';
-                    if (write(runtimes[i].sync_fd, &command, sizeof(command)) < 0) {
+                    if (write(runtimes[i].sync_fd, &command, sizeof(command)) < 0)
+                    {
                         /* filho pode ter morrido entretanto; ignoramos (SIGPIPE está IGN) */
                     }
                 }
@@ -533,28 +649,35 @@ int main(int argc, char **argv) {
     }
 
     /* Termina filhos ainda vivos */
-    if (stop_requested) {
+    if (stop_requested)
+    {
         fprintf(stderr, "Termination requested. Stopping flight processes...\n");
-        for (int i = 0; i < config.flight_count; ++i) {
-            if (runtimes[i].active) kill(runtimes[i].pid, SIGTERM);
+        for (int i = 0; i < config.flight_count; ++i)
+        {
+            if (runtimes[i].active)
+                kill(runtimes[i].pid, SIGTERM);
         }
     }
 
     /* Fecha todos os pipes do pai — força EOF no read() dos filhos
     que ainda estejam à espera de comandos de sincronização. */
-    for (int i = 0; i < config.flight_count; ++i) {
-        if (runtimes[i].sync_fd >= 0) {
+    for (int i = 0; i < config.flight_count; ++i)
+    {
+        if (runtimes[i].sync_fd >= 0)
+        {
             close(runtimes[i].sync_fd);
             runtimes[i].sync_fd = -1;
         }
-        if (runtimes[i].active && runtimes[i].pipe_fd >= 0) {
+        if (runtimes[i].active && runtimes[i].pipe_fd >= 0)
+        {
             close(runtimes[i].pipe_fd);
             runtimes[i].pipe_fd = -1;
         }
     }
 
     /* Recolhe todos os filhos para evitar zombies */
-    for (int i = 0; i < config.flight_count; ++i) {
+    for (int i = 0; i < config.flight_count; ++i)
+    {
         int status;
         waitpid(runtimes[i].pid, &status, 0);
     }
@@ -569,6 +692,6 @@ int main(int argc, char **argv) {
     tracker_destroy(&tracker);
     free_runtimes(runtimes, config.flight_count);
 
-    printf("Simulation finished. Report saved in simulation_report.txt\n");
+    printf("Simulation finished. Report saved in %s\n", config.output_file);
     return EXIT_SUCCESS;
 }

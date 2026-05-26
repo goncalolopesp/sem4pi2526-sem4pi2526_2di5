@@ -6,7 +6,9 @@ make
 
 echo "Running integration tests..."
 
+--output tests/simulation_report_single.txt
 OUT1="tests/out_single_flight.txt"
+--output tests/simulation_report_two_flights.txt
 OUT2="tests/out_two_flights.txt"
 OUT3="tests/out_invalid_args.txt"
 
@@ -19,8 +21,8 @@ OUT3="tests/out_invalid_args.txt"
 
 grep -q "Starting simulation with 1 flight(s)." "$OUT1"
 grep -q "history=61 pts" "$OUT1"
-grep -q "Simulation finished. Report saved in simulation_report.txt" "$OUT1"
-test -f simulation_report.txt
+grep -q "Simulation finished. Report saved in tests/simulation_report_single.txt" "$OUT1"
+test -f tests/simulation_report_single.txt
 
 ./flight_simulator \
   --area 38 43 -10 3 \
@@ -32,7 +34,7 @@ test -f simulation_report.txt
 
 grep -q "Starting simulation with 2 flight(s)." "$OUT2"
 grep -q "Position Tracker Summary (2 flights)" "$OUT2"
-grep -q "Simulation finished. Report saved in simulation_report.txt" "$OUT2"
+grep -q "Simulation finished. Report saved in tests/simulation_report_two_flights.txt" "$OUT2"
 
 set +e
 ./flight_simulator \

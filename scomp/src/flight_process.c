@@ -11,49 +11,54 @@
  * - Recebe SIGUSR1 quando ATC deteta violação de segurança (US102)
  * - Recebe SIGTERM/SIGINT para terminar com cleanup
  */
-static volatile sig_atomic_t start_requested      = 0;
-static volatile sig_atomic_t terminate_requested  = 0;
-static volatile sig_atomic_t violation_notified   = 0;
+static volatile sig_atomic_t start_requested = 0;
+static volatile sig_atomic_t terminate_requested = 0;
+static volatile sig_atomic_t violation_notified = 0;
 
-static void handle_start(int signo) {
+static void handle_start(int signo)
+{
     (void)signo;
     start_requested = 1;
 }
 
-static void handle_term(int signo) {
+static void handle_term(int signo)
+{
     (void)signo;
     terminate_requested = 1;
 }
 
 /* US102: handler de violação de segurança.
  * Apenas funções async-signal-safe (write). */
-static void handle_violation(int signo) {
+static void handle_violation(int signo)
+{
     (void)signo;
     violation_notified = 1;
     write(STDOUT_FILENO,
           "\n[flight] WARNING: ATC reported a safety violation!\n", 53);
 }
 
-static Position interpolate(Position a, Position b, double ratio) {
+static Position interpolate(Position a, Position b, double ratio)
+{
     Position p;
-    p.latitude   = a.latitude   + (b.latitude   - a.latitude)   * ratio;
-    p.longitude  = a.longitude  + (b.longitude  - a.longitude)  * ratio;
+    p.latitude = a.latitude + (b.latitude - a.latitude) * ratio;
+    p.longitude = a.longitude + (b.longitude - a.longitude) * ratio;
     p.altitude_m = a.altitude_m + (b.altitude_m - a.altitude_m) * ratio;
     return p;
 }
 
-static int send_update(int fd, const FlightPlan *plan, int t, Position p, int status) {
+static int send_update(int fd, const FlightPlan *plan, int t, Position p, int status)
+{
     PositionUpdate update;
     memset(&update, 0, sizeof(update));
     update.time_step = t;
-    update.pid       = getpid();
-    update.position  = p;
-    update.status    = status;
+    update.pid = getpid();
+    update.position = p;
+    update.status = status;
     /* Garante flight_id único por processo: <id_do_plano>-<pid>
        Isto evita que múltiplos processos com o mesmo plano sejam fundidos
        no PositionTracker — crítico para a deteção de violações da US102. */
     snprintf(update.flight_id, sizeof(update.flight_id), "%.48s-%d",
-         plan->flight_id, getpid());
+             plan->flight_id, getpid());
     ssize_t written = write(fd, &update, sizeof(update));
     return written == (ssize_t)sizeof(update) ? 0 : -1;
 }
@@ -61,7 +66,8 @@ static int send_update(int fd, const FlightPlan *plan, int t, Position p, int st
 void run_flight_process(const char *flight_file,
                         int update_write_fd,
                         int sync_read_fd,
-                        const SimulationConfig *config) {
+                        const SimulationConfig *config)
+{
 
     /* ---- Handler de arranque (SIGUSR2) ---- */
     struct sigaction start_action;
@@ -78,7 +84,7 @@ void run_flight_process(const char *flight_file,
     sigemptyset(&term_action.sa_mask);
     term_action.sa_flags = SA_RESTART;
     sigaction(SIGTERM, &term_action, NULL);
-    sigaction(SIGINT,  &term_action, NULL);
+    sigaction(SIGINT, &term_action, NULL);
 
     /* ---- US102: handler de violação (SIGUSR1) ----
      * Bloqueia TODOS os outros sinais durante a execução do handler,
@@ -86,16 +92,17 @@ void run_flight_process(const char *flight_file,
     struct sigaction violation_action;
     memset(&violation_action, 0, sizeof(violation_action));
     violation_action.sa_handler = handle_violation;
-    sigfillset(&violation_action.sa_mask);             /* bloqueia todos durante o handler */
-    sigdelset(&violation_action.sa_mask, SIGKILL);     /* SIGKILL não pode ser bloqueado */
-    sigdelset(&violation_action.sa_mask, SIGSTOP);     /* SIGSTOP também não */
+    sigfillset(&violation_action.sa_mask);         /* bloqueia todos durante o handler */
+    sigdelset(&violation_action.sa_mask, SIGKILL); /* SIGKILL não pode ser bloqueado */
+    sigdelset(&violation_action.sa_mask, SIGSTOP); /* SIGSTOP também não */
     violation_action.sa_flags = SA_RESTART;
     sigaction(SIGUSR1, &violation_action, NULL);
 
     /* ---- Carregar o plano de voo ---- */
     FlightPlan plan;
     char err[256];
-    if (parse_flight_plan(flight_file, &plan, err, sizeof(err)) != 0) {
+    if (parse_flight_plan(flight_file, &plan, err, sizeof(err)) != 0)
+    {
         dprintf(STDERR_FILENO, "Flight process error: %s\n", err);
         close(update_write_fd);
         _exit(EXIT_FAILURE);
@@ -109,11 +116,13 @@ void run_flight_process(const char *flight_file,
     sigprocmask(SIG_SETMASK, NULL, &wait_mask);
     sigdelset(&wait_mask, SIGUSR2);
 
-    while (!start_requested && !terminate_requested) {
+    while (!start_requested && !terminate_requested)
+    {
         sigsuspend(&wait_mask);
     }
 
-    if (terminate_requested) {
+    if (terminate_requested)
+    {
         close(update_write_fd);
         close(sync_read_fd);
         _exit(EXIT_SUCCESS);
@@ -121,7 +130,8 @@ void run_flight_process(const char *flight_file,
 
     int departure_time = config->start_time;
     if (!config->start_time_provided &&
-        parse_departure_time_seconds(flight_file, &departure_time, err, sizeof(err)) != 0) {
+        parse_departure_time_seconds(flight_file, &departure_time, err, sizeof(err)) != 0)
+    {
         dprintf(STDERR_FILENO, "Flight process error: %s\n", err);
         close(update_write_fd);
         close(sync_read_fd);
@@ -131,17 +141,20 @@ void run_flight_process(const char *flight_file,
     /* Se a simulação global começar antes deste voo, o processo fica sincronizado
      * com o pai e só começa a emitir posições a partir da sua DepartureTime. */
     int current_time = config->start_time;
-    while (current_time < departure_time && current_time <= config->end_time && !terminate_requested) {
+    while (current_time < departure_time && current_time <= config->end_time && !terminate_requested)
+    {
         char command;
         ssize_t n = read(sync_read_fd, &command, sizeof(command));
-        if (n <= 0 || command != 'N') {
+        if (n <= 0 || command != 'N')
+        {
             terminate_requested = 1;
             break;
         }
         current_time += config->step_seconds;
     }
 
-    if (terminate_requested || current_time > config->end_time) {
+    if (terminate_requested || current_time > config->end_time)
+    {
         close(update_write_fd);
         close(sync_read_fd);
         _exit(EXIT_SUCCESS);
@@ -149,21 +162,25 @@ void run_flight_process(const char *flight_file,
 
     /* ---- Cálculo do número de passos ---- */
     int total_steps = (config->end_time - current_time) / config->step_seconds;
-    if (total_steps < plan.segment_count) total_steps = plan.segment_count;
+    if (total_steps < plan.segment_count)
+        total_steps = plan.segment_count;
     int steps_per_segment = total_steps / plan.segment_count;
-    if (steps_per_segment <= 0) steps_per_segment = 1;
+    if (steps_per_segment <= 0)
+        steps_per_segment = 1;
 
     /* ---- Loop principal da simulação ---- */
-    for (int i = 0; i < plan.segment_count && !terminate_requested; ++i) {
+    for (int i = 0; i < plan.segment_count && !terminate_requested; ++i)
+    {
         Segment *seg = &plan.segments[i];
 
         for (int s = 0;
              s < steps_per_segment && current_time <= config->end_time && !terminate_requested;
-             ++s) {
+             ++s)
+        {
 
             double ratio = (steps_per_segment == 1)
-                         ? 1.0
-                         : (double)s / (double)(steps_per_segment - 1);
+                               ? 1.0
+                               : (double)s / (double)(steps_per_segment - 1);
             Position p = interpolate(seg->start, seg->end, ratio);
 
             send_update(update_write_fd, &plan, current_time, p, STATUS_RUNNING);
@@ -171,7 +188,8 @@ void run_flight_process(const char *flight_file,
             /* US103: aguarda autorização do pai para avançar de passo */
             char command;
             ssize_t n = read(sync_read_fd, &command, sizeof(command));
-            if (n <= 0 || command != 'N') {
+            if (n <= 0 || command != 'N')
+            {
                 terminate_requested = 1;
                 break;
             }
