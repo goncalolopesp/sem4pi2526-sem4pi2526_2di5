@@ -4,6 +4,7 @@ import eapli.framework.application.UseCaseController;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
@@ -40,7 +41,7 @@ public class ListCompanyFleetController {
     }
 
     public Iterable<Aircraft> listMyCompanyFleet(FleetSortOption sortOption) {
-        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR);
+        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR, SEM4PIRoles.ADMIN);
 
         SystemUser currentUser = authz.session().get().authenticatedUser();
 

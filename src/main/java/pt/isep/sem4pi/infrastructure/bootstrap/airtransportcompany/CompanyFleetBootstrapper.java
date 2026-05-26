@@ -73,6 +73,17 @@ public class CompanyFleetBootstrapper implements Action {
                     collabRepo.save(companyCollaborator);
                 }
 
+                Username adminUsername = Username.valueOf("admin");
+                Optional<SystemUser> adminOpt = AuthzRegistry.userService().userOfIdentity(adminUsername);
+
+                if (adminOpt.isPresent()) {
+                    SystemUser adminUser = adminOpt.get();
+                    if (collabRepo.findBySystemUser(adminUser).isEmpty()) {
+                        AirTransportCompanyCollaborator adminProfile = new AirTransportCompanyCollaborator(adminUser, tap);
+                        collabRepo.save(adminProfile);
+                    }
+                }
+
                 System.out.println("Fleet and Collaborator successfully bootstrapped.");
                 return true;
             }
