@@ -1,0 +1,19 @@
+@startuml US072_SSD
+title US072 - List Company Fleet - SSD
+
+actor "Air Transport Company Collaborator" as Collab
+participant "SEM4PI System" as System
+
+Collab -> System : request to list company fleet
+System --> Collab : prompt to select sorting option (Registration, Maker, Model, Capacity, Age)
+
+Collab -> System : select sorting option
+System --> Collab : present sorted list of aircraft (Registration, Maker, Model, Capacity, Age, Status)
+
+alt no collaborator profile found
+    System --> Collab : show error (No collaborator profile found for the current user)
+else no registered aircraft
+    System --> Collab : present empty fleet message
+end
+
+@enduml
