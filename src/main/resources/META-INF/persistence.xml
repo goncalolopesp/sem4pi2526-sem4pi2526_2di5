@@ -25,6 +25,8 @@
         <class>pt.isep.sem4pi.domain.model.flight.Flight</class>
         <class>pt.isep.sem4pi.domain.aircontrolarea.AirControlArea</class>
         <class>pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator</class>
+        <class>pt.isep.sem4pi.domain.model.simulation.Simulation</class>
+        <class>pt.isep.sem4pi.domain.model.simulation.SimulatedFlightInput</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
