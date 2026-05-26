@@ -32,7 +32,32 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
 
     @Override
     public TransactionalContext newTransactionalContext() {
-        return null;
+        return new TransactionalContext() {
+            @Override
+            public void beginTransaction() {
+                // no-op for in-memory repositories
+            }
+
+            @Override
+            public void commit() {
+                // no-op for in-memory repositories
+            }
+
+            @Override
+            public void rollback() {
+                // no-op for in-memory repositories
+            }
+
+            @Override
+            public void close() {
+                // no-op for in-memory repositories
+            }
+
+            @Override
+            public boolean isActive() {
+                return true;
+            }
+        };
     }
 
     @Override
@@ -167,7 +192,7 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
                     "bo",
                     "Backoffice User",
                     Email.valueOf("bo@example.org"),
-                    PhoneNumber.valueOf("+351000000000"),
+                    PhoneNumber.valueOf("+351900000000"),
                     LocalDate.now().plusYears(1),
                     LocalDate.now()
             );

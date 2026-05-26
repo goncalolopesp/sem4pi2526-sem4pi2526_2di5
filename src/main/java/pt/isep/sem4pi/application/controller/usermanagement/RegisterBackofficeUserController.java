@@ -120,7 +120,7 @@ public class RegisterBackofficeUserController {
         }
 
         final var repos = PersistenceContext.repositories();
-        final var service = new RegisterBackofficeUserService(repos.users(), repos.backofficeUsers());
+        final var service = new RegisterBackofficeUserService(repos);
 
         return service.register(username, password, firstName, lastName, email, phoneNumber,
                 securityClearanceExpirationDate, skillsAssessmentDate);

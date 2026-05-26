@@ -15,6 +15,7 @@ import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.AddAirport.AddAirportUI;
 import pt.isep.sem4pi.presentation.aircraft.AddAircraftUI;
 import pt.isep.sem4pi.presentation.aircraft.RetireAircraftAction;
+import pt.isep.sem4pi.presentation.aircraftModel.AddAircraftModelAction;
 import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.ListCompanyCollaboratorsAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
@@ -44,7 +45,8 @@ public class MainMenu extends AbstractUI {
 
     // BACKOFFICE CONFIGURATION
     private static final int REGISTER_ENGINE_MODEL_OPTION = 1;
-    private static final int CERTIFY_ENGINE_MODEL_OPTION = 2;
+    private static final int REGISTER_AIRCRAFT_MODEL_OPTION = 2;
+    private static final int CERTIFY_ENGINE_MODEL_OPTION = 3;
 
     // AirTransportCompany
     private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 1;
@@ -175,6 +177,7 @@ public class MainMenu extends AbstractUI {
     private Menu buildBackofficeConfigurationMenu() {
         final var menu = new Menu("Backoffice Configuration >");
         menu.addItem(REGISTER_ENGINE_MODEL_OPTION, "Register Engine Model", new RegisterEngineModelAction());
+        menu.addItem(REGISTER_AIRCRAFT_MODEL_OPTION, "Add Aircraft Model", new AddAircraftModelAction());
         menu.addItem(CERTIFY_ENGINE_MODEL_OPTION, "Certify Engine Model", new CertifyEngineModelAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;

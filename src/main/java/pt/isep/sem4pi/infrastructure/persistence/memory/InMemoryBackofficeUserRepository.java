@@ -29,6 +29,17 @@ public class InMemoryBackofficeUserRepository implements BackofficeUserRepositor
     }
 
     @Override
+    public void delete(final BackofficeUser user) {
+        if (user == null) {
+            return;
+        }
+        byUsername.remove(user.username());
+        if (user.email() != null) {
+            byEmail.remove(user.email().toString());
+        }
+    }
+
+    @Override
     public Optional<BackofficeUser> ofIdentity(final String username) {
         return Optional.ofNullable(byUsername.get(username));
     }
