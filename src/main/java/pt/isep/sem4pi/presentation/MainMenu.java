@@ -26,6 +26,7 @@ import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
+import pt.isep.sem4pi.presentation.simulation.RunAreaSimulationAction;
 
 /**
  * Menu principal da aplicacao SEM4PI.
@@ -63,6 +64,10 @@ public class MainMenu extends AbstractUI {
 
     //Air Control Area
     private static final int ADD_AIR_CONTROL_AREA_OPTIONS = 1;
+
+    //Simulation
+    private static final int SIMULATION_OPTIONS = 9;
+    private static final int RUN_SIMULATION_OPTION = 1;
 
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
@@ -142,6 +147,9 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(AIRPORT_OPTIONS, buildAirportMenu());
                 mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, buildAirControlAreaMenu());
                 mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu());
+                mainMenu.addSubMenu(
+                        SIMULATION_OPTIONS,
+                        buildSimulationMenu());
             } else if (isAtcc) {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
             }
@@ -225,4 +233,20 @@ public class MainMenu extends AbstractUI {
         return menu;
     }
 
+    private Menu buildSimulationMenu() {
+
+        final var menu = new Menu("Simulation >");
+
+        menu.addItem(
+                RUN_SIMULATION_OPTION,
+                "Run Area Simulation",
+                new RunAreaSimulationAction());
+
+        menu.addItem(
+                EXIT_OPTION,
+                RETURN_LABEL,
+                Actions.SUCCESS);
+
+        return menu;
+    }
 }
