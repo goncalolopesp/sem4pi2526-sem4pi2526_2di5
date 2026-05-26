@@ -363,6 +363,11 @@ static void write_report(const FlightRuntime *runtimes, int count,
 
     int failed = 0;
 
+    if (safety_log->total_detected >= VIOLATION_THRESHOLD)
+    {
+        failed = 1;
+    }
+
     for (int i = 0; i < tracker->entry_count; ++i)
     {
         if (tracker->entries[i].status == STATUS_ABORTED)
@@ -680,6 +685,14 @@ int main(int argc, char **argv)
     {
         int status;
         waitpid(runtimes[i].pid, &status, 0);
+    }
+
+    for (int i = 0; i < tracker.entry_count; ++i)
+    {
+        if (tracker.entries[i].status == STATUS_RUNNING)
+        {
+            tracker.entries[i].status = STATUS_FINISHED;
+        }
     }
 
     /* Resumos no terminal */
