@@ -27,6 +27,17 @@ static double haversine_nm(Position a, Position b) {
     return EARTH_RADIUS_NM * c;
 }
 
+/*
+static double equirectangular_nm(Position a, Position b) {
+    double avg_lat = (a.latitude + b.latitude) / 2.0 * (M_PI / 180.0);
+
+    double dlat = (b.latitude - a.latitude) * 60.0;
+    double dlon = (b.longitude - a.longitude) * 60.0 * cos(avg_lat);
+
+    return sqrt(dlat * dlat + dlon * dlon);
+}
+*/
+
 /* Procura o PID associado a um flight_id no array de runtimes. */
 static pid_t pid_for_flight(const char *flight_id,
                             const FlightRuntime *runtimes, int n) {
@@ -82,14 +93,23 @@ int safety_check_step(const PositionTracker *tracker,
             if (b->status != STATUS_RUNNING) continue;
             if (b->last_time_step != current_step) continue;
 
+            /* TRIAGEM 1: Altitude (É o cálculo mais leve de todos) */
+            double dalt = fabs(a->current_position.altitude_m - b->current_position.altitude_m);
+            if (dalt >= config->safety_min_alt_m) {
+                continue; /* Estão separados em altura, ignorar o resto! */
+            }
+
+            /* TRIAGEM 2: Latitude Bruta (1 grau = 60 milhas náuticas) */
+            double dlat_bruta = fabs(a->current_position.latitude - b->current_position.latitude) * 60.0;
+            if (dlat_bruta >= config->safety_min_sep_nm) {
+                continue; /* Estão demasiado longe a Norte/Sul, ignorar! */
+            }
+
+            /* MATEMÁTICA FINA: Só chega aqui se estiverem na mesma zona e mesma altitude */
             double dist = haversine_nm(a->current_position, b->current_position);
-            double dalt = fabs(a->current_position.altitude_m -
-                               b->current_position.altitude_m);
 
-            /* Demasiado próximos horizontal E verticalmente */
-            if (dist < config->safety_min_sep_nm &&
-                dalt < config->safety_min_alt_m) {
-
+            /* Confirmação final exata */
+            if (dist < config->safety_min_sep_nm) {
                 SafetyViolation v;
                 memset(&v, 0, sizeof(v));
                 v.time_step   = current_step;
