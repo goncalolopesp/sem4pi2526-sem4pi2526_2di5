@@ -43,4 +43,8 @@ public interface RepositoryFactory {
     SimulationRepository simulations();
 
     SimulationRepository simulations(TransactionalContext tx);
+
+    SimulationReportRepository simulationReports();
+
+    SimulationReportRepository simulationReports(TransactionalContext tx);
 }

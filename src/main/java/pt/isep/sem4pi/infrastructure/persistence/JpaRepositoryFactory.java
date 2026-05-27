@@ -91,4 +91,14 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     public SimulationRepository simulations(final TransactionalContext tx) {
         return new JpaSimulationRepository(PERSISTENCE_UNIT_NAME);
     }
+
+    @Override
+    public SimulationReportRepository simulationReports() {
+        return new JpaSimulationReportRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports(final TransactionalContext tx) {
+        return new JpaSimulationReportRepository(PERSISTENCE_UNIT_NAME);
+    }
 }
