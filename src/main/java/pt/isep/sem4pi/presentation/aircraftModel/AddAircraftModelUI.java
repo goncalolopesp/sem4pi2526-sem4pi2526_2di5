@@ -2,7 +2,6 @@ package pt.isep.sem4pi.presentation.aircraftModel;
 
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
-import eapli.framework.presentation.console.SelectWidget;
 import pt.isep.sem4pi.application.controller.aircraftModel.AddAircraftModelController;
 import pt.isep.sem4pi.domain.model.aircraftModel.DTO.AircraftModelDTO;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
@@ -24,38 +23,63 @@ public class AddAircraftModelUI extends AbstractUI {
     @Override
     protected boolean doShow() {
         /// 1. Choose Manufacturer
-        Iterable<Manufacturer> manufacturers = controller.getManufacturers();
-        SelectWidget<Manufacturer> selectorMan = new SelectWidget<>("Manufacturers:", manufacturers);
-        selectorMan.show();
-        Manufacturer selectedMan = selectorMan.selectedElement();
-        if (selectedMan == null) return false;
+        // 1. Choose Manufacturer (manual menu to avoid extra blank lines)
+        Iterable<Manufacturer> manufacturersIt = controller.getManufacturers();
+        List<Manufacturer> manufacturers = new ArrayList<>();
+        manufacturersIt.forEach(manufacturers::add);
+        if (manufacturers.isEmpty()) {
+            System.out.println("[ERROR] No manufacturers available.");
+            return false;
+        }
+
+        System.out.println("Manufacturers:");
+        for (int i = 0; i < manufacturers.size(); i++) {
+            System.out.printf("%d. %s\n", i + 1, manufacturers.get(i).toString());
+        }
+        System.out.println("0. Exit");
+        int manChoice = Console.readInteger("Select an option: ");
+        if (manChoice == 0) return false;
+        if (manChoice < 1 || manChoice > manufacturers.size()) {
+            System.out.println("Invalid option. Operation cancelled.");
+            return false;
+        }
+        Manufacturer selectedMan = manufacturers.get(manChoice - 1);
 
         /// 2. Simple data
         String name = Console.readLine("Model Name: ");
 
         List<String> validTypes = Arrays.asList("PASSENGER", "CARGO", "MIXED");
 
-        SelectWidget<String> typeSelector = new SelectWidget<>("Select the Aircraft Type:", validTypes);
-        typeSelector.show();
-
-        String selectedType = typeSelector.selectedElement();
-
-        if (selectedType == null) {
-            System.out.println("Operation cancelled.");
+        // 2. Select aircraft type
+        System.out.println("Select the Aircraft Type:");
+        for (int i = 0; i < validTypes.size(); i++) {
+            System.out.printf("%d. %s\n", i + 1, validTypes.get(i));
+        }
+        System.out.println("0. Exit");
+        int typeChoice = Console.readInteger("Select an option: ");
+        if (typeChoice == 0) return false;
+        if (typeChoice < 1 || typeChoice > validTypes.size()) {
+            System.out.println("Invalid option. Operation cancelled.");
             return false;
         }
+        String selectedType = validTypes.get(typeChoice - 1);
 
-        List<EngineType> validMotors = Arrays.asList(EngineType.values());
+        
 
-        SelectWidget<EngineType> motorSelector = new SelectWidget<>("Select the Motorization:", validMotors);
-        motorSelector.show();
-
-        EngineType motorization = motorSelector.selectedElement();
-
-        if (motorization == null) {
-            System.out.println("Operation cancelled.");
+        // 3. Select motorization
+        List<EngineType> motorList = Arrays.asList(EngineType.values());
+        System.out.println("Select the Motorization:");
+        for (int i = 0; i < motorList.size(); i++) {
+            System.out.printf("%d. %s\n", i + 1, motorList.get(i).name());
+        }
+        System.out.println("0. Exit");
+        int motorChoice = Console.readInteger("Select an option: ");
+        if (motorChoice == 0) return false;
+        if (motorChoice < 1 || motorChoice > motorList.size()) {
+            System.out.println("Invalid option. Operation cancelled.");
             return false;
         }
+        EngineType motorization = motorList.get(motorChoice - 1);
 
         Iterable<EngineModel> allEngines = controller.getEngineModels();
         List<EngineModel> compatibleEngines = new ArrayList<>();
@@ -92,14 +116,20 @@ public class AddAircraftModelUI extends AbstractUI {
 
         boolean addMore = true;
         while (addMore) {
-            SelectWidget<EngineModel> selectorEngine =
-                    new SelectWidget<>("Available Compatible Engines (select one or 0 to stop):", compatibleEngines);
-            selectorEngine.show();
-            EngineModel selectedEngine = selectorEngine.selectedElement();
+            System.out.println("Available Compatible Engines (select one or 0 to stop):");
+            for (int i = 0; i < compatibleEngines.size(); i++) {
+                System.out.printf("%d. %s\n", i + 1, compatibleEngines.get(i).toString());
+            }
+            System.out.println("0. Stop");
+            int engChoice = Console.readInteger("Select an option: ");
 
-            if (selectedEngine == null) {
+            if (engChoice == 0) {
+                addMore = false;
+            } else if (engChoice < 0 || engChoice > compatibleEngines.size()) {
+                System.out.println("Invalid option. Stopping selection.");
                 addMore = false;
             } else {
+                EngineModel selectedEngine = compatibleEngines.get(engChoice - 1);
                 boolean alreadySelected = selectedEngines.stream()
                         .anyMatch(e -> e.identity().equals(selectedEngine.identity()));
 

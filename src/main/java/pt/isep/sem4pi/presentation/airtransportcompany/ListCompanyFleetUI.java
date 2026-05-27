@@ -1,11 +1,11 @@
 package pt.isep.sem4pi.presentation.airtransportcompany;
 
 import eapli.framework.presentation.console.AbstractUI;
-import eapli.framework.presentation.console.SelectWidget;
+import eapli.framework.io.util.Console;
 import pt.isep.sem4pi.application.controller.airtransportcompany.ListCompanyFleetController;
 import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 
-import java.util.Arrays;
+
 
 public class ListCompanyFleetUI extends AbstractUI {
 
@@ -13,19 +13,27 @@ public class ListCompanyFleetUI extends AbstractUI {
 
     @Override
     protected boolean doShow() {
-        // 1. Apresentar as opções das alíneas a, b, c e d
-        SelectWidget<ListCompanyFleetController.FleetSortOption> sortSelector = new SelectWidget<>(
-                "How do you want to list the fleet?",
-                Arrays.asList(ListCompanyFleetController.FleetSortOption.values())
-        );
+        // 1. Apresentar as opções das alíneas a, b, c, d (sem linhas extra)
+        ListCompanyFleetController.FleetSortOption[] options = ListCompanyFleetController.FleetSortOption.values();
+        System.out.println("How do you want to list the fleet?");
+        for (int i = 0; i < options.length; i++) {
+            System.out.printf("%d. %s\n", i + 1, options[i].name());
+        }
+        System.out.println("0. Exit");
 
-        sortSelector.show();
-        ListCompanyFleetController.FleetSortOption selectedOption = sortSelector.selectedElement();
+        int choice = Console.readInteger("Select an option: ");
 
-        if (selectedOption == null) {
+        if (choice == 0) {
             System.out.println("Operation cancelled.");
             return false;
         }
+
+        if (choice < 1 || choice > options.length) {
+            System.out.println("Invalid option. Operation cancelled.");
+            return false;
+        }
+
+        ListCompanyFleetController.FleetSortOption selectedOption = options[choice - 1];
 
         System.out.println("\nRetrieving your company's fleet (Sorted by " + selectedOption.name() + ")...\n");
 
