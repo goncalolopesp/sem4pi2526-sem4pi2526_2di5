@@ -33,6 +33,9 @@ public class CheckSimulationStatusUI extends AbstractUI {
         System.out.println("Status:");
         System.out.println(simulation.status());
 
+        System.out.println("Failure reason:");
+        System.out.println(simulation.failureReason());
+
         return true;
     }
 

@@ -37,6 +37,9 @@ public class Simulation implements AggregateRoot<String>, Representationable {
     @Column(nullable = false)
     private SimulationStatus status;
 
+    @Column(length = 4000)
+    private String failureReason;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "simulation_flight_inputs",
@@ -52,11 +55,11 @@ public class Simulation implements AggregateRoot<String>, Representationable {
     }
 
     public Simulation(final String simulationId,
-            final String airControlAreaId,
-            final LocalDateTime startTime,
-            final LocalDateTime endTime,
-            final Integer timeStep,
-            final Double safetyThreshold) {
+                      final String airControlAreaId,
+                      final LocalDateTime startTime,
+                      final LocalDateTime endTime,
+                      final Integer timeStep,
+                      final Double safetyThreshold) {
 
         Preconditions.nonEmpty(simulationId, "Simulation id is required");
         Preconditions.nonEmpty(airControlAreaId, "Air control area id is required");
@@ -109,11 +112,7 @@ public class Simulation implements AggregateRoot<String>, Representationable {
     }
 
     public void markAsFailed() {
-        if (status == SimulationStatus.FINISHED) {
-            throw new IllegalStateException("Finished simulations cannot be marked as failed");
-        }
-
-        this.status = SimulationStatus.FAILED;
+        markAsFailed("Simulation failed");
     }
 
     public long durationInSeconds() {
@@ -211,5 +210,25 @@ public class Simulation implements AggregateRoot<String>, Representationable {
         builder.endObject();
 
         return builder.build();
+    }
+
+    public void markAsFailed(final String reason) {
+        if (status == SimulationStatus.FINISHED) {
+            throw new IllegalStateException("Finished simulations cannot be marked as failed");
+        }
+
+        this.status = SimulationStatus.FAILED;
+
+        if (reason == null) {
+            this.failureReason = "Simulation failed";
+        } else if (reason.length() > 4000) {
+            this.failureReason = reason.substring(0, 4000);
+        } else {
+            this.failureReason = reason;
+        }
+    }
+
+    public String failureReason() {
+        return failureReason;
     }
 }
