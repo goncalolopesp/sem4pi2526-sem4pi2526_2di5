@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.aircontrolarea;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.aircontrolarea.RegisterAirControlAreaController;
-
+import pt.isep.sem4pi.domain.aircontrolarea.DTO.AirControlAreaCreateDTO;
 
 public class RegisterAirControlAreaUI extends AbstractUI {
 
@@ -24,7 +24,9 @@ public class RegisterAirControlAreaUI extends AbstractUI {
         double minFuel = Console.readDouble("Minimum Fuel Reserve Required (liters): ");
 
         try {
-            controller.registerAirControlArea(code, minLat, maxLat, minLon, maxLon, name, minFuel);
+            AirControlAreaCreateDTO dto = new AirControlAreaCreateDTO(
+                    code, name, minLat, maxLat, minLon, maxLon, minFuel);
+            controller.registerAirControlArea(dto);
             System.out.println("\nAir Control Area successfully registered!");
 
         } catch (IllegalArgumentException e) {

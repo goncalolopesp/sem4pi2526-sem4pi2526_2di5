@@ -36,4 +36,29 @@ public class WeatherImportBatchTest {
     public void ensureFailsIfWeatherDataIsNull() {
         new WeatherImportBatch("AREA_PT", null);
     }
+
+    @Test
+    public void ensureValidBulkBatchIsCreated() {
+        WeatherData data = createValidWeatherData();
+
+        WeatherImportBatch batch = WeatherImportBatch.forBulkImport(
+                "AREA_PT",
+                java.util.List.of(data)
+        );
+
+        assertEquals("AREA_PT", batch.getAirControlAreaId());
+        assertEquals(ImportBatchStatus.COMPLETED, batch.getStatus());
+        assertEquals(1, batch.getImportedRecords());
+        assertEquals(1, batch.getRecords().size());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureBulkBatchFailsIfRecordsAreEmpty() {
+        WeatherImportBatch.forBulkImport("AREA_PT", java.util.List.of());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureBulkBatchFailsIfStatusIsNull() {
+        new WeatherImportBatch("AREA_PT", java.util.List.of(createValidWeatherData()), null);
+    }
 }
