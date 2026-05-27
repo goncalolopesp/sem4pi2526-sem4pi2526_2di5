@@ -6,7 +6,8 @@ import java.time.LocalTime;
 public class WeatherDataDTO {
     private final String airControlAreaId;
     private final LocalDate date;
-    private final LocalTime time;
+    private final LocalTime startTime;
+    private final LocalTime endTime;
     private final double windSpeedKnots;
     private final double windDirectionDegrees;
     private final double temperatureCelsius;
@@ -15,14 +16,15 @@ public class WeatherDataDTO {
     private final double altitudeMeters;
     private final int sourceLine;
 
-    public WeatherDataDTO(String airControlAreaId, LocalDate date, LocalTime time,
+    public WeatherDataDTO(String airControlAreaId, LocalDate date, LocalTime startTime, LocalTime endTime,
                           double windSpeedKnots, double windDirectionDegrees,
                           double temperatureCelsius, double pressureHpa,
                           double humidityPercentage, double altitudeMeters,
                           int sourceLine) {
         this.airControlAreaId = airControlAreaId;
         this.date = date;
-        this.time = time;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.windSpeedKnots = windSpeedKnots;
         this.windDirectionDegrees = windDirectionDegrees;
         this.temperatureCelsius = temperatureCelsius;
@@ -40,8 +42,12 @@ public class WeatherDataDTO {
         return date;
     }
 
-    public LocalTime getTime() {
-        return time;
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
     }
 
     public double getWindSpeedKnots() {
@@ -72,4 +78,3 @@ public class WeatherDataDTO {
         return sourceLine;
     }
 }
-

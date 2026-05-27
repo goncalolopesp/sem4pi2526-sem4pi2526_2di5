@@ -17,26 +17,34 @@ public class WeatherDataTest {
         Humidity humidity = new Humidity(55.0);
         Altitude altitude = new Altitude(150.0);
 
-        WeatherData data = new WeatherData(date, time, wind, temp, pressure, humidity, altitude);
+        WeatherData data = new WeatherData(date, time, time, wind, temp, pressure, humidity, altitude);
 
         assertNotNull(data);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureFailsIfDateIsNull() {
-        new WeatherData(null, LocalTime.now(), new Wind(15, 180), new Temperature(22.5),
+        LocalTime time = LocalTime.now();
+        new WeatherData(null, time, time, new Wind(15, 180), new Temperature(22.5),
                 new AtmosphericPressure(1015), new Humidity(55), new Altitude(150));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureFailsIfTimeIsNull() {
-        new WeatherData(LocalDate.now(), null, new Wind(15, 180), new Temperature(22.5),
+        new WeatherData(LocalDate.now(), null, LocalTime.now(), new Wind(15, 180), new Temperature(22.5),
                 new AtmosphericPressure(1015), new Humidity(55), new Altitude(150));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureFailsIfAnyVOIsNull() {
-        new WeatherData(LocalDate.now(), LocalTime.now(), null, new Temperature(22.5),
+        LocalTime time = LocalTime.now();
+        new WeatherData(LocalDate.now(), time, time, null, new Temperature(22.5),
+                new AtmosphericPressure(1015), new Humidity(55), new Altitude(150));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureFailsIfEndBeforeStart() {
+        new WeatherData(LocalDate.now(), LocalTime.of(10, 0), LocalTime.of(9, 0), new Wind(15, 180), new Temperature(22.5),
                 new AtmosphericPressure(1015), new Humidity(55), new Altitude(150));
     }
 }

@@ -25,7 +25,7 @@ public class RegisterWeatherService {
         LocalDate date = LocalDate.now();
         LocalTime time = LocalTime.now();
 
-        WeatherData data = new WeatherData(date, time, wind, temp, pressure, humidity, altitude);
+        WeatherData data = new WeatherData(date, time, time, wind, temp, pressure, humidity, altitude);
 
         WeatherImportBatch batch = new WeatherImportBatch(areaId, data);
 

@@ -24,7 +24,7 @@ import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
 import pt.isep.sem4pi.presentation.weatherdata.ImportWeatherDataUI;
-import pt.isep.sem4pi.presentation.weatherdata.WeatherDataTotalsUI;
+import pt.isep.sem4pi.presentation.weatherdata.ConsultWeatherDataUI;
 
 /**
  * Menu principal da aplicacao SEM4PI.
@@ -61,7 +61,7 @@ public class MainMenu extends AbstractUI {
     // Weather Data
     private static final int REGISTER_WEATHER_DATA_OPTIONS = 1;
     private static final int IMPORT_WEATHER_DATA_OPTIONS = 2;
-    private static final int VIEW_WEATHER_TOTALS_OPTIONS = 3;
+    private static final int CONSULT_WEATHER_DATA_OPTIONS = 3;
 
     //Air Control Area
     private static final int ADD_AIR_CONTROL_AREA_OPTIONS = 1;
@@ -132,6 +132,18 @@ public class MainMenu extends AbstractUI {
                             SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR,
                             SEM4PIRoles.ADMIN);
 
+            final boolean isWeatherManager =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.ADMIN,
+                            SEM4PIRoles.WEATHER_PERSON);
+
+            final boolean isWeatherConsultant =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.ADMIN,
+                            SEM4PIRoles.WEATHER_PERSON,
+                            SEM4PIRoles.PILOT,
+                            SEM4PIRoles.FLIGHT_CONTROL_OPERATOR);
+
             if (isAdmin) {
                 final var adminMenu = buildAdminMenu();
                 mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
@@ -143,9 +155,12 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
                 mainMenu.addSubMenu(AIRPORT_OPTIONS, buildAirportMenu());
                 mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, buildAirControlAreaMenu());
-                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu());
             } else if (isAtcc) {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
+            }
+
+            if (isWeatherManager || isWeatherConsultant) {
+                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu(isWeatherManager, isWeatherConsultant));
             }
         }
 
@@ -219,12 +234,16 @@ public class MainMenu extends AbstractUI {
         return menu;
     }
 
-    private Menu buildWeatherDataMenu() {
+    private Menu buildWeatherDataMenu(boolean canManage, boolean canConsult) {
         final var menu = new Menu("Weather Data >");
 
-        menu.addItem(REGISTER_WEATHER_DATA_OPTIONS, "Register Weather Data", new RegisterWeatherUI()::show);
-        menu.addItem(IMPORT_WEATHER_DATA_OPTIONS, "Import Weather Data", new ImportWeatherDataUI()::show);
-        menu.addItem(VIEW_WEATHER_TOTALS_OPTIONS, "View Weather Data Totals", new WeatherDataTotalsUI()::show);
+        if (canManage) {
+            menu.addItem(REGISTER_WEATHER_DATA_OPTIONS, "Register Weather Data", new RegisterWeatherUI()::show);
+            menu.addItem(IMPORT_WEATHER_DATA_OPTIONS, "Import Weather Data", new ImportWeatherDataUI()::show);
+        }
+        if (canConsult) {
+            menu.addItem(CONSULT_WEATHER_DATA_OPTIONS, "Consult Weather Data", new ConsultWeatherDataUI()::show);
+        }
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;
