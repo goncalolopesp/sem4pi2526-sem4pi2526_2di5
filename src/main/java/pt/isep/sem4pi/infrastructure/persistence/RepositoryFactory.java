@@ -39,4 +39,6 @@ public interface RepositoryFactory {
     AircraftRepository aircrafts();
 
     FlightRepository flights();
+
+    WeatherBatchRepository weatherBatches();
 }

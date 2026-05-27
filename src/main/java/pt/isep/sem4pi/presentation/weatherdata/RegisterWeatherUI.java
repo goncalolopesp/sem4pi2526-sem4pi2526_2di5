@@ -2,12 +2,11 @@ package pt.isep.sem4pi.presentation.weatherdata;
 
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.weatherdata.RegisterWeatherController;
-import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaWeatherBatchRepository;
 
 import java.util.Scanner;
 
 public class RegisterWeatherUI extends AbstractUI {
-    private final RegisterWeatherController controller = new RegisterWeatherController(new JpaWeatherBatchRepository());
+    private final RegisterWeatherController controller = new RegisterWeatherController();
     private final Scanner scanner = new Scanner(System.in);
 
     public boolean doShow() {

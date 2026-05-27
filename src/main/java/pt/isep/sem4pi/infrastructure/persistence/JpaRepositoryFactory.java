@@ -81,4 +81,9 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     public FlightRepository flights() {
         return new JpaFlightRepository(PERSISTENCE_UNIT_NAME);
     }
+
+    @Override
+    public WeatherBatchRepository weatherBatches() {
+        return new JpaWeatherBatchRepository();
+    }
 }

@@ -29,6 +29,7 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private static AirControlAreaRepository airControlAreaRepository;
     private static AircraftRepository aircraftRepository;
     private static FlightRepository flightRepository;
+    private static WeatherBatchRepository weatherBatchRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -150,6 +151,14 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
             flightRepository = new InMemoryFlightRepository();
         }
         return flightRepository;
+    }
+
+    @Override
+    public WeatherBatchRepository weatherBatches() {
+        if (weatherBatchRepository == null) {
+            weatherBatchRepository = new InMemoryWeatherBatchRepository();
+        }
+        return weatherBatchRepository;
     }
 
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {

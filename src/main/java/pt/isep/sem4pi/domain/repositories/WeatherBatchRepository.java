@@ -7,4 +7,5 @@ import java.util.List;
 public interface WeatherBatchRepository {
     WeatherImportBatch save(WeatherImportBatch batch);
     List<WeatherImportBatch> findAllByAreaId(String areaId);
+    long totalWeatherRecords();
 }
