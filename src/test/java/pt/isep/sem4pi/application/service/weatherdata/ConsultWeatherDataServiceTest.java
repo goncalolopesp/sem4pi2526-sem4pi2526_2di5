@@ -52,4 +52,16 @@ public class ConsultWeatherDataServiceTest {
         assertEquals(LocalTime.of(5, 0), dto.getStartTime());
         assertEquals(LocalTime.of(8, 15), dto.getEndTime());
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureFailsWithBlankArea() {
+        ConsultWeatherDataService service = new ConsultWeatherDataService(new InMemoryWeatherBatchRepository());
+        service.findByAreaAndDate(" ", LocalDate.now());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureFailsWithNullDate() {
+        ConsultWeatherDataService service = new ConsultWeatherDataService(new InMemoryWeatherBatchRepository());
+        service.findByAreaAndDate("121", null);
+    }
 }

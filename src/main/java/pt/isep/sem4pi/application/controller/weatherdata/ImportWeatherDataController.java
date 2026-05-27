@@ -10,12 +10,17 @@ public class ImportWeatherDataController {
     private final eapli.framework.infrastructure.authz.application.AuthorizationService authz;
 
     public ImportWeatherDataController() {
-        this.service = new WeatherDataImportService(
+        this(new WeatherDataImportService(
                 PersistenceContext.repositories().weatherBatches(),
                 PersistenceContext.repositories().airControlAreas(),
                 new WeatherDataImporterFactory()
-        );
-        this.authz = eapli.framework.infrastructure.authz.application.AuthzRegistry.authorizationService();
+        ), eapli.framework.infrastructure.authz.application.AuthzRegistry.authorizationService());
+    }
+
+    public ImportWeatherDataController(WeatherDataImportService service,
+                                       eapli.framework.infrastructure.authz.application.AuthorizationService authz) {
+        this.service = service;
+        this.authz = authz;
     }
 
     public WeatherImportResultDTO importWeatherData(String filePath, String fileType) {
