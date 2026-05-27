@@ -119,6 +119,7 @@ typedef struct
     int weather_code;
     double safety_min_sep_nm;
     double safety_min_alt_m;
+    int violation_threshold;
     int perf_max_flights;
     char output_file[MAX_PATH];
     int start_time_provided;

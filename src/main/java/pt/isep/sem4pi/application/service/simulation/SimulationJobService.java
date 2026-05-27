@@ -52,14 +52,12 @@ public class SimulationJobService {
                 simulationReportRepository.save(report);
 
                 if ("FAIL".equalsIgnoreCase(report.finalValidationResult())) {
-                    simulation.markAsFailed("Simulator execution failed. Check report/output logs.");
-                } else {
+                    simulation.markAsFailed(result.consoleOutput());                } else {
                     simulation.markAsFinished();
                 }
 
             } else {
-                simulation.markAsFailed("Simulator execution failed. Check report/output logs.");
-            }
+                simulation.markAsFailed(result.consoleOutput());            }
 
         } catch (final Exception e) {
             simulation.markAsFailed(e.getMessage());

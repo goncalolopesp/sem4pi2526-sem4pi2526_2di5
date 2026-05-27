@@ -25,17 +25,20 @@ public class RunAreaSimulationUI extends AbstractUI {
                             "Air Control Area Id:",
                             "Area id required");
 
-            final Integer timeStep =
-                    Integer.parseInt(
-                            Console.readNonEmptyLine(
-                                    "Time step:",
-                                    "Time step required"));
+            final Double minLat = Double.parseDouble(Console.readNonEmptyLine("Minimum latitude:", "Minimum latitude required"));
+            final Double maxLat = Double.parseDouble(Console.readNonEmptyLine("Maximum latitude:", "Maximum latitude required"));
+            final Double minLon = Double.parseDouble(Console.readNonEmptyLine("Minimum longitude:", "Minimum longitude required"));
+            final Double maxLon = Double.parseDouble(Console.readNonEmptyLine("Maximum longitude:", "Maximum longitude required"));
 
-            final Double threshold =
-                    Double.parseDouble(
-                            Console.readNonEmptyLine(
-                                    "Safety threshold:",
-                                    "Threshold required"));
+            final Integer startSecond = Integer.parseInt(Console.readNonEmptyLine("Start second:", "Start second required"));
+            final Integer endSecond = Integer.parseInt(Console.readNonEmptyLine("End second:", "End second required"));
+            final Integer timeStep = Integer.parseInt(Console.readNonEmptyLine("Time step:", "Time step required"));
+
+            final String weather = Console.readNonEmptyLine("Weather (clear/rain/storm/fog):", "Weather required");
+
+            final Double safetyMinSepNm = Double.parseDouble(Console.readNonEmptyLine("Minimum separation (NM):", "Minimum separation required"));
+            final Double safetyMinAltM = Double.parseDouble(Console.readNonEmptyLine("Minimum altitude (m):", "Minimum altitude required"));
+            final Integer violationThreshold = Integer.parseInt(Console.readNonEmptyLine("Maximum allowed violations:", "Violation threshold required"));
 
             final String flightPlansRaw =
                     Console.readNonEmptyLine(
@@ -56,10 +59,17 @@ public class RunAreaSimulationUI extends AbstractUI {
             final SimulationDTO dto =
                     controller.createSimulation(
                             areaId,
-                            start,
-                            end,
+                            minLat,
+                            maxLat,
+                            minLon,
+                            maxLon,
+                            startSecond,
+                            endSecond,
                             timeStep,
-                            threshold,
+                            weather,
+                            safetyMinSepNm,
+                            safetyMinAltM,
+                            violationThreshold,
                             flightPlans);
 
             controller.submitSimulation(dto.getSimulationId());

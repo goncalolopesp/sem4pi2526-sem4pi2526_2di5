@@ -67,6 +67,7 @@ int parse_args(int argc, char **argv, SimulationConfig *config)
     config->weather_code = WEATHER_CLEAR;
     config->safety_min_sep_nm = 3.0;
     config->safety_min_alt_m = 300.0;
+    config->violation_threshold = VIOLATION_THRESHOLD;
     config->perf_max_flights = MAX_FLIGHTS;
     snprintf(config->output_file, MAX_PATH, "simulation_report.txt");
 
@@ -103,6 +104,10 @@ int parse_args(int argc, char **argv, SimulationConfig *config)
         else if (strcmp(argv[i], "--safety-min-alt") == 0 && i + 1 < argc)
         {
             config->safety_min_alt_m = atof(argv[++i]);
+        }
+        else if (strcmp(argv[i], "--violation-threshold") == 0 && i + 1 < argc)
+        {
+            config->violation_threshold = atoi(argv[++i]);
         }
         else if (strcmp(argv[i], "--perf-max-flights") == 0 && i + 1 < argc)
         {
@@ -183,6 +188,11 @@ int validate_config(const SimulationConfig *config)
     {
         fprintf(stderr, "Validation error: --safety-min-alt must be positive.\n");
         return -1;
+    }
+    if (config->violation_threshold <= 0)
+    {
+        fprintf(stderr, "Validation error: violation threshold must be positive.\n");
+        return 0;
     }
     if (config->perf_max_flights <= 0 || config->perf_max_flights > MAX_FLIGHTS)
     {
@@ -287,6 +297,7 @@ static void write_report(const FlightRuntime *runtimes, int count,
             config->start_time, config->end_time, config->step_seconds);
     fprintf(report, "Safety thresholds: min separation = %.2f NM, min altitude = %.1f m\n",
             config->safety_min_sep_nm, config->safety_min_alt_m);
+    fprintf(report, "Violation threshold: %d\n", config->violation_threshold);
     fprintf(report, "Total flights: %d\n\n", count);
 
     /* Secção 1: histórico por runtime (US100) */
@@ -363,7 +374,7 @@ static void write_report(const FlightRuntime *runtimes, int count,
 
     int failed = 0;
 
-    if (safety_log->total_detected >= VIOLATION_THRESHOLD)
+    if (safety_log->total_detected >= config->violation_threshold)
     {
         failed = 1;
     }

@@ -16,25 +16,13 @@ public class RunAreaSimulationService {
         this.authz = authz;
     }
 
-    public Simulation createSimulation(final String airControlAreaId,
-                                       final LocalDateTime startTime,
-                                       final LocalDateTime endTime,
-                                       final Integer timeStep,
-                                       final Double safetyThreshold,
-                                       final List<String> flightPlanIds) {
+    public Simulation createSimulation(final String airControlAreaId, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon, final Integer startSecond, final Integer endSecond, final Integer timeStep, final String weather, final Double safetyMinSepNm, final Double safetyMinAltM, final Integer violationThreshold, final List<String> flightPlanIds) {
 
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.FLIGHT_CONTROL_OPERATOR, SEM4PIRoles.ADMIN);
 
         final String simulationId = "SIM-" + UUID.randomUUID();
 
-        final Simulation simulation = new Simulation(
-                simulationId,
-                airControlAreaId,
-                startTime,
-                endTime,
-                timeStep,
-                safetyThreshold
-        );
+        final Simulation simulation = new Simulation(simulationId, airControlAreaId, LocalDateTime.now(), LocalDateTime.now().plusSeconds(endSecond - startSecond), timeStep, safetyMinSepNm, minLat, maxLat, minLon, maxLon, startSecond, endSecond, weather, safetyMinSepNm, safetyMinAltM, violationThreshold);
 
         for (final String flightPlanId : flightPlanIds) {
             simulation.addFlightPlan(flightPlanId);

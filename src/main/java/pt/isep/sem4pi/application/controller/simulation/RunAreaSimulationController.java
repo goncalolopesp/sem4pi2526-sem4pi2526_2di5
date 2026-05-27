@@ -53,11 +53,37 @@ public class RunAreaSimulationController {
         this.simulationJobService = simulationJobService;
     }
 
-    public SimulationDTO createSimulation(final String airControlAreaId, final LocalDateTime startTime, final LocalDateTime endTime, final Integer timeStep, final Double safetyThreshold, final List<String> flightPlanIds) {
+    public SimulationDTO createSimulation(final String airControlAreaId,
+                                          final Double minLat,
+                                          final Double maxLat,
+                                          final Double minLon,
+                                          final Double maxLon,
+                                          final Integer startSecond,
+                                          final Integer endSecond,
+                                          final Integer timeStep,
+                                          final String weather,
+                                          final Double safetyMinSepNm,
+                                          final Double safetyMinAltM,
+                                          final Integer violationThreshold,
+                                          final List<String> flightPlanIds) {
 
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.FLIGHT_CONTROL_OPERATOR, SEM4PIRoles.ADMIN);
 
-        final Simulation simulation = runAreaSimulationService.createSimulation(airControlAreaId, startTime, endTime, timeStep, safetyThreshold, flightPlanIds);
+        final Simulation simulation =
+                runAreaSimulationService.createSimulation(
+                        airControlAreaId,
+                        minLat,
+                        maxLat,
+                        minLon,
+                        maxLon,
+                        startSecond,
+                        endSecond,
+                        timeStep,
+                        weather,
+                        safetyMinSepNm,
+                        safetyMinAltM,
+                        violationThreshold,
+                        flightPlanIds);
 
         final Simulation savedSimulation = simulationRepository.save(simulation);
 

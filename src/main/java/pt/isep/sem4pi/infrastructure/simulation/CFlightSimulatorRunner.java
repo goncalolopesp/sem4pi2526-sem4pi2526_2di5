@@ -34,28 +34,31 @@ public class CFlightSimulatorRunner implements SimulationRunner {
             command.add(SIMULATOR_PATH);
 
             command.add("--area");
-            command.add("39");
-            command.add("43");
-            command.add("-9");
-            command.add("-3");
+            command.add(String.valueOf(simulation.minLat()));
+            command.add(String.valueOf(simulation.maxLat()));
+            command.add(String.valueOf(simulation.minLon()));
+            command.add(String.valueOf(simulation.maxLon()));
 
             command.add("--start");
-            command.add("0");
+            command.add(String.valueOf(simulation.startSecond()));
 
             command.add("--end");
-            command.add(String.valueOf(simulation.durationInSeconds()));
+            command.add(String.valueOf(simulation.endSecond()));
 
             command.add("--step");
             command.add(String.valueOf(simulation.timeStep()));
 
             command.add("--weather");
-            command.add("clear");
+            command.add(simulation.weather());
 
             command.add("--safety-min-sep");
-            command.add(String.valueOf(simulation.safetyThreshold()));
+            command.add(String.valueOf(simulation.safetyMinSepNm()));
 
             command.add("--safety-min-alt");
-            command.add("300");
+            command.add(String.valueOf(simulation.safetyMinAltM()));
+
+            command.add("--violation-threshold");
+            command.add(String.valueOf(simulation.violationThreshold()));
 
             command.add("--perf-max-flights");
             command.add(String.valueOf(simulation.simulatedFlightInputs().size()));

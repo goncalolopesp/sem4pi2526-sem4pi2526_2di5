@@ -40,6 +40,36 @@ public class Simulation implements AggregateRoot<String>, Representationable {
     @Column(length = 4000)
     private String failureReason;
 
+    @Column(nullable = false)
+    private Double minLat;
+
+    @Column(nullable = false)
+    private Double maxLat;
+
+    @Column(nullable = false)
+    private Double minLon;
+
+    @Column(nullable = false)
+    private Double maxLon;
+
+    @Column(nullable = false)
+    private Integer startSecond;
+
+    @Column(nullable = false)
+    private Integer endSecond;
+
+    @Column(nullable = false)
+    private String weather;
+
+    @Column(nullable = false)
+    private Double safetyMinSepNm;
+
+    @Column(nullable = false)
+    private Double safetyMinAltM;
+
+    @Column(nullable = false)
+    private Integer violationThreshold;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "simulation_flight_inputs",
@@ -59,7 +89,17 @@ public class Simulation implements AggregateRoot<String>, Representationable {
                       final LocalDateTime startTime,
                       final LocalDateTime endTime,
                       final Integer timeStep,
-                      final Double safetyThreshold) {
+                      final Double safetyThreshold,
+                      final Double minLat,
+                      final Double maxLat,
+                      final Double minLon,
+                      final Double maxLon,
+                      final Integer startSecond,
+                      final Integer endSecond,
+                      final String weather,
+                      final Double safetyMinSepNm,
+                      final Double safetyMinAltM,
+                      final Integer violationThreshold) {
 
         Preconditions.nonEmpty(simulationId, "Simulation id is required");
         Preconditions.nonEmpty(airControlAreaId, "Air control area id is required");
@@ -87,6 +127,17 @@ public class Simulation implements AggregateRoot<String>, Representationable {
         this.timeStep = timeStep;
         this.safetyThreshold = safetyThreshold;
         this.status = SimulationStatus.CREATED;
+        this.minLat = minLat;
+        this.maxLat = maxLat;
+        this.minLon = minLon;
+        this.maxLon = maxLon;
+        this.startSecond = startSecond;
+        this.endSecond = endSecond;
+        this.timeStep = timeStep;
+        this.weather = weather.trim().toLowerCase();
+        this.safetyMinSepNm = safetyMinSepNm;
+        this.safetyMinAltM = safetyMinAltM;
+        this.violationThreshold = violationThreshold;
     }
 
     public void addFlightPlan(final String flightPlanId) {
@@ -149,6 +200,46 @@ public class Simulation implements AggregateRoot<String>, Representationable {
 
     public Set<SimulatedFlightInput> simulatedFlightInputs() {
         return Set.copyOf(simulatedFlightInputs);
+    }
+
+    public Double minLat() {
+        return minLat;
+    }
+
+    public Double maxLat() {
+        return maxLat;
+    }
+
+    public Double minLon() {
+        return minLon;
+    }
+
+    public Double maxLon() {
+        return maxLon;
+    }
+
+    public Integer startSecond() {
+        return startSecond;
+    }
+
+    public Integer endSecond() {
+        return endSecond;
+    }
+
+    public String weather() {
+        return weather;
+    }
+
+    public Double safetyMinSepNm() {
+        return safetyMinSepNm;
+    }
+
+    public Double safetyMinAltM() {
+        return safetyMinAltM;
+    }
+
+    public Integer violationThreshold() {
+        return violationThreshold;
     }
 
     public Long version() {
