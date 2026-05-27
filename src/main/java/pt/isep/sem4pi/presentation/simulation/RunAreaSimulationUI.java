@@ -62,23 +62,16 @@ public class RunAreaSimulationUI extends AbstractUI {
                             threshold,
                             flightPlans);
 
-            final SimulationExecutionResult result =
-                    controller.runSimulation(
-                            dto.getSimulationId());
+            controller.submitSimulation(dto.getSimulationId());
 
             System.out.println();
+            System.out.println("Simulation submitted successfully");
+            System.out.println("Simulation id:");
+            System.out.println(dto.getSimulationId());
+            System.out.println("Status:");
+            System.out.println("RUNNING");
 
-            if (result.success()) {
-                System.out.println("Simulation completed");
-                System.out.println("Report location:");
-                System.out.println(result.reportPath());
-            } else {
-                System.out.println("Simulation failed");
-                System.out.println("Details:");
-                System.out.println(result.consoleOutput());
-            }
-
-            return result.success();
+            return true;
 
         } catch (Exception e) {
             System.out.println("Error running simulation: " + e.getMessage());

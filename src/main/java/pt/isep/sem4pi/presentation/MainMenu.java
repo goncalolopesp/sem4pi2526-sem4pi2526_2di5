@@ -27,10 +27,11 @@ import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
 import pt.isep.sem4pi.presentation.simulation.RunAreaSimulationAction;
+import pt.isep.sem4pi.presentation.simulation.CheckSimulationStatusUI;
 
 /**
  * Menu principal da aplicacao SEM4PI.
- *
+ * <p>
  * Mostra opcoes com base nas roles do utilizador autenticado.
  */
 public class MainMenu extends AbstractUI {
@@ -66,8 +67,8 @@ public class MainMenu extends AbstractUI {
     private static final int ADD_AIR_CONTROL_AREA_OPTIONS = 1;
 
     //Simulation
-    private static final int SIMULATION_OPTIONS = 9;
     private static final int RUN_SIMULATION_OPTION = 1;
+    private static final int CHECK_SIMULATION_STATUS_OPTION = 2;
 
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
@@ -78,6 +79,7 @@ public class MainMenu extends AbstractUI {
     private static final int AIRPORT_OPTIONS = 6;
     private static final int AIR_CONTROL_AREA_OPTIONS = 7;
     private static final int WEATHER_DATA_OPTIONS = 8;
+    private static final int SIMULATION_OPTIONS = 9;
 
     private static final String SEPARATOR_LABEL = "--------------";
 
@@ -191,8 +193,7 @@ public class MainMenu extends AbstractUI {
         return menu;
     }
 
-    private Menu buildAirTransportCompanyMenu()
-    {
+    private Menu buildAirTransportCompanyMenu() {
         final var menu = new Menu("AirTransportCompany >");
 
         menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Transport Company", new RegisterAirTransportCompanyUI()::show);
@@ -205,8 +206,7 @@ public class MainMenu extends AbstractUI {
         return menu;
     }
 
-    private Menu buildAirportMenu()
-    {
+    private Menu buildAirportMenu() {
         final var menu = new Menu("Airport >");
 
         menu.addItem(ADD_AIRPORT_OPTIONS, "Add Airport", new AddAirportUI()::show);
@@ -215,7 +215,7 @@ public class MainMenu extends AbstractUI {
         return menu;
     }
 
-    private Menu buildAirControlAreaMenu(){
+    private Menu buildAirControlAreaMenu() {
         final var menu = new Menu("Air Control Area >");
 
         menu.addItem(ADD_AIR_CONTROL_AREA_OPTIONS, "Register Air Control Area", new RegisterAirControlAreaAction());
@@ -241,6 +241,11 @@ public class MainMenu extends AbstractUI {
                 RUN_SIMULATION_OPTION,
                 "Run Area Simulation",
                 new RunAreaSimulationAction());
+
+        menu.addItem(
+                CHECK_SIMULATION_STATUS_OPTION,
+                "Check Simulation Status",
+                new CheckSimulationStatusUI()::show);
 
         menu.addItem(
                 EXIT_OPTION,
