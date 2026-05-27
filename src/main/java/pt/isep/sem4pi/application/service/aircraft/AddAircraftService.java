@@ -13,6 +13,7 @@ import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class AddAircraftService {
             throw new IllegalStateException("An aircraft with this registration already exists.");
         }
 
-        Aircraft newAircraft = new Aircraft(registration, realId, seats, country);
+        Aircraft newAircraft = new Aircraft(registration, realId, seats, country, LocalDate.now());
         company.addAircraftToFleet(newAircraft);
 
         companyRepo.save(company);
