@@ -188,9 +188,9 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
     
     plan->climb_speed_knots = 210.0;
     plan->cruise_speed_knots = 460.0;
-    plan->descent_speed_knots = 180.0;
+    plan->descend_speed_knots = 180.0;
     plan->climb_rate_ms = 8.0;
-    plan->descent_rate_ms = -7.0;
+    plan->descend_rate_ms = -7.0;
     plan->fuel_kg = 0.0;
 
     extract_profile_number(buffer, "Climb", "\"Speed\"", "Value",
@@ -202,9 +202,9 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
                            &plan->cruise_speed_knots);
 
     extract_profile_number(buffer, "Descend", "\"Speed\"", "Value",
-                           &plan->descent_speed_knots);
-    extract_profile_number(buffer, "Descend", "\"RateDescent\"", "Value",
-                           &plan->descent_rate_ms);
+                           &plan->descend_speed_knots);
+    extract_profile_number(buffer, "Descend", "\"Ratedescend\"", "Value",
+                           &plan->descend_rate_ms);
 
     char *fuel = strstr(buffer, "\"Fuel\"");
     if (fuel)

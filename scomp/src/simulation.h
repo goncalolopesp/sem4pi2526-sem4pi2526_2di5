@@ -44,7 +44,7 @@ typedef struct
     double cruise_speed_knots;
 
     double climb_rate_ms;
-    double descent_rate_ms;
+    double descend_rate_ms;
 
     double fuel_kg;
 

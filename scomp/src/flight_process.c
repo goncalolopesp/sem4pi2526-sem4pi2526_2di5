@@ -69,7 +69,7 @@ static double selected_speed_knots(const FlightPlan *plan, const Segment *seg)
         return plan->climb_speed_knots;
 
     if (strcmp(seg->mode, "descend") == 0)
-        return plan->descent_speed_knots;
+        return plan->descend_speed_knots;
 
     return plan->cruise_speed_knots;
 }
@@ -80,7 +80,7 @@ static double selected_vertical_rate_ms(const FlightPlan *plan, const Segment *s
         return plan->climb_rate_ms;
 
     if (strcmp(seg->mode, "descend") == 0)
-        return plan->descent_rate_ms;
+        return plan->descend_rate_ms;
 
     return 0.0;
 }
