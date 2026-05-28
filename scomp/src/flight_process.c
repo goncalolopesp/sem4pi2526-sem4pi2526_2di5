@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 
 /* Processo filho que simula um voo.
  * - Recebe SIGUSR2 para arrancar (US100/US101)
@@ -44,6 +45,54 @@ static Position interpolate(Position a, Position b, double ratio)
     p.longitude = a.longitude + (b.longitude - a.longitude) * ratio;
     p.altitude_m = a.altitude_m + (b.altitude_m - a.altitude_m) * ratio;
     return p;
+}
+
+static double weather_factor(int weather_code)
+{
+    switch (weather_code)
+    {
+    case WEATHER_RAIN:
+        return 0.95;
+    case WEATHER_FOG:
+        return 0.90;
+    case WEATHER_STORM:
+        return 0.80;
+    case WEATHER_CLEAR:
+    default:
+        return 1.0;
+    }
+}
+
+static double selected_speed_knots(const FlightPlan *plan, const Segment *seg)
+{
+    if (strcmp(seg->mode, "climb") == 0)
+        return plan->climb_speed_knots;
+
+    if (strcmp(seg->mode, "descend") == 0)
+        return plan->descent_speed_knots;
+
+    return plan->cruise_speed_knots;
+}
+
+static double selected_vertical_rate_ms(const FlightPlan *plan, const Segment *seg)
+{
+    if (strcmp(seg->mode, "climb") == 0)
+        return plan->climb_rate_ms;
+
+    if (strcmp(seg->mode, "descend") == 0)
+        return plan->descent_rate_ms;
+
+    return 0.0;
+}
+
+static double distance_nm(Position a, Position b)
+{
+    double avg_lat_rad = ((a.latitude + b.latitude) / 2.0) * 3.141592653589793 / 180.0;
+
+    double dlat_nm = (b.latitude - a.latitude) * 60.0;
+    double dlon_nm = (b.longitude - a.longitude) * 60.0 * cos(avg_lat_rad);
+
+    return sqrt(dlat_nm * dlat_nm + dlon_nm * dlon_nm);
 }
 
 static int send_update(int fd, const FlightPlan *plan, int t, Position p, int status)
@@ -160,30 +209,70 @@ void run_flight_process(const char *flight_file,
         _exit(EXIT_SUCCESS);
     }
 
-    /* ---- Cálculo do número de passos ---- */
-    int total_steps = (config->end_time - current_time) / config->step_seconds;
-    if (total_steps < plan.segment_count)
-        total_steps = plan.segment_count;
-    int steps_per_segment = total_steps / plan.segment_count;
-    if (steps_per_segment <= 0)
-        steps_per_segment = 1;
+        /* ---- Física simplificada ----
+     * O movimento usa velocidades do perfil de voo e um fator meteorológico.
+     * Isto evita uma interpolação puramente artificial e aproxima a simulação
+     * do comportamento esperado no enunciado, sem implementar um modelo físico completo. */
+    double weather_perf = weather_factor(config->weather_code);
 
-    /* ---- Loop principal da simulação ---- */
+        /* ---- Loop principal da simulação ---- */
     for (int i = 0; i < plan.segment_count && !terminate_requested; ++i)
     {
         Segment *seg = &plan.segments[i];
 
+        double speed_knots = selected_speed_knots(&plan, seg) * weather_perf;
+        if (speed_knots <= 0.0)
+            speed_knots = 1.0;
+
+        double segment_distance_nm = distance_nm(seg->start, seg->end);
+        double segment_seconds = (segment_distance_nm / speed_knots) * 3600.0;
+
+        double vertical_rate = selected_vertical_rate_ms(&plan, seg) * weather_perf;
+        double altitude_delta = seg->end.altitude_m - seg->start.altitude_m;
+
+        if (vertical_rate != 0.0)
+        {
+            double vertical_seconds = altitude_delta / vertical_rate;
+            if (vertical_seconds < 0.0)
+                vertical_seconds = -vertical_seconds;
+
+            if (vertical_seconds > segment_seconds)
+                segment_seconds = vertical_seconds;
+        }
+
+        int segment_steps = (int)(segment_seconds / config->step_seconds);
+        if (segment_steps <= 0)
+            segment_steps = 1;
+
         for (int s = 0;
-             s < steps_per_segment && current_time <= config->end_time && !terminate_requested;
+             s <= segment_steps && current_time <= config->end_time && !terminate_requested;
              ++s)
         {
+            double elapsed = (double)s * (double)config->step_seconds;
+            double ratio = elapsed / segment_seconds;
 
-            double ratio = (steps_per_segment == 1)
-                               ? 1.0
-                               : (double)s / (double)(steps_per_segment - 1);
+            if (ratio > 1.0)
+                ratio = 1.0;
+
             Position p = interpolate(seg->start, seg->end, ratio);
 
+            if (vertical_rate != 0.0)
+            {
+                double altitude = seg->start.altitude_m + vertical_rate * elapsed;
+
+                if (altitude_delta >= 0.0 && altitude > seg->end.altitude_m)
+                    altitude = seg->end.altitude_m;
+
+                if (altitude_delta < 0.0 && altitude < seg->end.altitude_m)
+                    altitude = seg->end.altitude_m;
+
+                p.altitude_m = altitude;
+            }
+
             send_update(update_write_fd, &plan, current_time, p, STATUS_RUNNING);
+
+            if (ratio >= 1.0)
+                break;
 
             /* US103: aguarda autorização do pai para avançar de passo */
             char command;

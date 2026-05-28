@@ -139,6 +139,26 @@ static int parse_position_block(char *segment_block, const char *position_key, P
     return ok ? 0 : -1;
 }
 
+static int extract_profile_number(char *buffer,
+                                  const char *section_key,
+                                  const char *field_key,
+                                  const char *number_key,
+                                  double *value)
+{
+    char section_pattern[64];
+    snprintf(section_pattern, sizeof(section_pattern), "\"%s\"", section_key);
+
+    char *section = strstr(buffer, section_pattern);
+    if (!section)
+        return -1;
+
+    char *field = strstr(section, field_key);
+    if (!field)
+        return -1;
+
+    return extract_number_after_key(field, number_key, value);
+}
+
 /* Analisa um bloco "Start" ou "End" e preenche a estrutura Position. */
 int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_size)
 {
@@ -165,6 +185,33 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
     }
 
     /* Se não houver ID numérico, uso o caminho como identificador. */
+    
+    plan->climb_speed_knots = 210.0;
+    plan->cruise_speed_knots = 460.0;
+    plan->descent_speed_knots = 180.0;
+    plan->climb_rate_ms = 8.0;
+    plan->descent_rate_ms = -7.0;
+    plan->fuel_kg = 0.0;
+
+    extract_profile_number(buffer, "Climb", "\"Speed\"", "Value",
+                           &plan->climb_speed_knots);
+    extract_profile_number(buffer, "Climb", "\"RateClimb\"", "Value",
+                           &plan->climb_rate_ms);
+
+    extract_profile_number(buffer, "Cruise", "\"Speed\"", "Value",
+                           &plan->cruise_speed_knots);
+
+    extract_profile_number(buffer, "Descend", "\"Speed\"", "Value",
+                           &plan->descent_speed_knots);
+    extract_profile_number(buffer, "Descend", "\"RateDescent\"", "Value",
+                           &plan->descent_rate_ms);
+
+    char *fuel = strstr(buffer, "\"Fuel\"");
+    if (fuel)
+    {
+        extract_number_after_key(fuel, "Quantity", &plan->fuel_kg);
+    }
+
     char *segments = strstr(buffer, "\"Segments\"");
     if (!segments)
     {

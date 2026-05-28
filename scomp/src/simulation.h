@@ -39,9 +39,19 @@ typedef struct
 
 typedef struct
 {
+    double climb_speed_knots;
+    double descend_speed_knots;
+    double cruise_speed_knots;
+
+    double climb_rate_ms;
+    double descent_rate_ms;
+
+    double fuel_kg;
+
     char flight_id[FLIGHT_ID_SIZE];
     int segment_count;
     Segment segments[MAX_SEGMENTS];
+
 } FlightPlan;
 
 /* Update enviado pelos processos filhos para o pai via pipe */
