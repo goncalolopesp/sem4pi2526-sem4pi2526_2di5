@@ -431,8 +431,10 @@ int main(int argc, char **argv)
     memset(poll_fds, 0, sizeof(poll_fds));
 
     printf("Starting simulation with %d flight(s).\n", config.flight_count);
-    printf("Safety thresholds: separation=%.2f NM, altitude=%.1f m, violation threshold=%d.\n",
-           config.safety_min_sep_nm, config.safety_min_alt_m, VIOLATION_THRESHOLD);
+    printf("Safety thresholds: separation=%.2f NM, altitude=%.1f m, threshold=%d.\n",
+       config.safety_min_sep_nm,
+       config.safety_min_alt_m,
+       config.violation_threshold);
 
     /*
      * Bloqueia SIGUSR2 antes do fork.
@@ -639,11 +641,11 @@ int main(int argc, char **argv)
         }
 
         /* Threshold: termina antecipadamente se exceder */
-        if (safety_log.total_detected >= VIOLATION_THRESHOLD)
+        if (safety_log.total_detected >= config.violation_threshold)
         {
             fprintf(stderr,
-                    "[ATC] Violation threshold (%d) exceeded. Aborting simulation.\n",
-                    VIOLATION_THRESHOLD);
+                "[ATC] Violation threshold (%d) exceeded. Aborting simulation.\n",
+                config.violation_threshold);
             stop_requested = 1;
         }
 
