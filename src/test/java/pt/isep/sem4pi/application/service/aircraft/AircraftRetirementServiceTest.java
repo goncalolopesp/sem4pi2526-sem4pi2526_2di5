@@ -11,6 +11,8 @@ import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryFlightRepository;
 
+import java.time.LocalDate;
+
 import static org.junit.Assert.assertTrue;
 
 public class AircraftRetirementServiceTest {
@@ -24,7 +26,7 @@ public class AircraftRetirementServiceTest {
         final AircraftRegistration registration = new AircraftRegistration("CS-OK");
 
         final CabinConfiguration dummySeats = new CabinConfiguration(150, 20, 0);
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(new ManufacturerId("Airbus"),"A320"), dummySeats, "Portugal");
+        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(new ManufacturerId("Airbus"),"A320"), dummySeats, "Portugal", LocalDate.of(2020, 1, 1));
         aircraftRepository.save(aircraft);
 
         final Aircraft retired = service.retireAircraft(registration);
@@ -41,7 +43,7 @@ public class AircraftRetirementServiceTest {
         final AircraftRegistration registration = new AircraftRegistration("CS-BLOCK");
 
         final CabinConfiguration dummySeats = new CabinConfiguration(150, 20, 0);
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(new ManufacturerId("Airbus"),"A320"), dummySeats, "Portugal");
+        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(new ManufacturerId("Airbus"),"A320"), dummySeats, "Portugal", LocalDate.of(2020, 1, 1));
         aircraftRepository.save(aircraft);
 
         final Flight flight = new Flight(new FlightId("TP200"), registration);

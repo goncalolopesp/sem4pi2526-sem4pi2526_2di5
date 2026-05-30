@@ -101,4 +101,9 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     public SimulationReportRepository simulationReports(final TransactionalContext tx) {
         return new JpaSimulationReportRepository(PERSISTENCE_UNIT_NAME);
     }
+
+    @Override
+    public WeatherBatchRepository weatherBatches() {
+        return new JpaWeatherBatchRepository();
+    }
 }

@@ -25,7 +25,6 @@ import java.util.Optional;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 public class RegisterBackofficeUserServiceTest {
 
@@ -74,6 +73,7 @@ public class RegisterBackofficeUserServiceTest {
         @Override public pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository airTransportCompanyCollaborators() { return null; }
         @Override public pt.isep.sem4pi.domain.repositories.AircraftRepository aircrafts() { return null; }
         @Override public pt.isep.sem4pi.domain.repositories.FlightRepository flights() { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.WeatherBatchRepository weatherBatches() { return null; }
     }
 
     private TestRepositoryFactory factory;
@@ -291,6 +291,7 @@ public class RegisterBackofficeUserServiceTest {
             @Override public pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository airTransportCompanyCollaborators() { return null; }
             @Override public pt.isep.sem4pi.domain.repositories.AircraftRepository aircrafts() { return null; }
             @Override public pt.isep.sem4pi.domain.repositories.FlightRepository flights() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.WeatherBatchRepository weatherBatches() { return null; }
         };
 
         final RegisterBackofficeUserService svc = new RegisterBackofficeUserService(customFactory);

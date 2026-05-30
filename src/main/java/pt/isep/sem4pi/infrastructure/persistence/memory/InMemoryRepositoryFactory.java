@@ -29,6 +29,7 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private static AirControlAreaRepository airControlAreaRepository;
     private static AircraftRepository aircraftRepository;
     private static FlightRepository flightRepository;
+    private static WeatherBatchRepository weatherBatchRepository;
     private static SimulationRepository simulationRepository;
     private static SimulationReportRepository simulationReportRepository;
 
@@ -152,6 +153,14 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
             flightRepository = new InMemoryFlightRepository();
         }
         return flightRepository;
+    }
+
+    @Override
+    public WeatherBatchRepository weatherBatches() {
+        if (weatherBatchRepository == null) {
+            weatherBatchRepository = new InMemoryWeatherBatchRepository();
+        }
+        return weatherBatchRepository;
     }
 
     @Override
