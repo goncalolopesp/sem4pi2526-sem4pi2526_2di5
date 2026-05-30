@@ -417,7 +417,8 @@ static void *shared_monitor_thread(void *arg)
 
         sem_wait(&state->mutex);
 
-        fprintf(stderr, "[shared] active=%d updates=%d\n",
+        fprintf(stderr,
+                "[shared] active=%d updates=%d\n",
                 state->active_flights,
                 state->shared_update_counter);
 
@@ -760,7 +761,13 @@ int main(int argc, char **argv)
     tracker_destroy(&tracker);
     free_runtimes(runtimes, config.flight_count);
 
-    pthread_cancel(shared_thread);
+    stop_requested = 1;
+
+    pthread_mutex_lock(&shared->pthread_mutex);
+
+    pthread_cond_broadcast(&shared->pthread_cond);
+
+    pthread_mutex_unlock(&shared->pthread_mutex);
 
     pthread_join(
         shared_thread,
