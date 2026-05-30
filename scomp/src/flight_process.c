@@ -327,6 +327,14 @@ void run_flight_process(const char *flight_file,
             sem_post(
                 &shared->update_sem);
 
+            pthread_mutex_lock(&shared->pthread_mutex);
+
+            shared->shared_update_counter++;
+
+            pthread_cond_signal(&shared->pthread_cond);
+
+            pthread_mutex_unlock(&shared->pthread_mutex);
+
             if (ratio >= 1.0)
                 break;
 

@@ -182,6 +182,11 @@ typedef struct
 {
     sem_t mutex;
     sem_t update_sem;
+
+    pthread_mutex_t pthread_mutex;
+    pthread_cond_t pthread_cond;
+
+    int shared_update_counter;
     int active_flights;
     SharedFlightState flights[MAX_TRACKED_FLIGHTS];
 } SharedSimulationState;

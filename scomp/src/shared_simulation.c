@@ -43,6 +43,23 @@ SharedSimulationState *shared_create(void)
         1,
         0);
 
+    pthread_mutexattr_t mutex_attr;
+    pthread_condattr_t cond_attr;
+
+    pthread_mutexattr_init(&mutex_attr);
+    pthread_mutexattr_setpshared(&mutex_attr, PTHREAD_PROCESS_SHARED);
+
+    pthread_condattr_init(&cond_attr);
+    pthread_condattr_setpshared(&cond_attr, PTHREAD_PROCESS_SHARED);
+
+    pthread_mutex_init(&state->pthread_mutex, &mutex_attr);
+    pthread_cond_init(&state->pthread_cond, &cond_attr);
+
+    pthread_mutexattr_destroy(&mutex_attr);
+    pthread_condattr_destroy(&cond_attr);
+
+    state->shared_update_counter = 0;
+
     close(fd);
 
     return state;
@@ -53,6 +70,9 @@ void shared_destroy(SharedSimulationState *state)
     sem_destroy(&state->mutex);
 
     sem_destroy(&state->update_sem);
+
+    pthread_mutex_destroy(&state->pthread_mutex);
+    pthread_cond_destroy(&state->pthread_cond);
 
     munmap(
         state,

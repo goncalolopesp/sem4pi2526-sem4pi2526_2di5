@@ -399,24 +399,29 @@ static void write_report(const FlightRuntime *runtimes, int count,
 
 static void *shared_monitor_thread(void *arg)
 {
-    SharedSimulationState *state =
-        arg;
+    SharedSimulationState *state = arg;
+    int last_seen = 0;
 
     while (!stop_requested)
     {
-        sem_wait(
-            &state->update_sem);
+        pthread_mutex_lock(&state->pthread_mutex);
 
-        sem_wait(
-            &state->mutex);
+        while (state->shared_update_counter == last_seen && !stop_requested)
+        {
+            pthread_cond_wait(&state->pthread_cond, &state->pthread_mutex);
+        }
 
-        fprintf(
-            stderr,
-            "[shared] active=%d\n",
-            state->active_flights);
+        last_seen = state->shared_update_counter;
 
-        sem_post(
-            &state->mutex);
+        pthread_mutex_unlock(&state->pthread_mutex);
+
+        sem_wait(&state->mutex);
+
+        fprintf(stderr, "[shared] active=%d updates=%d\n",
+                state->active_flights,
+                state->shared_update_counter);
+
+        sem_post(&state->mutex);
     }
 
     return NULL;
