@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 
 /* Processo filho que simula um voo.
  * - Recebe SIGUSR2 para arrancar (US100/US101)
@@ -149,6 +151,22 @@ void run_flight_process(const char *flight_file,
 
     /* ---- Carregar o plano de voo ---- */
     FlightPlan plan;
+
+    int shm_fd =
+        shm_open(
+            SHM_NAME,
+            O_RDWR,
+            0666);
+
+    SharedSimulationState *shared =
+        mmap(
+            NULL,
+            sizeof(*shared),
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED,
+            shm_fd,
+            0);
+
     char err[256];
     if (parse_flight_plan(flight_file, &plan, err, sizeof(err)) != 0)
     {
@@ -209,13 +227,13 @@ void run_flight_process(const char *flight_file,
         _exit(EXIT_SUCCESS);
     }
 
-        /* ---- Física simplificada ----
+    /* ---- Física simplificada ----
      * O movimento usa velocidades do perfil de voo e um fator meteorológico.
      * Isto evita uma interpolação puramente artificial e aproxima a simulação
      * do comportamento esperado no enunciado, sem implementar um modelo físico completo. */
     double weather_perf = weather_factor(config->weather_code);
 
-        /* ---- Loop principal da simulação ---- */
+    /* ---- Loop principal da simulação ---- */
     for (int i = 0; i < plan.segment_count && !terminate_requested; ++i)
     {
         Segment *seg = &plan.segments[i];
@@ -271,6 +289,44 @@ void run_flight_process(const char *flight_file,
 
             send_update(update_write_fd, &plan, current_time, p, STATUS_RUNNING);
 
+            sem_wait(
+                &shared->mutex);
+
+            int idx = -1;
+
+            for (int k = 0; k < shared->active_flights; ++k)
+            {
+                if (shared->flights[k].pid == getpid())
+                {
+                    idx = k;
+                    break;
+                }
+            }
+
+            if (idx == -1)
+            {
+                idx = shared->active_flights;
+                shared->active_flights++;
+            }
+
+            snprintf(
+                shared->flights[idx].flight_id,
+                FLIGHT_ID_SIZE,
+                "%.48s-%d",
+                plan.flight_id,
+                getpid());
+
+            shared->flights[idx].pid = getpid();
+            shared->flights[idx].position = p;
+            shared->flights[idx].time_step = current_time;
+            shared->flights[idx].status = STATUS_RUNNING;
+
+            sem_post(
+                &shared->mutex);
+
+            sem_post(
+                &shared->update_sem);
+
             if (ratio >= 1.0)
                 break;
 
@@ -293,5 +349,8 @@ void run_flight_process(const char *flight_file,
 
     close(update_write_fd);
     close(sync_read_fd);
+
+    munmap(shared, sizeof(*shared));
+    close(shm_fd);
     _exit(EXIT_SUCCESS);
 }

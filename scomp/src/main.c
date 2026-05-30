@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <pthread.h>
 
 static volatile sig_atomic_t stop_requested = 0;
 
@@ -396,6 +397,31 @@ static void write_report(const FlightRuntime *runtimes, int count,
     fclose(report);
 }
 
+static void *shared_monitor_thread(void *arg)
+{
+    SharedSimulationState *state =
+        arg;
+
+    while (!stop_requested)
+    {
+        sem_wait(
+            &state->update_sem);
+
+        sem_wait(
+            &state->mutex);
+
+        fprintf(
+            stderr,
+            "[shared] active=%d\n",
+            state->active_flights);
+
+        sem_post(
+            &state->mutex);
+    }
+
+    return NULL;
+}
+
 int main(int argc, char **argv)
 {
     SimulationConfig config;
@@ -421,6 +447,17 @@ int main(int argc, char **argv)
     PositionTracker tracker;
     tracker_init(&tracker);
 
+    SharedSimulationState *shared =
+        shared_create();
+
+    pthread_t shared_thread;
+
+    pthread_create(
+        &shared_thread,
+        NULL,
+        shared_monitor_thread,
+        shared);
+
     /* US102: log de violações de segurança */
     SafetyLog safety_log;
     safety_log_init(&safety_log);
@@ -432,9 +469,9 @@ int main(int argc, char **argv)
 
     printf("Starting simulation with %d flight(s).\n", config.flight_count);
     printf("Safety thresholds: separation=%.2f NM, altitude=%.1f m, threshold=%d.\n",
-       config.safety_min_sep_nm,
-       config.safety_min_alt_m,
-       config.violation_threshold);
+           config.safety_min_sep_nm,
+           config.safety_min_alt_m,
+           config.violation_threshold);
 
     /*
      * Bloqueia SIGUSR2 antes do fork.
@@ -644,8 +681,8 @@ int main(int argc, char **argv)
         if (safety_log.total_detected >= config.violation_threshold)
         {
             fprintf(stderr,
-                "[ATC] Violation threshold (%d) exceeded. Aborting simulation.\n",
-                config.violation_threshold);
+                    "[ATC] Violation threshold (%d) exceeded. Aborting simulation.\n",
+                    config.violation_threshold);
             stop_requested = 1;
         }
 
@@ -717,6 +754,15 @@ int main(int argc, char **argv)
 
     tracker_destroy(&tracker);
     free_runtimes(runtimes, config.flight_count);
+
+    pthread_cancel(shared_thread);
+
+    pthread_join(
+        shared_thread,
+        NULL);
+
+    shared_destroy(
+        shared);
 
     printf("Simulation finished. Report saved in %s\n", config.output_file);
     return EXIT_SUCCESS;

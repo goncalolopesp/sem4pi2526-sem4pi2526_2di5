@@ -2,6 +2,8 @@
 #define SIMULATION_H
 
 #include <sys/types.h>
+#include <semaphore.h>
+#include <pthread.h>
 
 /* ===== Limites e constantes ===== */
 #define MAX_FLIGHTS 32
@@ -9,6 +11,7 @@
 #define MAX_PATH 256
 #define FLIGHT_ID_SIZE 64
 #define MAX_TRACKED_FLIGHTS 64
+#define SHM_NAME "/flight_simulation_shm"
 
 /* Estados de execução de um voo */
 #define STATUS_RUNNING 1
@@ -164,6 +167,25 @@ typedef struct
     int total_detected; /* pode crescer além do array */
 } SafetyLog;
 
+/* ===== US105 Shared Memory ===== */
+
+typedef struct
+{
+    char flight_id[FLIGHT_ID_SIZE];
+    pid_t pid;
+    Position position;
+    int time_step;
+    int status;
+} SharedFlightState;
+
+typedef struct
+{
+    sem_t mutex;
+    sem_t update_sem;
+    int active_flights;
+    SharedFlightState flights[MAX_TRACKED_FLIGHTS];
+} SharedSimulationState;
+
 /* ===== Protótipos ===== */
 
 int parse_args(int argc, char **argv, SimulationConfig *config);
@@ -196,5 +218,10 @@ int safety_check_step(const PositionTracker *tracker,
                       const FlightRuntime *runtimes,
                       int runtime_count);
 void safety_log_print(const SafetyLog *log);
+
+SharedSimulationState *shared_create(void);
+
+void shared_destroy(
+    SharedSimulationState *state);
 
 #endif
