@@ -23,7 +23,8 @@ public class JpaWeatherBatchRepository implements WeatherBatchRepository {
     public List<WeatherImportBatch> findAllByAreaId(String areaId) {
         EntityManager em = emf.createEntityManager();
         TypedQuery<WeatherImportBatch> query = em.createQuery(
-                "SELECT b FROM WeatherImportBatch b WHERE b.airControlAreaId = :areaId", WeatherImportBatch.class);
+                "SELECT DISTINCT b FROM WeatherImportBatch b LEFT JOIN FETCH b.records WHERE b.airControlAreaId = :areaId",
+                WeatherImportBatch.class);
         query.setParameter("areaId", areaId);
         List<WeatherImportBatch> results = query.getResultList();
         em.close();

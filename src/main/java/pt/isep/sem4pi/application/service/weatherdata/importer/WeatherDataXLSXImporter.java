@@ -159,14 +159,25 @@ public class WeatherDataXLSXImporter implements WeatherDataImporter {
         double windSpeed = readDouble(row, columnIndex.get(COL_VALUE), formatter, "Value (knot)");
 
         LocalDate date = readDate(row, columnIndex.get(COL_DAY), formatter);
-        LocalTime time = readTimeRange(row, columnIndex.get(COL_START), columnIndex.get(COL_END), formatter);
+        LocalTime startTime = readTime(row, columnIndex.get(COL_START), formatter);
+        LocalTime endTime = readTime(row, columnIndex.get(COL_END), formatter);
+        if (startTime == null && endTime == null) {
+            throw new IllegalArgumentException("Invalid time range.");
+        }
+        if (startTime == null) {
+            startTime = endTime;
+        }
+        if (endTime == null) {
+            endTime = startTime;
+        }
 
         double altitudeMeters = ((altInfFt + altSupFt) / 2.0) * FEET_TO_METERS;
 
         return new WeatherDataDTO(
                 areaId,
                 date,
-                time,
+                startTime,
+                endTime,
                 windSpeed,
                 direction,
                 DEFAULT_TEMPERATURE_C,
@@ -216,18 +227,6 @@ public class WeatherDataXLSXImporter implements WeatherDataImporter {
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Invalid date: '" + value + "'.");
         }
-    }
-
-    private LocalTime readTimeRange(Row row, int startIndex, int endIndex, DataFormatter formatter) {
-        LocalTime start = readTime(row, startIndex, formatter);
-        if (start != null) {
-            return start;
-        }
-        LocalTime end = readTime(row, endIndex, formatter);
-        if (end != null) {
-            return end;
-        }
-        throw new IllegalArgumentException("Invalid time range.");
     }
 
     private LocalTime readTime(Row row, int index, DataFormatter formatter) {

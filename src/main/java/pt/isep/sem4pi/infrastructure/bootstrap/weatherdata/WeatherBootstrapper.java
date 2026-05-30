@@ -2,12 +2,16 @@ package pt.isep.sem4pi.infrastructure.bootstrap.weatherdata;
 
 import pt.isep.sem4pi.application.controller.weatherdata.RegisterWeatherController;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
+import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 
 public class WeatherBootstrapper {
     private final RegisterWeatherController controller;
 
     public WeatherBootstrapper(WeatherBatchRepository repository) {
-        this.controller = new RegisterWeatherController(repository);
+        this.controller = new RegisterWeatherController(
+                repository,
+                AuthzRegistry.authorizationService()
+        );
     }
 
     public void execute() {

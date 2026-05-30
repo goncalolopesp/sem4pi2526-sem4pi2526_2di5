@@ -16,13 +16,12 @@ import static org.junit.Assert.*;
 public class WeatherDataImportServiceTest {
 
     private InMemoryWeatherBatchRepository batchRepository;
-    private InMemoryAirControlAreaRepository airControlAreaRepository;
     private WeatherDataImportService service;
 
     @Before
     public void setUp() {
         batchRepository = new InMemoryWeatherBatchRepository();
-        airControlAreaRepository = new InMemoryAirControlAreaRepository();
+        InMemoryAirControlAreaRepository airControlAreaRepository = new InMemoryAirControlAreaRepository();
         airControlAreaRepository.save(new AirControlArea(
                 "121",
                 new AirControlAreaBoundary(37.0, 43.9, -9.8, 4.94),
@@ -67,5 +66,10 @@ public class WeatherDataImportServiceTest {
         assertTrue(result.getImportedRecords() > 0);
         assertTrue(localAirControlAreaRepository.containsOfIdentity(
                 new pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID("121")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureInvalidFileTypeThrows() {
+        service.importWeatherData("missing_file.txt", "txt");
     }
 }

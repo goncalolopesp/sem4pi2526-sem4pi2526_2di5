@@ -79,7 +79,8 @@ public class WeatherDataImportService {
             try {
                 WeatherData data = new WeatherData(
                         dto.getDate(),
-                        dto.getTime(),
+                        dto.getStartTime(),
+                        dto.getEndTime(),
                         new Wind(dto.getWindSpeedKnots(), dto.getWindDirectionDegrees()),
                         new Temperature(dto.getTemperatureCelsius()),
                         new AtmosphericPressure(dto.getPressureHpa()),

@@ -8,8 +8,9 @@ import static org.junit.Assert.*;
 public class WeatherImportBatchTest {
 
     private WeatherData createValidWeatherData() {
+        LocalTime now = LocalTime.now();
         return new WeatherData(
-                LocalDate.now(), LocalTime.now(),
+                LocalDate.now(), now, now,
                 new Wind(10.0, 90.0), new Temperature(20.0),
                 new AtmosphericPressure(1013.0), new Humidity(50.0), new Altitude(100.0)
         );

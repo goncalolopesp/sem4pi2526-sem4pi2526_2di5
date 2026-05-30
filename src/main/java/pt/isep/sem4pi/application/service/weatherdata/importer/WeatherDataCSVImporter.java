@@ -100,14 +100,25 @@ public class WeatherDataCSVImporter implements WeatherDataImporter {
         double windSpeed = parseDouble(parts[8], "Value (knot)");
 
         LocalDate date = parseDate(parts[9]);
-        LocalTime time = parseTime(parts[10], parts[11]);
+        LocalTime startTime = parseTimeValue(parts[10]);
+        LocalTime endTime = parseTimeValue(parts[11]);
+        if (startTime == null && endTime == null) {
+            throw new IllegalArgumentException("Invalid time range: '" + parts[10] + "' - '" + parts[11] + "'.");
+        }
+        if (startTime == null) {
+            startTime = endTime;
+        }
+        if (endTime == null) {
+            endTime = startTime;
+        }
 
         double altitudeMeters = ((altInfFt + altSupFt) / 2.0) * FEET_TO_METERS;
 
         return new WeatherDataDTO(
                 areaId,
                 date,
-                time,
+                startTime,
+                endTime,
                 windSpeed,
                 direction,
                 DEFAULT_TEMPERATURE_C,
@@ -134,16 +145,15 @@ public class WeatherDataCSVImporter implements WeatherDataImporter {
         }
     }
 
-    private LocalTime parseTime(String startValue, String endValue) {
+    private LocalTime parseTimeValue(String value) {
+        String trimmed = value == null ? "" : value.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
         try {
-            return LocalTime.parse(startValue.trim(), TIME_FORMAT);
+            return LocalTime.parse(trimmed, TIME_FORMAT);
         } catch (DateTimeParseException e) {
-            try {
-                return LocalTime.parse(endValue.trim(), TIME_FORMAT);
-            } catch (DateTimeParseException ignored) {
-                throw new IllegalArgumentException("Invalid time range: '" + startValue + "' - '" + endValue + "'.");
-            }
+            return null;
         }
     }
 }
-

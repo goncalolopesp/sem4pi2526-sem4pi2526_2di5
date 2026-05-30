@@ -35,5 +35,31 @@ public class WeatherDataCSVImporterTest {
         assertEquals(0, payload.getRecords().size());
         assertEquals(1, payload.getErrors().size());
     }
-}
 
+    @Test
+    public void ensureImporterParsesStartAndEndTimes() throws IOException {
+        Path tempFile = Files.createTempFile("weather", ".csv");
+        Files.writeString(tempFile, "ACA,Lat.,Long.,Lat.,Long.,Alt_inf (ft),Alt_Sup (ft),Direction (degree),Value (knot),Day,Star,End\n"
+                + "121,43.0,-9.0,40.0,-7.9,0,1000,90,25,6/22/2026,5:00,8:15\n");
+
+        WeatherDataCSVImporter importer = new WeatherDataCSVImporter();
+        WeatherImportPayload payload = importer.execute(tempFile.toString());
+
+        assertEquals(1, payload.getRecords().size());
+        assertEquals(java.time.LocalTime.of(5, 0), payload.getRecords().get(0).getStartTime());
+        assertEquals(java.time.LocalTime.of(8, 15), payload.getRecords().get(0).getEndTime());
+    }
+
+    @Test
+    public void ensureImporterReportsInvalidTimeRange() throws IOException {
+        Path tempFile = Files.createTempFile("weather", ".csv");
+        Files.writeString(tempFile, "ACA,Lat.,Long.,Lat.,Long.,Alt_inf (ft),Alt_Sup (ft),Direction (degree),Value (knot),Day,Star,End\n"
+                + "121,43.0,-9.0,40.0,-7.9,0,1000,90,25,6/22/2026,invalid,\n");
+
+        WeatherDataCSVImporter importer = new WeatherDataCSVImporter();
+        WeatherImportPayload payload = importer.execute(tempFile.toString());
+
+        assertEquals(0, payload.getRecords().size());
+        assertEquals(1, payload.getErrors().size());
+    }
+}
