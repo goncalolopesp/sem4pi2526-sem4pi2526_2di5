@@ -162,7 +162,6 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
                 mainMenu.addSubMenu(AIRPORT_OPTIONS, buildAirportMenu());
                 mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, buildAirControlAreaMenu());
-                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu());
                 mainMenu.addSubMenu(
                         SIMULATION_OPTIONS,
                         buildSimulationMenu());
