@@ -2,6 +2,10 @@ package pt.isep.sem4pi.domain.aircontrolarea;
 
 import org.junit.Before;
 import org.junit.Test;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaBoundary;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
+
 import static org.junit.Assert.*;
 
 public class AirControlAreaTest {

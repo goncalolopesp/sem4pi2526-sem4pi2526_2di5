@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.aircontrolarea.DTO;
+package pt.isep.sem4pi.domain.model.aircontrolarea.DTO;
 
 public class AirControlAreaCreateDTO {
     private final String code;

@@ -1,6 +1,6 @@
 package pt.isep.sem4pi.application.service.weatherdata.importer;
 
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaBoundary;
 
 import java.io.BufferedReader;
 import java.io.IOException;
