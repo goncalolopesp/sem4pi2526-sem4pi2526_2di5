@@ -2,11 +2,11 @@ package pt.isep.sem4pi.application.service.airtransportcompany;
 
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.CompanyName;
+import pt.isep.sem4pi.domain.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 
 import java.util.ArrayList;
@@ -28,16 +28,16 @@ public class RegisterAirTransportCompanyServiceTest {
         }
 
         @Override
-        public Optional<AirTransportCompany> findByIataCode(IataCode iataCode) {
+        public Optional<AirTransportCompany> findByIataCode(IataCodeCompany iataCode) {
             return fakeDatabase.stream()
-                    .filter(c -> c.identityIata().equals(iataCode))
+                    .filter(c -> c.identity().equals(iataCode))
                     .findFirst();
         }
 
         @Override
-        public Optional<AirTransportCompany> findByIcaoCode(IcaoCode icaoCode) {
+        public Optional<AirTransportCompany> findByIcaoCode(IcaoCodeCompany icaoCode) {
             return fakeDatabase.stream()
-                    .filter(c -> c.identityIcao().equals(icaoCode))
+                    .filter(c -> c.getIcaoCode().equals(icaoCode))
                     .findFirst();
         }
 
@@ -66,7 +66,7 @@ public class RegisterAirTransportCompanyServiceTest {
         AirTransportCompany result = service.registerCompany("Emirates", "EK", "UAE");
 
         assertNotNull(result);
-        assertEquals("EK", result.identityIata().code());
+        assertEquals("EK", result.identity().code());
 
         assertEquals(1, fakeRepo.fakeDatabase.size());
     }
@@ -75,8 +75,8 @@ public class RegisterAirTransportCompanyServiceTest {
     public void ensureRegistrationFailsIfIataCodeAlreadyExists() {
         AirTransportCompany existingCompany = new AirTransportCompany(
                 new CompanyName("Existing Airline"),
-                new IataCode("EK"),
-                new IcaoCode("AAA")
+                new IataCodeCompany("EK"),
+                new IcaoCodeCompany("AAA")
         );
         fakeRepo.save(existingCompany);
 
@@ -94,8 +94,8 @@ public class RegisterAirTransportCompanyServiceTest {
     public void ensureRegistrationFailsIfIcaoCodeAlreadyExists() {
         AirTransportCompany existingCompany = new AirTransportCompany(
                 new CompanyName("Existing Airline"),
-                new IataCode("ZZ"),
-                new IcaoCode("UAE")
+                new IataCodeCompany("ZZ"),
+                new IcaoCodeCompany("UAE")
         );
         fakeRepo.save(existingCompany);
 

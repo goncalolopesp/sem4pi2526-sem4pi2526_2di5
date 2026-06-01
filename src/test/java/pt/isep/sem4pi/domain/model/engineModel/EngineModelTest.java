@@ -1,8 +1,8 @@
 package pt.isep.sem4pi.domain.model.engineModel;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
-import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
+import pt.isep.sem4pi.domain.manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.manufacturer.ManufacturerId;
 
 import java.math.BigDecimal;
 

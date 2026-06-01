@@ -4,9 +4,9 @@ import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.UserManagementService;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompanyCollaborator;
+import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
@@ -26,7 +26,7 @@ public class RegisterCustomerCollaboratorController {
     }
 
     public AirTransportCompanyCollaborator registerCompanyCollaborator(
-            String username, String password, String firstName, String lastName, String email, IcaoCode companyCode) {
+            String username, String password, String firstName, String lastName, String email, IcaoCodeCompany companyCode) {
 
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.ADMIN, SEM4PIRoles.BACKOFFICE_OPERATOR);
 

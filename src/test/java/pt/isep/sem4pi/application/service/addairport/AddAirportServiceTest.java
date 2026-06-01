@@ -1,38 +1,26 @@
 package pt.isep.sem4pi.application.service.addairport;
 
+import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainRepository;
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.airport.*;
+import pt.isep.sem4pi.domain.airport.*;
+import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.*;
 
 public class AddAirportServiceTest {
 
-    private static class FakeAirportRepository implements AirportRepository {
-
-        public final List<Airport> fakeDatabase = new ArrayList<>();
-
-        @Override
-        public Airport save(Airport airport) {
-            fakeDatabase.add(airport);
-            return airport;
-        }
+    private static class FakeAirportRepository
+            extends InMemoryDomainRepository<Airport, IataCodeAirport>
+            implements AirportRepository {
 
         @Override
-        public Optional<Airport> findByIataCode(IataCode iataCode) {
-            return fakeDatabase.stream()
-                    .filter(a -> a.identityIata().equals(iataCode))
-                    .findFirst();
-        }
-
-        @Override
-        public Optional<Airport> findByIcaoCode(IcaoCode icaoCode) {
-            return fakeDatabase.stream()
+        public Optional<Airport> findByIcaoCode(IcaoCodeAirport icaoCode) {
+            return StreamSupport.stream(findAll().spliterator(), false)
                     .filter(a -> a.identityIcao().equals(icaoCode))
                     .findFirst();
         }
@@ -57,28 +45,27 @@ public class AddAirportServiceTest {
         );
 
         assertNotNull(result);
-        assertEquals("OPO", result.identityIata().code());
+        assertEquals("OPO", result.identity().code());
         assertEquals("LPPR", result.identityIcao().code());
-
-        assertEquals(1, fakeRepo.fakeDatabase.size());
     }
 
     @Test
     public void ensureRegistrationFailsIfIataCodeAlreadyExists() {
+        // Usamos LISBOA neste teste
         Airport existingAirport = new Airport(
-                "Existing Airport", "Town", "Country",
-                new IataCode("OPO"),
-                new IcaoCode("ZZZZ"),
+                "Existing Airport", "Lisbon", "Country",
+                new IataCodeAirport("LIS"),
+                new IcaoCodeAirport("ZZZZ"),
                 new Coordinates(0, 0),
                 new Elevation(0),
-                "AREA_PT"
+                new AirControlAreaID("AREA_PT")
         );
         fakeRepo.save(existingAirport);
 
         try {
             service.addAirport(
                     "Fake Airport", "Fake", "Fake",
-                    "OPO", "AAAA",
+                    "LIS", "AAAA",
                     0, 0, 0,
                     "AREA_PT"
             );
@@ -86,26 +73,24 @@ public class AddAirportServiceTest {
         } catch (IllegalStateException e) {
             assertEquals("An airport with this IATA code already exists.", e.getMessage());
         }
-
-        assertEquals(1, fakeRepo.fakeDatabase.size());
     }
 
     @Test
     public void ensureRegistrationFailsIfIcaoCodeAlreadyExists() {
         Airport existingAirport = new Airport(
-                "Existing Airport", "Town", "Country",
-                new IataCode("ZZZ"),
-                new IcaoCode("LPPR"),
+                "Existing Airport", "Madrid", "Country",
+                new IataCodeAirport("MAD"),
+                new IcaoCodeAirport("LEMD"),
                 new Coordinates(0, 0),
                 new Elevation(0),
-                "AREA_PT"
+                new AirControlAreaID("AREA_PT")
         );
         fakeRepo.save(existingAirport);
 
         try {
             service.addAirport(
                     "Fake Airport", "Fake", "Fake",
-                    "OPO", "LPPR",
+                    "YYY", "LEMD", // ICAO Duplicado
                     0, 0, 0,
                     "AREA_PT"
             );
@@ -113,7 +98,5 @@ public class AddAirportServiceTest {
         } catch (IllegalStateException e) {
             assertEquals("An airport with this ICAO code already exists.", e.getMessage());
         }
-
-        assertEquals(1, fakeRepo.fakeDatabase.size());
     }
 }

@@ -1,15 +1,15 @@
 package pt.isep.sem4pi.application.service.aircraft;
 
 import pt.isep.sem4pi.application.viadto.AircraftModelDTORepresentationBuilder;
-import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
-import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.model.aircraft.CabinConfiguration;
+import pt.isep.sem4pi.domain.aircraft.Aircraft;
+import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.aircraft.CabinConfiguration;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
 import pt.isep.sem4pi.domain.model.aircraftModel.DTO.AircraftModelDTO;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
 
@@ -30,7 +30,7 @@ public class AddAircraftService {
     public void addAircraftToFleet(String companyIataStr, String regStr, String manufacturerStr, String modelNameStr,
                                    String country, int eco, int bus, int first) {
 
-        IataCode companyIata = new IataCode(companyIataStr);
+        IataCodeCompany companyIata = new IataCodeCompany(companyIataStr);
         AircraftRegistration registration = new AircraftRegistration(regStr);
         CabinConfiguration seats = new CabinConfiguration(eco, bus, first);
 

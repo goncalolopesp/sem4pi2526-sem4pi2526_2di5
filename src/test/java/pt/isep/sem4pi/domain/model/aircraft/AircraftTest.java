@@ -2,8 +2,12 @@ package pt.isep.sem4pi.domain.model.aircraft;
 
 import org.junit.Before;
 import org.junit.Test;
+import pt.isep.sem4pi.domain.aircraft.Aircraft;
+import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.aircraft.AircraftStatus;
+import pt.isep.sem4pi.domain.aircraft.CabinConfiguration;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
-import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
+import pt.isep.sem4pi.domain.manufacturer.ManufacturerId;
 
 import java.lang.reflect.Constructor;
 import java.time.LocalDate;

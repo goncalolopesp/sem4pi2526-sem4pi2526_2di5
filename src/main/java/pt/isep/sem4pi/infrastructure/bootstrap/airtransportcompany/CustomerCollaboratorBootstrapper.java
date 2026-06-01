@@ -2,7 +2,7 @@ package pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany;
 
 import eapli.framework.actions.Action;
 import pt.isep.sem4pi.application.controller.airtransportcompany.RegisterCustomerCollaboratorController;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
@@ -24,7 +24,7 @@ public class CustomerCollaboratorBootstrapper implements Action {
                     "John",
                     "Doe",
                     "johndoe@personal.email.com",
-                    new IcaoCode("TAP")
+                    new IcaoCodeCompany("TAP")
             );
             System.out.println("Air Transport Company Collaborator successfully bootstrapped.");
             return true;

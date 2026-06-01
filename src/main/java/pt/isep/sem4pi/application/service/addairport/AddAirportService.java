@@ -1,11 +1,11 @@
 package pt.isep.sem4pi.application.service.addairport;
 
-
-import pt.isep.sem4pi.domain.model.airport.Airport;
-import pt.isep.sem4pi.domain.model.airport.Coordinates;
-import pt.isep.sem4pi.domain.model.airport.Elevation;
-import pt.isep.sem4pi.domain.model.airport.IataCode;
-import pt.isep.sem4pi.domain.model.airport.IcaoCode;
+import pt.isep.sem4pi.domain.airport.Airport;
+import pt.isep.sem4pi.domain.airport.Coordinates;
+import pt.isep.sem4pi.domain.airport.Elevation;
+import pt.isep.sem4pi.domain.airport.IataCodeAirport;
+import pt.isep.sem4pi.domain.airport.IcaoCodeAirport;
+import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 
 public class AddAirportService {
@@ -17,14 +17,15 @@ public class AddAirportService {
     }
 
     public Airport addAirport(String name, String town, String country, String rawIata, String rawIcao,
-                              double lat, double lon, double elevMeters, String airControlAreaId) {
+                              double lat, double lon, double elevMeters, String rawAirControlAreaId) {
 
-        IataCode iata = new IataCode(rawIata);
-        IcaoCode icao = new IcaoCode(rawIcao);
+        IataCodeAirport iata = new IataCodeAirport(rawIata);
+        IcaoCodeAirport icao = new IcaoCodeAirport(rawIcao);
         Coordinates coords = new Coordinates(lat, lon);
         Elevation elevation = new Elevation(elevMeters);
+        AirControlAreaID airControlAreaId = new AirControlAreaID(rawAirControlAreaId);
 
-        if (airportRepository.findByIataCode(iata).isPresent()) {
+        if (airportRepository.ofIdentity(iata).isPresent()) {
             throw new IllegalStateException("An airport with this IATA code already exists.");
         }
         if (airportRepository.findByIcaoCode(icao).isPresent()) {
@@ -32,6 +33,7 @@ public class AddAirportService {
         }
 
         Airport newAirport = new Airport(name, town, country, iata, icao, coords, elevation, airControlAreaId);
+
         return airportRepository.save(newAirport);
     }
 }

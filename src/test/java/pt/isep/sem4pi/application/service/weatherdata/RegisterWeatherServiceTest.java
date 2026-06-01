@@ -2,8 +2,8 @@ package pt.isep.sem4pi.application.service.weatherdata;
 
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.weatherdata.ImportBatchStatus;
-import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
+import pt.isep.sem4pi.domain.weatherdata.ImportBatchStatus;
+import pt.isep.sem4pi.domain.weatherdata.WeatherImportBatch;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryWeatherBatchRepository;
 
 import java.util.List;

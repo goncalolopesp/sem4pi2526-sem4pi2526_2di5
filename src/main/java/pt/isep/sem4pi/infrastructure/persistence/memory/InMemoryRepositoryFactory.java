@@ -2,6 +2,8 @@ package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
+import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
+import eapli.framework.infrastructure.authz.repositories.impl.inmemory.InMemoryUserRepository;
 import pt.isep.sem4pi.domain.repositories.*;
 import pt.isep.sem4pi.domain.usermanagement.Email;
 import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
@@ -30,6 +32,8 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private static AircraftRepository aircraftRepository;
     private static FlightRepository flightRepository;
     private static WeatherBatchRepository weatherBatchRepository;
+    private static FlightRouteRepository flightRouteRepository;
+    private static AirportRepository airportRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -62,14 +66,14 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     }
 
     @Override
-    public eapli.framework.infrastructure.authz.domain.repositories.UserRepository users(TransactionalContext tx) {
+    public UserRepository users(TransactionalContext tx) {
         return users();
     }
 
     @Override
-    public eapli.framework.infrastructure.authz.domain.repositories.UserRepository users() {
+    public UserRepository users() {
         if (userRepository == null) {
-            userRepository = new eapli.framework.infrastructure.authz.repositories.impl.inmemory.InMemoryUserRepository();
+            userRepository = new InMemoryUserRepository();
             seedDefaultUsers(userRepository);
         }
 
@@ -159,6 +163,22 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
             weatherBatchRepository = new InMemoryWeatherBatchRepository();
         }
         return weatherBatchRepository;
+    }
+
+    @Override
+    public FlightRouteRepository flightRoutes() {
+        if (flightRouteRepository == null) {
+            flightRouteRepository = new InMemoryFlightRouteRepository();
+        }
+        return flightRouteRepository;
+    }
+
+    @Override
+    public AirportRepository airports() {
+        if (airportRepository == null) {
+            airportRepository = new InMemoryAirportRepository();
+        }
+        return airportRepository;
     }
 
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {

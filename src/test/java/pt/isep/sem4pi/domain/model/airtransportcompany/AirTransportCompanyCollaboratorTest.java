@@ -3,8 +3,7 @@ package pt.isep.sem4pi.domain.model.airtransportcompany;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.airtransportcompany.*;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 
@@ -19,8 +18,8 @@ public class AirTransportCompanyCollaboratorTest {
     public void setUp() {
         testCompany = new AirTransportCompany(
                 new CompanyName("TAP Portugal"),
-                new IataCode("TP"),
-                new IcaoCode("TAP")
+                new IataCodeCompany("TP"),
+                new IcaoCodeCompany("TAP")
         );
         testUser = UserBuilderHelper.builder()
                 .withUsername("testuser")

@@ -5,9 +5,10 @@ import pt.isep.sem4pi.application.service.weatherdata.importer.WeatherDataImport
 import pt.isep.sem4pi.application.service.weatherdata.importer.WeatherImportPayload;
 import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
 import pt.isep.sem4pi.domain.aircontrolarea.DTO.AirControlAreaCreateDTO;
-import pt.isep.sem4pi.domain.model.weatherdata.*;
-import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataDTO;
-import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
+import pt.isep.sem4pi.domain.weatherdata.*;
+import pt.isep.sem4pi.domain.weatherdata.*;
+import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherDataDTO;
+import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherImportResultDTO;
 import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 

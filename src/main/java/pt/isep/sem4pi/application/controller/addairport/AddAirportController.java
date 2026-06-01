@@ -1,7 +1,7 @@
 package pt.isep.sem4pi.application.controller.addairport;
 
 import pt.isep.sem4pi.application.service.addairport.AddAirportService;
-import pt.isep.sem4pi.domain.model.airport.Airport;
+import pt.isep.sem4pi.domain.airport.Airport;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 
 public class AddAirportController {

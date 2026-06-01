@@ -2,7 +2,7 @@ package pt.isep.sem4pi.presentation.weatherdata;
 
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.weatherdata.ConsultWeatherDataController;
-import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataViewDTO;
+import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherDataViewDTO;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;

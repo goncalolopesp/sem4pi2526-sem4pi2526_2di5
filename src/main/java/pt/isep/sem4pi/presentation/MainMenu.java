@@ -19,6 +19,7 @@ import pt.isep.sem4pi.presentation.aircraftModel.AddAircraftModelAction;
 import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.*;
 import pt.isep.sem4pi.presentation.authz.ListUsersAction;
+import pt.isep.sem4pi.presentation.route.CreateFlightRouteAction;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
@@ -54,6 +55,7 @@ public class MainMenu extends AbstractUI {
     private static final int RETIRE_AIRCRAFT_OPTION = 4;
     private static final int ADD_AIRCRAFT_OPTION = 5;
     private static final int LIST_ATCC_FLEET = 6;
+    private static final int CREATE_FLIGHT_ROUTE_OPTION = 7;
 
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
@@ -210,6 +212,7 @@ public class MainMenu extends AbstractUI {
         menu.addItem(RETIRE_AIRCRAFT_OPTION, "Retire Aircraft", new RetireAircraftAction());
         menu.addItem(ADD_AIRCRAFT_OPTION, "Add Aircraft", new AddAircraftUI()::show);
         menu.addItem(LIST_ATCC_FLEET, "List Company Fleet", new ListCompanyFleetAction());
+        menu.addItem(CREATE_FLIGHT_ROUTE_OPTION, "Create flight route", new CreateFlightRouteAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;

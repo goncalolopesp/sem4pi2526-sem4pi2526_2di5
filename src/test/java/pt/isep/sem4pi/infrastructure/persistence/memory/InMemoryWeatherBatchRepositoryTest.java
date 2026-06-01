@@ -1,7 +1,7 @@
 package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.weatherdata.*;
+import pt.isep.sem4pi.domain.weatherdata.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

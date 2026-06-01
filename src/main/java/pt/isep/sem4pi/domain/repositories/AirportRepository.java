@@ -1,13 +1,14 @@
 package pt.isep.sem4pi.domain.repositories;
 
-import pt.isep.sem4pi.domain.model.airport.Airport;
-import pt.isep.sem4pi.domain.model.airport.IataCode;
-import pt.isep.sem4pi.domain.model.airport.IcaoCode;
+import eapli.framework.domain.repositories.DomainRepository;
+import pt.isep.sem4pi.domain.airport.Airport;
+import pt.isep.sem4pi.domain.airport.IataCodeAirport;
+import pt.isep.sem4pi.domain.airport.IcaoCodeAirport;
+import pt.isep.sem4pi.domain.route.FlightRoute;
+import pt.isep.sem4pi.domain.route.FlightRouteID;
 
 import java.util.Optional;
 
-public interface AirportRepository {
-    Airport save(Airport airport);
-    Optional<Airport> findByIataCode(IataCode iataCode);
-    Optional<Airport> findByIcaoCode(IcaoCode icaoCode);
+public interface AirportRepository extends DomainRepository<IataCodeAirport, Airport> {
+    Optional<Airport> findByIcaoCode(IcaoCodeAirport icaoCode);
 }

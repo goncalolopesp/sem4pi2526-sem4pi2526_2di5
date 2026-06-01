@@ -4,7 +4,7 @@ import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.airtransportcompany.ListCustomerCollaboratorsController;
 import pt.isep.sem4pi.application.controller.airtransportcompany.ListCustomerCollaboratorsController.CollaboratorView;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public class ListCompanyCollaboratorsUI extends AbstractUI {
 
         try {
             final List<CollaboratorView> collaborators =
-                    theController.listCompanyCollaborators(new IcaoCode(companyIcao));
+                    theController.listCompanyCollaborators(new IcaoCodeCompany(companyIcao));
 
             if (collaborators.isEmpty()) {
                 System.out.println("\nNo active collaborators found for this company.");

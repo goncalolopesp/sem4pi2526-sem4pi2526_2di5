@@ -74,6 +74,8 @@ public class RegisterBackofficeUserServiceTest {
         @Override public pt.isep.sem4pi.domain.repositories.AircraftRepository aircrafts() { return null; }
         @Override public pt.isep.sem4pi.domain.repositories.FlightRepository flights() { return null; }
         @Override public pt.isep.sem4pi.domain.repositories.WeatherBatchRepository weatherBatches() { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.AirportRepository airports() { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.FlightRouteRepository flightRoutes() { return null; }
     }
 
     private TestRepositoryFactory factory;
@@ -273,7 +275,6 @@ public class RegisterBackofficeUserServiceTest {
 
             @Override
             public BackofficeUserRepository backofficeUsers(TransactionalContext tx) {
-                // return failing repo for the tx
                 return failingBo;
             }
 
@@ -292,6 +293,8 @@ public class RegisterBackofficeUserServiceTest {
             @Override public pt.isep.sem4pi.domain.repositories.AircraftRepository aircrafts() { return null; }
             @Override public pt.isep.sem4pi.domain.repositories.FlightRepository flights() { return null; }
             @Override public pt.isep.sem4pi.domain.repositories.WeatherBatchRepository weatherBatches() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.AirportRepository airports() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.FlightRouteRepository flightRoutes() { return null; }
         };
 
         final RegisterBackofficeUserService svc = new RegisterBackofficeUserService(customFactory);
@@ -311,7 +314,6 @@ public class RegisterBackofficeUserServiceTest {
                     LocalDate.now()
             );
         } finally {
-            // after rollback, system user must not exist
             assertFalse(memFactory.users().ofIdentity(Username.valueOf(username)).isPresent());
             assertFalse(memFactory.backofficeUsers().existsByUsername(username));
         }

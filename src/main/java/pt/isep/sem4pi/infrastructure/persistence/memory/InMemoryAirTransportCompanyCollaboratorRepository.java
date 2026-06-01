@@ -2,8 +2,8 @@ package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainRepository;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompanyCollaborator;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository;
 
 import java.util.Optional;
@@ -30,6 +30,6 @@ public class InMemoryAirTransportCompanyCollaboratorRepository
 
     @Override
     public Iterable<AirTransportCompanyCollaborator> findByCompany(AirTransportCompany company) {
-        return match(e -> e.company().identityIcao().equals(company.identityIcao()));
+        return match(e -> e.company().getIcaoCode().equals(company.getIcaoCode()));
     }
 }

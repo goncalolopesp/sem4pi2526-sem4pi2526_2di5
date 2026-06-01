@@ -1,7 +1,7 @@
 package pt.isep.sem4pi.presentation.weatherdata;
 
 import pt.isep.sem4pi.application.controller.weatherdata.ImportWeatherDataController;
-import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
+import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherImportResultDTO;
 
 public class ImportWeatherDataRunner {
     public static void main(String[] args) {

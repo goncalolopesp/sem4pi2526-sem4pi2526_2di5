@@ -2,8 +2,8 @@ package pt.isep.sem4pi.domain.repositories;
 
 import eapli.framework.domain.repositories.DomainRepository;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompanyCollaborator;
 
 import java.util.Optional;
 

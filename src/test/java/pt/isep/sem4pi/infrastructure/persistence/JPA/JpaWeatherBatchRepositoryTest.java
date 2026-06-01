@@ -7,6 +7,7 @@ import pt.isep.sem4pi.domain.model.weatherdata.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import pt.isep.sem4pi.domain.weatherdata.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

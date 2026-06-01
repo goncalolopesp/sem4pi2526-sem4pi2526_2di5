@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.engineModel;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.engineModel.RegisterEngineModelController;
-import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.FuelType;

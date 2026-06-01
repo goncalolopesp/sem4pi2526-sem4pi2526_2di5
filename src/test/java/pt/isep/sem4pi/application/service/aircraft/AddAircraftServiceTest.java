@@ -3,16 +3,16 @@ package pt.isep.sem4pi.application.service.aircraft;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.domain.model.aircraftModel.*;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.CompanyName;
+import pt.isep.sem4pi.domain.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.FuelType;
-import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
-import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
+import pt.isep.sem4pi.domain.manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportCompanyRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftModelRepository;
 
@@ -33,7 +33,7 @@ public class AddAircraftServiceTest {
         modelRepo = new InMemoryAircraftModelRepository();
         service = new AddAircraftService(companyRepo, modelRepo);
 
-        companyRepo.save(new AirTransportCompany(new CompanyName("TAP"), new IataCode("TP"), new IcaoCode("TAP")));
+        companyRepo.save(new AirTransportCompany(new CompanyName("TAP"), new IataCodeCompany("TP"), new IcaoCodeCompany("TAP")));
 
         Manufacturer manufacturer = new Manufacturer(new ManufacturerId("AIRBUS"), "Airbus", "France");
         EngineModel engine = new EngineModel(new EngineModelId("CFM56"), manufacturer, "CFM56",
@@ -58,7 +58,7 @@ public class AddAircraftServiceTest {
     public void ensureSuccessfulAircraftAddition() {
         service.addAircraftToFleet("TP", "CS-TPA", "AIRBUS", "A320", "Portugal", 150, 0, 0);
 
-        AirTransportCompany tap = companyRepo.findByIataCode(new IataCode("TP")).get();
+        AirTransportCompany tap = companyRepo.findByIataCode(new IataCodeCompany("TP")).get();
         assertEquals(1, tap.getFleet().size());
     }
 

@@ -6,7 +6,7 @@ import pt.isep.sem4pi.application.service.weatherdata.WeatherDataImportService;
 import pt.isep.sem4pi.application.service.weatherdata.importer.WeatherDataImporterFactory;
 import pt.isep.sem4pi.domain.aircontrolarea.AirControlArea;
 import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary;
-import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
+import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherImportResultDTO;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirControlAreaRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryWeatherBatchRepository;
 

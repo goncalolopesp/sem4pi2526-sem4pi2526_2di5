@@ -1,6 +1,6 @@
 package pt.isep.sem4pi.application.service.weatherdata.importer;
 
-import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataDTO;
+import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherDataDTO;
 
 import java.io.BufferedReader;
 import java.io.IOException;

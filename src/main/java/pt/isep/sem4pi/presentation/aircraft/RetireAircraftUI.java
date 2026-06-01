@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.aircraft;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.aircraft.RetireAircraftController;
-import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
+import pt.isep.sem4pi.domain.aircraft.Aircraft;
 
 import java.util.List;
 import java.util.stream.Collectors;

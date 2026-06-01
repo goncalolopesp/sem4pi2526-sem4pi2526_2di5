@@ -2,10 +2,10 @@ package pt.isep.sem4pi.infrastructure.persistence.JPA;
 
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
 import jakarta.persistence.TypedQuery;
-import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.model.flight.Flight;
-import pt.isep.sem4pi.domain.model.flight.FlightId;
-import pt.isep.sem4pi.domain.model.flight.FlightStatus;
+import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.flight.Flight;
+import pt.isep.sem4pi.domain.flight.FlightId;
+import pt.isep.sem4pi.domain.flight.FlightStatus;
 import pt.isep.sem4pi.domain.repositories.FlightRepository;
 
 public class JpaFlightRepository extends JpaAutoTxRepository<Flight, FlightId, FlightId> implements FlightRepository {

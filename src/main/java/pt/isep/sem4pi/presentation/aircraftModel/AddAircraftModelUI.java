@@ -4,7 +4,7 @@ import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.aircraftModel.AddAircraftModelController;
 import pt.isep.sem4pi.domain.model.aircraftModel.DTO.AircraftModelDTO;
-import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.manufacturer.Manufacturer;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 

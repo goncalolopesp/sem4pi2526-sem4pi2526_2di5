@@ -1,9 +1,9 @@
 package pt.isep.sem4pi.infrastructure.persistence.memory;
 
-import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 
 import java.util.ArrayList;
@@ -21,16 +21,16 @@ public class InMemoryAirTransportCompanyRepository implements AirTransportCompan
     }
 
     @Override
-    public Optional<AirTransportCompany> findByIataCode(IataCode iataCode) {
+    public Optional<AirTransportCompany> findByIataCode(IataCodeCompany iataCode) {
         return database.stream()
-                .filter(c -> c.identityIata().equals(iataCode))
+                .filter(c -> c.identity().equals(iataCode))
                 .findFirst();
     }
 
     @Override
-    public Optional<AirTransportCompany> findByIcaoCode(IcaoCode icaoCode) {
+    public Optional<AirTransportCompany> findByIcaoCode(IcaoCodeCompany icaoCode) {
         return database.stream()
-                .filter(c -> c.identityIcao().equals(icaoCode))
+                .filter(c -> c.getIcaoCode().equals(icaoCode))
                 .findFirst();
     }
 
