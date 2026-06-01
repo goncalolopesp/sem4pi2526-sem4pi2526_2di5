@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.aircontrolarea;
+package pt.isep.sem4pi.domain.model.aircontrolarea;
 
 import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.validations.Preconditions;
