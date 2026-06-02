@@ -5,7 +5,6 @@ import pt.isep.sem4pi.domain.model.airport.Coordinates;
 import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
 import pt.isep.sem4pi.domain.model.route.*;
-import pt.isep.sem4pi.domain.route.*;
 import pt.isep.sem4pi.domain.model.route.DTO.FlightRouteDTO;
 import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
 
