@@ -106,4 +106,12 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     public WeatherBatchRepository weatherBatches() {
         return new JpaWeatherBatchRepository();
     }
+
+    @Override
+    public FlightRouteRepository flightRoutes() {return new JpaFlightRouteRepository();}
+
+    @Override
+    public AirportRepository airports() {
+        return new  JpaAirportRepository();
+    }
 }

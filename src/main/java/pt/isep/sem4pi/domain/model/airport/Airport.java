@@ -1,26 +1,23 @@
 package pt.isep.sem4pi.domain.model.airport;
 
+import eapli.framework.domain.model.AggregateRoot;
 import jakarta.persistence.*;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
 
 @Entity
 @Table(name = "Airport")
-public class Airport {
+public class Airport implements AggregateRoot<IataCodeAirport> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long airportId;
+    @EmbeddedId
+    private IataCodeAirport iataCode;
+
+    @Embedded
+    @Column(unique = true, nullable = false)
+    private IcaoCodeAirport icaoCode;
 
     private String name;
     private String town;
     private String country;
-
-    @Embedded
-    @Column(unique = true, nullable = false)
-    private IataCode iataCode;
-
-    @Embedded
-    @Column(unique = true, nullable = false)
-    private IcaoCode icaoCode;
 
     @Embedded
     private Coordinates coordinates;
@@ -28,15 +25,21 @@ public class Airport {
     @Embedded
     private Elevation elevation;
 
-    @Column(name = "air_control_area_id", nullable = false)
-    private String airControlAreaId;
+    @Embedded
+    @AttributeOverride(name = "areaCode", column = @Column(name = "air_control_area_id", nullable = false))
+    private AirControlAreaID airControlAreaId;
 
-    protected Airport() {}
+    @Version
+    private Long version;
 
-    public Airport(String name, String town, String country, IataCode iataCode, IcaoCode icaoCode,
-                   Coordinates coordinates, Elevation elevation, String airControlAreaId) {
-        if (name == null || town == null || country == null || airControlAreaId == null) {
-            throw new IllegalArgumentException("Basic airport details cannot be null.");
+    protected Airport() {
+        // For ORM
+    }
+
+    public Airport(String name, String town, String country, IataCodeAirport iataCode, IcaoCodeAirport icaoCode,
+                   Coordinates coordinates, Elevation elevation, AirControlAreaID airControlAreaId) {
+        if (name == null || town == null || country == null || airControlAreaId == null || iataCode == null || icaoCode == null) {
+            throw new IllegalArgumentException("Airport details cannot be null.");
         }
         this.name = name;
         this.town = town;
@@ -48,6 +51,36 @@ public class Airport {
         this.airControlAreaId = airControlAreaId;
     }
 
-    public IataCode identityIata() { return this.iataCode; }
-    public IcaoCode identityIcao() { return this.icaoCode; }
+    @Override
+    public IataCodeAirport identity() {
+        return this.iataCode;
+    }
+
+    @Override
+    public boolean sameAs(Object other) {
+        if (!(other instanceof Airport)) {
+            return false;
+        }
+        final Airport that = (Airport) other;
+        if (this == that) {
+            return true;
+        }
+        return identity().equals(that.identity());
+    }
+
+    /* Getters gerais para a UI e lógicas de domínio */
+
+    public IcaoCodeAirport identityIcao() { return this.icaoCode; }
+
+    public String getName() { return name; }
+
+    public String getTown() { return town; }
+
+    public String getCountry() { return country; }
+
+    public Coordinates getCoordinates() { return coordinates; }
+
+    public Elevation getElevation() { return elevation; }
+
+    public AirControlAreaID getAirControlAreaId() { return airControlAreaId; }
 }

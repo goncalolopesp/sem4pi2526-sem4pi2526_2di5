@@ -42,6 +42,10 @@ public interface RepositoryFactory {
 
     WeatherBatchRepository weatherBatches();
 
+    FlightRouteRepository flightRoutes();
+
+    AirportRepository airports();
+
     SimulationRepository simulations();
 
     SimulationRepository simulations(TransactionalContext tx);

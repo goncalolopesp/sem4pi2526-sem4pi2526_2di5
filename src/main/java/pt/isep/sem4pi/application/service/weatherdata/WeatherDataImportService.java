@@ -3,8 +3,10 @@ package pt.isep.sem4pi.application.service.weatherdata;
 import pt.isep.sem4pi.application.service.weatherdata.importer.WeatherDataImporter;
 import pt.isep.sem4pi.application.service.weatherdata.importer.WeatherDataImporterFactory;
 import pt.isep.sem4pi.application.service.weatherdata.importer.WeatherImportPayload;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
-import pt.isep.sem4pi.domain.aircontrolarea.DTO.AirControlAreaCreateDTO;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaBoundary;
+import pt.isep.sem4pi.domain.model.aircontrolarea.DTO.AirControlAreaCreateDTO;
 import pt.isep.sem4pi.domain.model.weatherdata.*;
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataDTO;
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
@@ -29,7 +31,7 @@ public class WeatherDataImportService {
 
     public WeatherImportResultDTO importWeatherData(String filePath, String fileType) {
         String resolvedPath = resolveFilePath(filePath, fileType);
-        java.util.Map<String, pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary> acaDefinitions =
+        java.util.Map<String, AirControlAreaBoundary> acaDefinitions =
                 loadAirControlAreas(resolvedPath, fileType);
         java.util.Set<String> createdAreas = new java.util.HashSet<>();
         java.util.Set<String> missingAreaErrors = new java.util.HashSet<>();
@@ -49,7 +51,7 @@ public class WeatherDataImportService {
             if (!airControlAreaRepository.containsOfIdentity(new AirControlAreaID(areaId))) {
                 if (!createdAreas.contains(areaId) && acaDefinitions.containsKey(areaId)) {
                     try {
-                        pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary boundary = acaDefinitions.get(areaId);
+                        AirControlAreaBoundary boundary = acaDefinitions.get(areaId);
                         AirControlAreaCreateDTO createDto = new AirControlAreaCreateDTO(
                                 areaId,
                                 IMPORTED_ACA_NAME_PREFIX + areaId,
@@ -59,7 +61,7 @@ public class WeatherDataImportService {
                                 boundary.getMaxLongitude(),
                                 IMPORTED_ACA_MIN_RESERVE_FUEL
                         );
-                        pt.isep.sem4pi.domain.aircontrolarea.AirControlArea area = createAirControlArea(createDto);
+                        AirControlArea area = createAirControlArea(createDto);
                         airControlAreaRepository.save(area);
                         createdAreas.add(areaId);
                     } catch (IllegalArgumentException e) {
@@ -162,7 +164,7 @@ public class WeatherDataImportService {
     private static final String IMPORTED_ACA_NAME_PREFIX = "ACA ";
     private static final double IMPORTED_ACA_MIN_RESERVE_FUEL = 0.0;
 
-    private java.util.Map<String, pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary> loadAirControlAreas(
+    private java.util.Map<String, AirControlAreaBoundary> loadAirControlAreas(
             String weatherFilePath, String fileType) {
         if (weatherFilePath == null || weatherFilePath.trim().isEmpty()) {
             return java.util.Map.of();
@@ -224,11 +226,11 @@ public class WeatherDataImportService {
         return filePath.substring(idx + 1).toLowerCase();
     }
 
-    private pt.isep.sem4pi.domain.aircontrolarea.AirControlArea createAirControlArea(AirControlAreaCreateDTO dto) {
-        pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary boundaries =
-                new pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary(
+    private AirControlArea createAirControlArea(AirControlAreaCreateDTO dto) {
+        AirControlAreaBoundary boundaries =
+                new AirControlAreaBoundary(
                         dto.getMinLatitude(), dto.getMaxLatitude(), dto.getMinLongitude(), dto.getMaxLongitude());
-        return new pt.isep.sem4pi.domain.aircontrolarea.AirControlArea(
+        return new AirControlArea(
                 dto.getCode(), boundaries, dto.getName(), dto.getMinimumReserveFuel());
     }
 }

@@ -4,29 +4,29 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class IataCodeTest {
+public class IataCodeCompanyAirportTest {
 
     @Test
     public void ensureValidIataCodeIsCreated() {
-        IataCode code = new IataCode("TP");
+        IataCodeCompany code = new IataCodeCompany("TP");
         assertEquals("TP", code.code());
     }
 
     @Test
     public void ensureIataCodeConvertsToLowercaseToUppercase() {
-        IataCode code = new IataCode("tp");
+        IataCodeCompany code = new IataCodeCompany("tp");
         assertEquals("TP", code.code());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureIataCodeFailsIfNull() {
-        new IataCode(null);
+        new IataCodeCompany(null);
     }
 
     @Test
     public void ensureIataCodeFailsIfThreeLetters() {
         try {
-            new IataCode("TAP");
+            new IataCodeCompany("TAP");
             fail("Expected an IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("IATA code must be exactly 2 letters.", e.getMessage());
@@ -35,6 +35,6 @@ public class IataCodeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureIataCodeFailsIfContainsNumbers() {
-        new IataCode("T1");
+        new IataCodeCompany("T1");
     }
 }

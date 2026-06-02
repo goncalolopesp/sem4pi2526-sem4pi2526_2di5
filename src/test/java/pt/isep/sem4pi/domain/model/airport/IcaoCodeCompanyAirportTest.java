@@ -1,31 +1,32 @@
 package pt.isep.sem4pi.domain.model.airport;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
-public class IcaoCodeTest {
+public class IcaoCodeCompanyAirportTest {
 
     @Test
     public void ensureValidFourLetterIcaoCodeIsCreated() {
-        IcaoCode icao = new IcaoCode("LPPR");
+        IcaoCodeAirport icao = new IcaoCodeAirport("LPPR");
         assertEquals("LPPR", icao.code());
     }
 
     @Test
     public void ensureIcaoCodeConvertsToLowercaseToUppercase() {
-        IcaoCode icao = new IcaoCode("lppr");
+        IcaoCodeAirport icao = new IcaoCodeAirport("lppr");
         assertEquals("LPPR", icao.code());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureIcaoCodeFailsIfNull() {
-        new IcaoCode(null);
+        new IcaoCodeAirport(null);
     }
 
     @Test
     public void ensureIcaoCodeFailsIfThreeLetters() {
         try {
-            new IcaoCode("LPP");
+            new IcaoCodeAirport("LPP");
             fail("Expected an IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("ICAO code must be 4 letters.", e.getMessage());
@@ -35,7 +36,7 @@ public class IcaoCodeTest {
     @Test
     public void ensureIcaoCodeFailsIfFiveLetters() {
         try {
-            new IcaoCode("LPPRX");
+            new IcaoCodeAirport("LPPRX");
             fail("Expected an IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("ICAO code must be 4 letters.", e.getMessage());
@@ -44,6 +45,6 @@ public class IcaoCodeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureIcaoCodeFailsIfContainsNumbers() {
-        new IcaoCode("LPP1");
+        new IcaoCodeAirport("LPP1");
     }
 }

@@ -5,7 +5,6 @@ import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.application.controller.aircraftModel.AddAircraftModelController;
 import pt.isep.sem4pi.application.service.aircraftModel.AddAircraftModelService;
 import pt.isep.sem4pi.domain.model.aircraftModel.DTO.AircraftModelDTO;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;

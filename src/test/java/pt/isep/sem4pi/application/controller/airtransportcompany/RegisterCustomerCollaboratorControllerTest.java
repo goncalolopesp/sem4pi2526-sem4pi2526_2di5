@@ -7,8 +7,8 @@ import org.junit.Test;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
 import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportCompanyCollaboratorRepository;
@@ -23,7 +23,7 @@ public class RegisterCustomerCollaboratorControllerTest {
     private InMemoryAirTransportCompanyCollaboratorRepository collaboratorRepo;
     private RegisterCustomerCollaboratorController controller;
 
-    private static final IcaoCode TAP_ICAO = new IcaoCode("TAP");
+    private static final IcaoCodeCompany TAP_ICAO = new IcaoCodeCompany("TAP");
 
     @Before
     public void setUp() {
@@ -42,7 +42,7 @@ public class RegisterCustomerCollaboratorControllerTest {
 
         companyRepo.save(new AirTransportCompany(
                 new CompanyName("TAP Portugal"),
-                new IataCode("TP"),
+                new IataCodeCompany("TP"),
                 TAP_ICAO
         ));
     }
@@ -62,7 +62,7 @@ public class RegisterCustomerCollaboratorControllerTest {
         );
 
         assertNotNull(result);
-        assertEquals(TAP_ICAO, result.company().identityIcao());
+        assertEquals(TAP_ICAO, result.company().getIcaoCode());
         assertEquals(username, result.systemUser().identity().toString());
         assertEquals(1, collaboratorRepo.size());
         assertTrue(collaboratorRepo.findBySystemUser(result.systemUser()).isPresent());
@@ -78,7 +78,7 @@ public class RegisterCustomerCollaboratorControllerTest {
                 "John",
                 "Doe",
                 "john@email.com",
-                new IcaoCode("XXX")
+                new IcaoCodeCompany("XXX")
         );
     }
 
@@ -95,7 +95,7 @@ public class RegisterCustomerCollaboratorControllerTest {
                     "John",
                     "Doe",
                     "john2@email.com",
-                    new IcaoCode("XXX")
+                    new IcaoCodeCompany("XXX")
             );
             fail("Expected IllegalArgumentException");
         } catch (IllegalArgumentException ignored) {
