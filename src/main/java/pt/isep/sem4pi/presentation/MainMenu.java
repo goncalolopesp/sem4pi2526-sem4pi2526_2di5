@@ -82,8 +82,8 @@ public class MainMenu extends AbstractUI {
     private static final int AIR_TRANSPORT_COMPANY_OPTIONS = 5;
     private static final int AIRPORT_OPTIONS = 6;
     private static final int AIR_CONTROL_AREA_OPTIONS = 7;
-    private static final int WEATHER_DATA_OPTIONS = 8;
-    private static final int SIMULATION_OPTIONS = 9;
+    private static final int SIMULATION_OPTIONS = 8;
+    private static final int WEATHER_DATA_OPTIONS = 9;
 
     private static final String SEPARATOR_LABEL = "--------------";
 
