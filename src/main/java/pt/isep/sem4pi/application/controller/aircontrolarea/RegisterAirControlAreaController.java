@@ -4,6 +4,10 @@ import eapli.framework.application.UseCaseController;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import pt.isep.sem4pi.domain.aircontrolarea.*;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaBoundary;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.aircontrolarea.DTO.AirControlAreaCreateDTO;
 import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
@@ -24,18 +28,25 @@ public class RegisterAirControlAreaController {
         this.repository = repository;
     }
 
-    public AirControlArea registerAirControlArea(String code, double minLat, double maxLat, double minLon, double maxLon, String name, double minFuel) {
+    public AirControlArea registerAirControlArea(AirControlAreaCreateDTO dto) {
 
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
 
-        AirControlAreaID id = new AirControlAreaID(code);
+        AirControlAreaID id = new AirControlAreaID(dto.getCode());
         if (repository.containsOfIdentity(id)) {
-            throw new IllegalArgumentException("An Air Control Area with the code '" + code + "' already exists in the system.");
+            throw new IllegalArgumentException("An Air Control Area with the code '" + dto.getCode() + "' already exists in the system.");
         }
 
-        AirControlAreaBoundary boundaries = new AirControlAreaBoundary(minLat, maxLat, minLon, maxLon);
-        AirControlArea newArea = new AirControlArea(code, boundaries, name, minFuel);
+        AirControlAreaBoundary boundaries = new AirControlAreaBoundary(
+                dto.getMinLatitude(), dto.getMaxLatitude(), dto.getMinLongitude(), dto.getMaxLongitude());
+        AirControlArea newArea = new AirControlArea(
+                dto.getCode(), boundaries, dto.getName(), dto.getMinimumReserveFuel());
 
         return repository.save(newArea);
+    }
+
+    public AirControlArea registerAirControlArea(String code, double minLat, double maxLat, double minLon, double maxLon, String name, double minFuel) {
+        AirControlAreaCreateDTO dto = new AirControlAreaCreateDTO(code, name, minLat, maxLat, minLon, maxLon, minFuel);
+        return registerAirControlArea(dto);
     }
 }

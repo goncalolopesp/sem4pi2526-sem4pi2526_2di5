@@ -1,0 +1,145 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title US055 - Register Aircraft Model (SD)
+
+autonumber
+
+actor "Backoffice Operator" as Actor
+
+participant ":AddAircraftModelUI" as UI
+participant ":AddAircraftModelController" as Controller
+participant ":AddAircraftModelService" as Service
+
+participant "repositories:\nPersistenceContext" as PersistenceContext
+participant "manufacturerRepository:\nManufacturerRepository" as ManufacturerRepo
+participant "engineModelRepository:\nEngineModelRepository" as EngineRepo
+participant "aircraftModelRepository:\nAircraftModelRepository" as AircraftRepo
+participant "aircraftModelRepositoryJpa:\nAircraftModelRepositoryJPA" as AircraftRepoJpa
+
+participant "aircraftModel:\nAircraftModel" as AircraftModel
+participant "certifiedEngine:\nCertifiedEngine" as CertifiedEngine
+participant "builder:\nAircraftModelDTORepresentationBuilder" as Builder
+participant "dto:\nAircraftModelDTO" as DTO
+
+note right of AircraftRepo
+Repository interfaces are defined
+in the Domain layer.
+Concrete implementations may be
+JPA or In-Memory.
+end note
+
+Actor -> UI : requests register aircraft model
+activate UI
+
+UI -> Controller ++ : create()
+Controller --> UI : controller
+
+UI -> Controller : getManufacturers()
+activate Controller
+
+Controller -> PersistenceContext : repositories()
+activate PersistenceContext
+PersistenceContext --> Controller : repositories
+
+Controller -> PersistenceContext : manufacturers()
+PersistenceContext --> Controller : ManufacturerRepo
+
+Controller -> ManufacturerRepo : findAll()
+activate ManufacturerRepo
+ManufacturerRepo --> Controller : manufacturers
+deactivate ManufacturerRepo
+
+Controller --> UI : manufacturers
+deactivate Controller
+
+UI --> Actor : shows manufacturers
+
+Actor -> UI : selects manufacturer, type, motorization\nand provides aircraft model data (weights, aero, capacity, etc.)
+
+UI -> Controller : getEngineModels()
+activate Controller
+
+Controller -> PersistenceContext : engineModels()
+PersistenceContext --> Controller : EngineRepo
+
+Controller -> EngineRepo : findAll()
+activate EngineRepo
+EngineRepo --> Controller : engineModels
+deactivate EngineRepo
+
+Controller --> UI : engineModels
+deactivate Controller
+
+UI --> Actor : shows engine models
+
+Actor -> UI : selects engine model(s)
+
+UI -> Controller : addAircraftModel(data, engines, maximumCapacity)
+activate Controller
+
+Controller -> Service ++ : addAircraftModel(data, engines, maximumCapacity)
+
+Service -> AircraftRepo : containsOfIdentity(modelId)
+activate AircraftRepo
+AircraftRepo --> Service : false
+deactivate AircraftRepo
+
+loop for each engine in engines
+    Service -> EngineRepo : ofIdentity(engineId)
+    activate EngineRepo
+    EngineRepo --> Service : realEngine
+    deactivate EngineRepo
+end
+
+Service -> AircraftModel ++ : new(id, type, motorization,\nweight, aerodynamics, performance,\nfuel, wingGeometry, realEngines, maximumCapacity)
+
+loop for each realEngine
+    AircraftModel -> AircraftModel : certifyEngine(realEngine)
+    AircraftModel -> CertifiedEngine ++ : new(realEngine)
+    CertifiedEngine --> AircraftModel : certifiedEngine
+    deactivate CertifiedEngine
+end
+
+AircraftModel --> Service : aircraftModel
+deactivate AircraftModel
+
+Service --> Controller : aircraftModel
+deactivate Service
+
+Controller -> AircraftRepo : save(aircraftModel)
+activate AircraftRepo
+AircraftRepo -> AircraftRepoJpa : save(aircraftModel)
+activate AircraftRepoJpa
+AircraftRepoJpa --> AircraftRepo : savedAircraftModel
+deactivate AircraftRepoJpa
+AircraftRepo --> Controller : savedAircraftModel
+deactivate AircraftRepo
+
+Controller -> Builder ++ : new()
+Builder --> Controller : builder
+deactivate Builder
+
+Controller -> AircraftModel ++ : buildRepresentation(builder)
+AircraftModel -> Builder ++ : build()
+Builder -> DTO ++ : new()
+DTO --> Builder : dto
+deactivate DTO
+Builder --> AircraftModel : dto
+deactivate Builder
+AircraftModel --> Controller : dto
+deactivate AircraftModel
+
+Controller -> DTO ++ : setVersion(savedAircraftModel.version())
+deactivate DTO
+
+Controller --> UI : dto
+deactivate Controller
+
+UI --> Actor : displays success
+
+deactivate UI
+
+@enduml

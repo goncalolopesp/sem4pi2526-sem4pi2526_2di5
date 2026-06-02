@@ -3,11 +3,15 @@ package pt.isep.sem4pi.application.service.aircraft;
 import org.junit.Test;
 import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.aircraft.CabinConfiguration; // <-- Adicionado o Import
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryFlightRepository;
+
+import java.time.LocalDate;
 
 import static org.junit.Assert.assertTrue;
 
@@ -20,7 +24,9 @@ public class AircraftRetirementServiceTest {
         final AircraftRetirementService service = new AircraftRetirementService(aircraftRepository, flightRepository);
 
         final AircraftRegistration registration = new AircraftRegistration("CS-OK");
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId("A320"));
+
+        final CabinConfiguration dummySeats = new CabinConfiguration(150, 20, 0);
+        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(new ManufacturerId("Airbus"),"A320"), dummySeats, "Portugal", LocalDate.of(2020, 1, 1));
         aircraftRepository.save(aircraft);
 
         final Aircraft retired = service.retireAircraft(registration);
@@ -35,7 +41,9 @@ public class AircraftRetirementServiceTest {
         final AircraftRetirementService service = new AircraftRetirementService(aircraftRepository, flightRepository);
 
         final AircraftRegistration registration = new AircraftRegistration("CS-BLOCK");
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId("A320"));
+
+        final CabinConfiguration dummySeats = new CabinConfiguration(150, 20, 0);
+        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(new ManufacturerId("Airbus"),"A320"), dummySeats, "Portugal", LocalDate.of(2020, 1, 1));
         aircraftRepository.save(aircraft);
 
         final Flight flight = new Flight(new FlightId("TP200"), registration);
@@ -44,4 +52,3 @@ public class AircraftRetirementServiceTest {
         service.retireAircraft(registration);
     }
 }
-

@@ -26,7 +26,15 @@ public class ManageBackofficeUserStatusUI extends AbstractUI {
                 System.out.printf("%3d) %-15s  %-30s  %-8s%n", idx++, u.username(), u.email(), u.isActive() ? "ENABLED" : "DISABLED");
             }
 
-            final int choice = Console.readInteger("Select user by number (0 to cancel):");
+            final String choiceRaw = Console.readNonEmptyLine("Select user by number (0 to cancel):", "A selection is required");
+            final int choice;
+            try {
+                choice = Integer.parseInt(choiceRaw.trim());
+            } catch (final NumberFormatException e) {
+                System.out.println("Operation cancelled.");
+                return true;
+            }
+
             if (choice <= 0 || choice > users.size()) {
                 System.out.println("Operation cancelled.");
                 return true;
@@ -34,7 +42,7 @@ public class ManageBackofficeUserStatusUI extends AbstractUI {
 
             final UserStatusService.BackofficeUserStatus selected = users.get(choice - 1);
             System.out.println("Selected: " + selected.username() + " (" + (selected.isActive() ? "ENABLED" : "DISABLED") + ")");
-            final String action = Console.readLine("Type 'enable' to enable, 'disable' to disable, or enter to cancel:");
+            final String action = Console.readNonEmptyLine("Type 'enable' to enable, 'disable' to disable, or enter to cancel:", "Action is required");
             if (action == null || action.trim().isEmpty()) {
                 System.out.println("Operation cancelled.");
                 return true;

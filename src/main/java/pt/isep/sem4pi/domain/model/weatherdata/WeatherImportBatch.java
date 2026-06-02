@@ -43,6 +43,27 @@ public class WeatherImportBatch {
         this.importedRecords = 1;
     }
 
+    public WeatherImportBatch(String airControlAreaId, List<WeatherData> records, ImportBatchStatus status) {
+        if (airControlAreaId == null || airControlAreaId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Area ID is required.");
+        }
+        if (records == null || records.isEmpty()) {
+            throw new IllegalArgumentException("At least one weather record is required.");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("Import status is required.");
+        }
+        this.airControlAreaId = airControlAreaId;
+        this.importedAt = LocalDateTime.now();
+        this.status = status;
+        this.records.addAll(records);
+        this.importedRecords = records.size();
+    }
+
+    public static WeatherImportBatch forBulkImport(String airControlAreaId, List<WeatherData> records) {
+        return new WeatherImportBatch(airControlAreaId, records, ImportBatchStatus.COMPLETED);
+    }
+
     public String getAirControlAreaId() { return airControlAreaId; }
     public int getImportedRecords() { return importedRecords; }
     public ImportBatchStatus getStatus() { return status; }

@@ -15,16 +15,16 @@ import eapli.framework.presentation.console.menu.VerticalMenuRenderer;
 import pt.isep.sem4pi.presentation.AddAirport.AddAirportUI;
 import pt.isep.sem4pi.presentation.aircraft.AddAircraftUI;
 import pt.isep.sem4pi.presentation.aircraft.RetireAircraftAction;
+import pt.isep.sem4pi.presentation.aircraftModel.AddAircraftModelAction;
 import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
-import pt.isep.sem4pi.presentation.airtransportcompany.ListCompanyCollaboratorsAction;
-import pt.isep.sem4pi.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
-import pt.isep.sem4pi.presentation.airtransportcompany.RegisterCompanyCollaboratorAction;
+import pt.isep.sem4pi.presentation.airtransportcompany.*;
 import pt.isep.sem4pi.presentation.authz.ListUsersAction;
-import pt.isep.sem4pi.presentation.usermanagement.ListBackofficeUsersUI;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
+import pt.isep.sem4pi.presentation.weatherdata.ImportWeatherDataUI;
+import pt.isep.sem4pi.presentation.weatherdata.ConsultWeatherDataUI;
 
 /**
  * Menu principal da aplicacao SEM4PI.
@@ -44,7 +44,8 @@ public class MainMenu extends AbstractUI {
 
     // BACKOFFICE CONFIGURATION
     private static final int REGISTER_ENGINE_MODEL_OPTION = 1;
-    private static final int CERTIFY_ENGINE_MODEL_OPTION = 2;
+    private static final int REGISTER_AIRCRAFT_MODEL_OPTION = 2;
+    private static final int CERTIFY_ENGINE_MODEL_OPTION = 3;
 
     // AirTransportCompany
     private static final int REGISTER_AIR_TRANSPORT_COMPANY_OPTION = 1;
@@ -52,12 +53,15 @@ public class MainMenu extends AbstractUI {
     private static final int LIST_ATCC_COLABORATORS = 3;
     private static final int RETIRE_AIRCRAFT_OPTION = 4;
     private static final int ADD_AIRCRAFT_OPTION = 5;
+    private static final int LIST_ATCC_FLEET = 6;
 
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
 
     // Weather Data
     private static final int REGISTER_WEATHER_DATA_OPTIONS = 1;
+    private static final int IMPORT_WEATHER_DATA_OPTIONS = 2;
+    private static final int CONSULT_WEATHER_DATA_OPTIONS = 3;
 
     //Air Control Area
     private static final int ADD_AIR_CONTROL_AREA_OPTIONS = 1;
@@ -128,6 +132,18 @@ public class MainMenu extends AbstractUI {
                             SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR,
                             SEM4PIRoles.ADMIN);
 
+            final boolean isWeatherManager =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.ADMIN,
+                            SEM4PIRoles.WEATHER_PERSON);
+
+            final boolean isWeatherConsultant =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.ADMIN,
+                            SEM4PIRoles.WEATHER_PERSON,
+                            SEM4PIRoles.PILOT,
+                            SEM4PIRoles.FLIGHT_CONTROL_OPERATOR);
+
             if (isAdmin) {
                 final var adminMenu = buildAdminMenu();
                 mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
@@ -139,9 +155,12 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
                 mainMenu.addSubMenu(AIRPORT_OPTIONS, buildAirportMenu());
                 mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, buildAirControlAreaMenu());
-                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu());
             } else if (isAtcc) {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
+            }
+
+            if (isWeatherManager || isWeatherConsultant) {
+                mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu(isWeatherManager, isWeatherConsultant));
             }
         }
 
@@ -175,6 +194,7 @@ public class MainMenu extends AbstractUI {
     private Menu buildBackofficeConfigurationMenu() {
         final var menu = new Menu("Backoffice Configuration >");
         menu.addItem(REGISTER_ENGINE_MODEL_OPTION, "Register Engine Model", new RegisterEngineModelAction());
+        menu.addItem(REGISTER_AIRCRAFT_MODEL_OPTION, "Add Aircraft Model", new AddAircraftModelAction());
         menu.addItem(CERTIFY_ENGINE_MODEL_OPTION, "Certify Engine Model", new CertifyEngineModelAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
@@ -189,6 +209,7 @@ public class MainMenu extends AbstractUI {
         menu.addItem(LIST_ATCC_COLABORATORS, "List Company Collaborators", new ListCompanyCollaboratorsAction());
         menu.addItem(RETIRE_AIRCRAFT_OPTION, "Retire Aircraft", new RetireAircraftAction());
         menu.addItem(ADD_AIRCRAFT_OPTION, "Add Aircraft", new AddAircraftUI()::show);
+        menu.addItem(LIST_ATCC_FLEET, "List Company Fleet", new ListCompanyFleetAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;
@@ -213,10 +234,16 @@ public class MainMenu extends AbstractUI {
         return menu;
     }
 
-    private Menu buildWeatherDataMenu() {
+    private Menu buildWeatherDataMenu(boolean canManage, boolean canConsult) {
         final var menu = new Menu("Weather Data >");
 
-        menu.addItem(REGISTER_WEATHER_DATA_OPTIONS, "Register Weather Data", new RegisterWeatherUI()::show);
+        if (canManage) {
+            menu.addItem(REGISTER_WEATHER_DATA_OPTIONS, "Register Weather Data", new RegisterWeatherUI()::show);
+            menu.addItem(IMPORT_WEATHER_DATA_OPTIONS, "Import Weather Data", new ImportWeatherDataUI()::show);
+        }
+        if (canConsult) {
+            menu.addItem(CONSULT_WEATHER_DATA_OPTIONS, "Consult Weather Data", new ConsultWeatherDataUI()::show);
+        }
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;

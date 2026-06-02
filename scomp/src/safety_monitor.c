@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include "simulation.h"
 #include <math.h>
 #include <signal.h>

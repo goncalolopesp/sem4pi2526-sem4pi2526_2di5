@@ -1,5 +1,6 @@
 package pt.isep.sem4pi.application.service.usermanagment;
 
+import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
 import eapli.framework.infrastructure.authz.domain.model.Username;
@@ -11,6 +12,7 @@ import pt.isep.sem4pi.domain.usermanagement.Email;
 import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
+import pt.isep.sem4pi.infrastructure.persistence.RepositoryFactory;
 
 import java.time.LocalDate;
 
@@ -22,15 +24,11 @@ import java.time.LocalDate;
  */
 public class RegisterBackofficeUserService {
 
-    private final UserRepository usersRepo;
-    private final BackofficeUserRepository backofficeRepo;
+    private final RepositoryFactory repositoryFactory;
 
-    public RegisterBackofficeUserService(final UserRepository usersRepo,
-                                        final BackofficeUserRepository backofficeRepo) {
-        Preconditions.nonNull(usersRepo, "User repository is required");
-        Preconditions.nonNull(backofficeRepo, "BackofficeUser repository is required");
-        this.usersRepo = usersRepo;
-        this.backofficeRepo = backofficeRepo;
+    public RegisterBackofficeUserService(final RepositoryFactory repositoryFactory) {
+        Preconditions.nonNull(repositoryFactory, "RepositoryFactory is required");
+        this.repositoryFactory = repositoryFactory;
     }
 
     /**
@@ -56,41 +54,80 @@ public class RegisterBackofficeUserService {
         final Email emailVo = Email.valueOf(emailNorm);
         final PhoneNumber phoneVo = PhoneNumber.valueOf(phoneNumber);
 
-        // Unicidade: perfil
-        if (backofficeRepo.existsByUsername(uname)) {
-            throw new IllegalArgumentException("username already exists");
+        final TransactionalContext tx = repositoryFactory.newTransactionalContext();
+        tx.beginTransaction();
+        SystemUser createdSysUser = null;
+        UserRepository usersRepo = null;
+        try {
+            usersRepo = repositoryFactory.users(tx);
+            final BackofficeUserRepository backofficeRepo = repositoryFactory.backofficeUsers(tx);
+
+            // Unicidade: perfil
+            if (backofficeRepo.existsByUsername(uname)) {
+                throw new IllegalArgumentException("username already exists");
+            }
+            if (backofficeRepo.existsByEmail(emailVo)) {
+                throw new IllegalArgumentException("email already exists");
+            }
+
+            // Unicidade: SystemUser (framework)
+            if (usersRepo.ofIdentity(Username.valueOf(uname)).isPresent()) {
+                throw new IllegalArgumentException("username already exists");
+            }
+
+            // Criação do SystemUser valida automaticamente password policy via builder helper
+            final SystemUserBuilder userBuilder = UserBuilderHelper.builder();
+            userBuilder.withUsername(uname)
+                    .withPassword(password)
+                    .withName(firstName, lastName)
+                    .withEmail(emailNorm)
+                    .withRoles(SEM4PIRoles.BACKOFFICE_OPERATOR);
+
+            final SystemUser sysUser = userBuilder.build();
+            usersRepo.save(sysUser);
+            createdSysUser = sysUser;
+
+            final String fullName = ((firstName == null ? "" : firstName) + " " + (lastName == null ? "" : lastName)).trim();
+            final BackofficeUser profile = new BackofficeUser(
+                    uname,
+                    fullName,
+                    emailVo,
+                    phoneVo,
+                    securityClearanceExpirationDate,
+                    skillsAssessmentDate
+            );
+            backofficeRepo.save(profile);
+
+            tx.commit();
+            return profile;
+        } catch (final RuntimeException | Error e) {
+            try {
+                tx.rollback();
+            } catch (final Exception ex) {
+                // swallow rollback exceptions but log if required
+            }
+
+            if (createdSysUser != null) {
+                try {
+                    // attempt compensating delete using same repo instance used in the transaction
+                    if (usersRepo != null) {
+                        usersRepo.delete(createdSysUser);
+                    } else {
+                        // fallback: use repository factory
+                        repositoryFactory.users().delete(createdSysUser);
+                    }
+                } catch (final Exception ex) {
+                    // swallow - best-effort compensating action
+                }
+            }
+
+            throw e;
+        } finally {
+            try {
+                tx.close();
+            } catch (final Exception ex) {
+                // swallow close exceptions
+            }
         }
-        if (backofficeRepo.existsByEmail(emailVo)) {
-            throw new IllegalArgumentException("email already exists");
-        }
-
-        // Unicidade: SystemUser (framework)
-        if (usersRepo.ofIdentity(Username.valueOf(uname)).isPresent()) {
-            throw new IllegalArgumentException("username already exists");
-        }
-
-        // Criação do SystemUser valida automaticamente password policy via builder helper
-        final SystemUserBuilder userBuilder = UserBuilderHelper.builder();
-        userBuilder.withUsername(uname)
-                .withPassword(password)
-                .withName(firstName, lastName)
-                .withEmail(emailNorm)
-                .withRoles(SEM4PIRoles.BACKOFFICE_OPERATOR);
-
-        final SystemUser sysUser = userBuilder.build();
-        usersRepo.save(sysUser);
-
-        final String fullName = ((firstName == null ? "" : firstName) + " " + (lastName == null ? "" : lastName)).trim();
-        final BackofficeUser profile = new BackofficeUser(
-                uname,
-                fullName,
-                emailVo,
-                phoneVo,
-                securityClearanceExpirationDate,
-                skillsAssessmentDate
-        );
-        backofficeRepo.save(profile);
-
-        return profile;
     }
 }

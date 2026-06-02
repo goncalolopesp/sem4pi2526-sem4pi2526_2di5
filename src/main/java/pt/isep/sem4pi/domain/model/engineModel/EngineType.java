@@ -4,6 +4,8 @@ public enum EngineType {
     TURBOFAN,
     TURBOPROP,
     TURBOJET,
+    RAM_JET,
+    ELECTRIC_PROPELLER,
     PISTON
 }
 
