@@ -3,7 +3,6 @@ package pt.isep.sem4pi.application.controller.aircontrolarea;
 import eapli.framework.application.UseCaseController;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
-import pt.isep.sem4pi.domain.model.aircontrolarea.*;
 import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
 import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaBoundary;
 import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
