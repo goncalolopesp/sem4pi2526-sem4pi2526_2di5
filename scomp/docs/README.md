@@ -8,12 +8,13 @@
 4. US100 - Simulate flights in a given area
 5. US102 - Detect safety violations
 6. US103 - Synchronize simulation steps
-7. US109 - Generate simulation report
-8. Estruturas Principais
-9. Decisões Técnicas
-10. Testes
-11. Build e Execução
-12. Diagrama de Componentes
+7. US105 - Shared memory coordination
+8. US109 - Generate simulation report
+9. Estruturas Principais
+10. Decisões Técnicas
+11. Testes
+12. Build e Execução
+13. Diagrama de Componentes
 
 ---
 
@@ -37,23 +38,27 @@ A arquitetura foi evoluindo incrementalmente ao longo dos sprints, mantendo sepa
 
 A solução encontra-se dividida nos seguintes componentes principais:
 
-| Componente | Responsabilidade |
-|---|---|
-| `main.c` | Coordenação global da simulação |
-| `flight_process.c` | Execução individual de cada voo |
-| `flight_plan_parser.c` | Carregamento e parsing de planos de voo |
-| `position_tracker.c` | Histórico temporal das posições |
-| `safety_monitor.c` | Validação de segurança |
-| `simulation.h` | Estruturas e contratos partilhados |
-| `tests/` | Testes unitários e testes de integração |
-| `data/` | Ficheiros de planos de voo usados na simulação e nos testes |
+| Componente             | Responsabilidade                                            |
+| ---------------------- | ----------------------------------------------------------- |
+| `main.c`               | Coordenação global da simulação                             |
+| `flight_process.c`     | Execução individual de cada voo                             |
+| `flight_plan_parser.c` | Carregamento e parsing de planos de voo                     |
+| `position_tracker.c`   | Histórico temporal das posições                             |
+| `safety_monitor.c`     | Validação de segurança                                      |
+| `simulation.h`         | Estruturas e contratos partilhados                          |
+| `tests/`               | Testes unitários e testes de integração                     |
+| `data/`                | Ficheiros de planos de voo usados na simulação e nos testes |
 
 Cada voo executa num processo independente criado através de `fork()`.
 
-A comunicação entre processos é realizada utilizando:
+A comunicação e sincronização utiliza:
 
 - pipes POSIX;
 - sinais POSIX;
+- shared memory POSIX;
+- semáforos;
+- pthread mutexes;
+- pthread condition variables;
 - sincronização passo-a-passo.
 
 ---
@@ -194,11 +199,11 @@ Garantir sincronização temporal entre todos os voos da simulação.
 
 A implementação utiliza um modelo híbrido:
 
-| Mecanismo | Responsabilidade |
-|---|---|
-| sinais POSIX | controlo do ciclo de vida |
-| pipes | sincronização passo-a-passo e envio de updates |
-| `poll()` | multiplexagem eficiente |
+| Mecanismo    | Responsabilidade                               |
+| ------------ | ---------------------------------------------- |
+| sinais POSIX | controlo do ciclo de vida                      |
+| pipes        | sincronização passo-a-passo e envio de updates |
+| `poll()`     | multiplexagem eficiente                        |
 
 ## Funcionamento
 
@@ -245,7 +250,35 @@ Esta separação melhora clareza e robustez.
 
 ---
 
-# 7. US109 - Generate simulation report
+# 7. US105 - Shared Memory Coordination
+
+## Objetivo
+
+Adicionar coordenação concorrente baseada em memória partilhada.
+
+## Componentes introduzidos
+
+- shared_simulation.c
+- SharedSimulationState
+- thread de monitorização
+- pthread mutexes
+- condition variables
+
+## Fluxo
+
+Filhos -> Shared Memory -> Thread do Parent
+
+Os filhos atualizam a memória partilhada.
+
+A thread do parent recebe notificações e monitoriza o estado global.
+
+## Resultado
+
+Permite múltiplos voos concorrentes mantendo compatibilidade com US anteriores.
+
+---
+
+# 8. US109 - Generate simulation report
 
 ## Objetivo
 
@@ -262,7 +295,7 @@ Gerar um relatório simples da execução da simulação.
 
 ---
 
-# 8. Estruturas Principais
+# 9. Estruturas Principais
 
 ## `SimulationConfig`
 
@@ -318,7 +351,7 @@ Estrutura de registo das violações de segurança.
 
 ---
 
-# 9. Decisões Técnicas
+# 10. Decisões Técnicas
 
 ## Um processo por voo
 
@@ -363,7 +396,7 @@ para garantir compatibilidade com APIs POSIX.
 
 ---
 
-# 10. Testes
+# 11. Testes
 
 A pasta `tests/` contém testes unitários e testes de integração.
 
@@ -375,7 +408,7 @@ tests/
 └── run_integration_tests.sh
 ```
 
-## 10.1 Testes unitários
+## 11.1 Testes unitários
 
 ### `test_position_tracker.c`
 
@@ -412,7 +445,7 @@ test_safety_monitor OK
 All tests passed
 ```
 
-## 10.2 Testes de integração
+## 11.2 Testes de integração
 
 O script `run_integration_tests.sh` valida o executável completo.
 
@@ -439,7 +472,7 @@ Running integration tests...
 All integration tests passed
 ```
 
-## 10.3 Verificações finais realizadas
+## 11.3 Verificações finais realizadas
 
 ### Processos pendurados
 
@@ -501,7 +534,7 @@ Resultado validado:
 
 ---
 
-# 11. Build e Execução
+# 12. Build e Execução
 
 ## Compilação
 
@@ -548,9 +581,67 @@ Incorreto:
 --flight data/Flight_Plan_v0a.json data/Flight_Plan_v0c.json
 ```
 
+## Execução em AntiX
+
+A execução do projeto foi validada numa máquina AntiX.
+
+### 1. Instalar dependências necessárias
+
+```bash
+sudo apt update
+sudo apt install default-jdk maven
+````
+
+Confirmar instalação:
+
+```bash
+java --version
+javac --version
+mvn -version
+```
+
+### 2. Corrigir terminações de linha do script (caso necessário)
+
+Como o `run.sh` foi desenvolvido em ambientes diferentes, pode ser necessário remover terminações Windows:
+
+```bash
+sed -i 's/\r$//' run.sh
+```
+
+### 3. Compilar o simulador SCOMP
+
+Entrar na pasta do simulador e gerar o executável:
+
+```bash
+cd scomp
+make
+cd ..
+```
+
+### 4. Dar permissões de execução
+
+```bash
+chmod +x run.sh
+chmod +x scomp/flight_simulator
+```
+
+### 5. Executar o projeto
+
+A partir da pasta raiz do projeto:
+
+```bash
+./run.sh
+```
+
+### Notas
+
+* O executável `scomp/flight_simulator` deve existir antes da execução do `run.sh`.
+* O simulador SCOMP é implementado em C, mas o projeto completo depende também de Java e Maven devido à componente EAPLI e à execução integrada.
+* Todos os testes e validações apresentados na documentação foram executados em ambiente AntiX.
+
 ---
 
-# 12. Diagrama de Componentes
+# 13. Diagrama de Componentes
 
 O diagrama foi atualizado apenas para incluir o bloco de testes e os ficheiros de dados usados na validação.
 
@@ -569,6 +660,8 @@ package "Flight Simulation System" {
     [Position Tracker\nposition_tracker.c] as Tracker
     [Safety Monitor\nsafety_monitor.c] as Safety
     [Report Generator] as Report
+    [Shared Memory Layer\nshared_simulation.c] as Shared
+    [Monitor Thread] as Thread
 
     database "Flight Plan Files\nJSON" as Json
     file "simulation_report.txt" as ReportFile
@@ -587,6 +680,10 @@ Main --> Safety : checks violations
 Safety --> FlightProcess : SIGUSR1
 Main --> Report : creates summary
 Report --> ReportFile : writes
+
+FlightProcess --> Shared : updates
+Thread --> Shared : monitors
+Main --> Thread : creates
 
 @enduml
 ```

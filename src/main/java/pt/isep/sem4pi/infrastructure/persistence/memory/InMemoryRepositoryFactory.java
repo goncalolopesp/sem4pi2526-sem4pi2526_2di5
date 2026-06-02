@@ -17,7 +17,7 @@ import java.time.LocalDate;
 
 /**
  * Fábrica de repositórios em memória.
- *
+ * <p>
  * Usada como implementação padrão para persistência nas user stories US30-32.
  * Cria repositórios e semeia alguns utilizadores por omissão.
  */
@@ -34,6 +34,8 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private static WeatherBatchRepository weatherBatchRepository;
     private static FlightRouteRepository flightRouteRepository;
     private static AirportRepository airportRepository;
+    private static SimulationRepository simulationRepository;
+    private static SimulationReportRepository simulationReportRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -120,14 +122,14 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
 
     @Override
     public AirControlAreaRepository airControlAreas() {
-        if (airControlAreaRepository == null){
+        if (airControlAreaRepository == null) {
             return new InMemoryAirControlAreaRepository();
         }
         return airControlAreaRepository;
     }
 
     @Override
-    public AirControlAreaRepository airControlAreas(TransactionalContext tx){
+    public AirControlAreaRepository airControlAreas(TransactionalContext tx) {
         return airControlAreas();
     }
 
@@ -181,6 +183,20 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
         return airportRepository;
     }
 
+    @Override
+    public SimulationRepository simulations() {
+        if (simulationRepository == null) {
+            simulationRepository = new InMemorySimulationRepository();
+        }
+
+        return simulationRepository;
+    }
+
+    @Override
+    public SimulationRepository simulations(TransactionalContext tx) {
+        return simulations();
+    }
+
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {
         // ADMIN
         final SystemUserBuilder adminBuilder = UserBuilderHelper.builder();
@@ -227,5 +243,19 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
             );
             repo.save(bo);
         }
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports() {
+        if (simulationReportRepository == null) {
+            simulationReportRepository = new InMemorySimulationReportRepository();
+        }
+
+        return simulationReportRepository;
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports(TransactionalContext tx) {
+        return simulationReports();
     }
 }

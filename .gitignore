@@ -23,5 +23,8 @@ buildNumber.properties
 
 #c
 *.o
+cp.txt
+scomp/flight_simulator
 
 db/*
+database/*

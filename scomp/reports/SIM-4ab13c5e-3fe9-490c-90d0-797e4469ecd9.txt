@@ -1,0 +1,51 @@
+US100/US101/US102 Simulation Report
+Area: lat [39.000000, 43.000000], lon [-9.000000, -3.000000]
+Time range: 0 to 1200, step: 1 seconds
+Safety thresholds: min separation = 3.00 NM, min altitude = 300.0 m
+Total flights: 2
+
+Flight 654321-26873, PID 26873, updates 5
+  t=0 lat=38.774200 lon=-9.134200 alt=114.00 status=1
+  t=1 lat=38.776520 lon=-9.131107 alt=136.27 status=1
+  t=2 lat=38.778841 lon=-9.128014 alt=158.54 status=1
+  t=3 lat=38.781161 lon=-9.124920 alt=180.81 status=1
+  t=4 lat=38.783481 lon=-9.121827 alt=203.08 status=1
+
+Flight 123456-26874, PID 26874, updates 5
+  t=0 lat=41.262891 lon=-8.685220 alt=69.00 status=1
+  t=1 lat=41.264738 lon=-8.683528 alt=92.01 status=1
+  t=2 lat=41.266586 lon=-8.681835 alt=115.02 status=1
+  t=3 lat=41.268433 lon=-8.680143 alt=138.02 status=1
+  t=4 lat=41.270281 lon=-8.678451 alt=161.03 status=1
+
+=== US101 Position Tracker (2 entries) ===
+  [123456-26874] pid=26874 final_pos=(41.270281, -8.678451, 161.0m) status=RUNNING history=5 pts
+    t=0 lat=41.262891 lon=-8.685220 alt=69.00 status=1
+    t=1 lat=41.264738 lon=-8.683528 alt=92.01 status=1
+    t=2 lat=41.266586 lon=-8.681835 alt=115.02 status=1
+    t=3 lat=41.268433 lon=-8.680143 alt=138.02 status=1
+    t=4 lat=41.270281 lon=-8.678451 alt=161.03 status=1
+  [654321-26873] pid=26873 final_pos=(38.783481, -9.121827, 203.1m) status=RUNNING history=5 pts
+    t=0 lat=38.774200 lon=-9.134200 alt=114.00 status=1
+    t=1 lat=38.776520 lon=-9.131107 alt=136.27 status=1
+    t=2 lat=38.778841 lon=-9.128014 alt=158.54 status=1
+    t=3 lat=38.781161 lon=-9.124920 alt=180.81 status=1
+    t=4 lat=38.783481 lon=-9.121827 alt=203.08 status=1
+==========================================
+
+=== US102 Safety Violations (10 shown / 10 total) ===
+  t=0 ALTITUDE  flight=123456-26874 pid=26874 alt=69.0m (min=300.0m)
+  t=0 ALTITUDE  flight=654321-26873 pid=26873 alt=114.0m (min=300.0m)
+  t=1 ALTITUDE  flight=123456-26874 pid=26874 alt=92.0m (min=300.0m)
+  t=1 ALTITUDE  flight=654321-26873 pid=26873 alt=136.3m (min=300.0m)
+  t=2 ALTITUDE  flight=123456-26874 pid=26874 alt=115.0m (min=300.0m)
+  t=2 ALTITUDE  flight=654321-26873 pid=26873 alt=158.5m (min=300.0m)
+  t=3 ALTITUDE  flight=123456-26874 pid=26874 alt=138.0m (min=300.0m)
+  t=3 ALTITUDE  flight=654321-26873 pid=26873 alt=180.8m (min=300.0m)
+  t=4 ALTITUDE  flight=123456-26874 pid=26874 alt=161.0m (min=300.0m)
+  t=4 ALTITUDE  flight=654321-26873 pid=26873 alt=203.1m (min=300.0m)
+==========================================
+
+=== FINAL VALIDATION RESULT ===
+Simulation result: PASS
+================================

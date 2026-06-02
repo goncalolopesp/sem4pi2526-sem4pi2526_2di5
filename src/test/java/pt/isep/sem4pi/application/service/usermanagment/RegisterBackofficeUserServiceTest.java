@@ -19,8 +19,6 @@ import pt.isep.sem4pi.infrastructure.persistence.RepositoryFactory;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryBackofficeUserRepository;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -76,6 +74,10 @@ public class RegisterBackofficeUserServiceTest {
         @Override public pt.isep.sem4pi.domain.repositories.WeatherBatchRepository weatherBatches() { return null; }
         @Override public pt.isep.sem4pi.domain.repositories.AirportRepository airports() { return null; }
         @Override public pt.isep.sem4pi.domain.repositories.FlightRouteRepository flightRoutes() { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.SimulationRepository simulations() { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.SimulationRepository simulations(TransactionalContext tx) { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.SimulationReportRepository simulationReports() { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.SimulationReportRepository simulationReports(TransactionalContext tx) { return null; }
     }
 
     private TestRepositoryFactory factory;
@@ -295,6 +297,10 @@ public class RegisterBackofficeUserServiceTest {
             @Override public pt.isep.sem4pi.domain.repositories.WeatherBatchRepository weatherBatches() { return null; }
             @Override public pt.isep.sem4pi.domain.repositories.AirportRepository airports() { return null; }
             @Override public pt.isep.sem4pi.domain.repositories.FlightRouteRepository flightRoutes() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.SimulationRepository simulations() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.SimulationRepository simulations(TransactionalContext tx) { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.SimulationReportRepository simulationReports() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.SimulationReportRepository simulationReports(TransactionalContext tx) { return null; }
         };
 
         final RegisterBackofficeUserService svc = new RegisterBackofficeUserService(customFactory);
