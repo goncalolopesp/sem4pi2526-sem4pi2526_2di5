@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.domain.route;
+package pt.isep.sem4pi.domain.model.route;
 
 import org.junit.Test;
 import pt.isep.sem4pi.domain.model.route.Wind;
