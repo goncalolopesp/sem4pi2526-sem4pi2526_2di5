@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.model.weatherdata;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class WindTest {

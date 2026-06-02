@@ -1,31 +1,32 @@
 package pt.isep.sem4pi.domain.model.airport;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
-public class IataCodeTest {
+public class IataCodeCompanyAirportTest {
 
     @Test
     public void ensureValidThreeLetterIataCodeIsCreated() {
-        IataCode iata = new IataCode("OPO");
+        IataCodeAirport iata = new IataCodeAirport("OPO");
         assertEquals("OPO", iata.code());
     }
 
     @Test
     public void ensureIataCodeConvertsToLowercaseToUppercase() {
-        IataCode iata = new IataCode("opo");
+        IataCodeAirport iata = new IataCodeAirport("opo");
         assertEquals("OPO", iata.code());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureIataCodeFailsIfNull() {
-        new IataCode(null);
+        new IataCodeAirport(null);
     }
 
     @Test
     public void ensureIataCodeFailsIfTwoLetters() {
         try {
-            new IataCode("TP");
+            new IataCodeAirport("TP");
             fail("Expected an IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("IATA code must be exactly 3 letters.", e.getMessage());
@@ -35,7 +36,7 @@ public class IataCodeTest {
     @Test
     public void ensureIataCodeFailsIfFourLetters() {
         try {
-            new IataCode("OPOX");
+            new IataCodeAirport("OPOX");
             fail("Expected an IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("IATA code must be exactly 3 letters.", e.getMessage());
@@ -44,6 +45,6 @@ public class IataCodeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureIataCodeFailsIfContainsNumbers() {
-        new IataCode("OP1");
+        new IataCodeAirport("OP1");
     }
 }

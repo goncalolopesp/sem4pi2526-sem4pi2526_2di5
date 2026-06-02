@@ -1,17 +1,17 @@
-package pt.isep.sem4pi.domain.model.airtransportcompany;
+package pt.isep.sem4pi.domain.model.airport;
 
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public class IcaoCode {
+public class IcaoCodeAirport {
     private String icaoCode;
 
-    protected IcaoCode() {
+    protected IcaoCodeAirport() {
     }
 
-    public IcaoCode(String icaoCode) {
-        if (icaoCode == null || !icaoCode.matches("^[A-Za-z]{2,3}$")) {
-            throw new IllegalArgumentException("ICAO code must be 2 or 3 letters.");
+    public IcaoCodeAirport(String icaoCode) {
+        if (icaoCode == null || !icaoCode.matches("^[A-Za-z]{4}$")) {
+            throw new IllegalArgumentException("ICAO code must be 4 letters.");
         }
         this.icaoCode = icaoCode.toUpperCase();
     }
@@ -23,7 +23,7 @@ public class IcaoCode {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof IcaoCode that)) return false;
+        if (!(o instanceof IcaoCodeAirport that)) return false;
         return icaoCode.equals(that.icaoCode);
     }
 

@@ -6,18 +6,22 @@ skinparam packageStyle rectangle
 package "Air Transport Operations" {
 
   class AirTransportCompany <<AggregateRoot>> {
-    +companyId: CompanyId
     +name: String
-    +iataCode: String
-    +icaoCode: String
+  }
+
+  class IataCodeCompany <<ValueObject>> {
+    +code: String
+  }
+
+  class IcaoCodeCompany <<ValueObject>> {
+    +code: String
   }
 
   class Aircraft <<AggregateRoot>> {
-    +aircraftId: AircraftId
-    +companyId: CompanyId
+    +registration: AircraftRegistration <<ID>>
+    +companyIataCode: IataCodeCompany
     +aircraftModelId: AircraftModelId
     +engineModelId: EngineModelId
-    +registration: String
     +countryOfRegistration: String
     +operationalStatus: AircraftOperationalStatus
     +crewSize: Integer
@@ -31,12 +35,21 @@ package "Air Transport Operations" {
 
   class FlightRoute <<AggregateRoot>> {
     +flightRouteId: FlightRouteId
-    +companyId: CompanyId
-    +code: String
+    +company: IataCodeCompany
     +originAirportId: AirportId
     +destinationAirportId: AirportId
-    +activeFrom: Date
-    +deactivatedFrom: Date
+  }
+
+  class RouteSegment <<Entity>> {
+    +segmentId: Long <<ID>>
+    +startNodeCoords: Coordinates
+    +endNodeCoords: Coordinates
+    +maxSpeed: Integer
+  }
+
+  class Wind <<ValueObject>> {
+    +directionAngle: Integer
+    +speed: Decimal
   }
 
   class Flight <<AggregateRoot>> {
@@ -44,6 +57,12 @@ package "Air Transport Operations" {
     +flightRouteId: FlightRouteId
     +type: FlightType
     +status: FlightStatus
+  }
+
+  class AltitudeRange <<ValueObject>> {
+    +minAltitude: Decimal
+    +maxAltitude: Decimal
+    +width: Decimal
   }
 
   class FlightScheduleEntry <<Entity>> {
@@ -74,10 +93,18 @@ package "Flight Planning" {
   class FlightPlan <<AggregateRoot>> {
     +flightPlanId: FlightPlanId
     +flightId: FlightId
-    +aircraftId: AircraftId
+    +aircraftRegistration: AircraftRegistration
     +pilotId: PilotId
     +status: FlightPlanStatus
     +createdAt: DateTime
+  }
+
+  class FlightLegPlan <<Entity>> {
+    +legId: LegId
+    +departureAirport: AirportId
+    +arrivalAirport: AirportId
+    +departureDateTime: DateTime
+    +arrivalDateTime: DateTime
   }
 
   class FuelInfo <<ValueObject>> {
@@ -97,22 +124,27 @@ package "Flight Planning" {
   }
 }
 
+AirTransportCompany "1" *-- "1" IataCodeCompany : +iataCode <<ID>>
+AirTransportCompany "1" *-- "1" IcaoCodeCompany : +icaoCode
+
 Aircraft "1" *-- "1" CabinConfiguration
 
-Flight --> FlightRoute : instance of >
+FlightRoute "1" *-- "1..*" RouteSegment
+
 Flight "1" *-- "0..*" FlightScheduleEntry
-FlightPlan "1" *-- "1" FuelInfo
+Flight --> FlightRoute : follows >
+
+FlightPlan "1" *-- "1..*" FlightLegPlan
+FlightLegPlan "1" *-- "1" FuelInfo
+
 FlightPlan "1" *-- "0..1" FlightPlanFile
 
-FlightPlan --> Flight : for >
-FlightPlan --> Aircraft : assigned aircraft >
-FlightPlan --> Pilot : assigned pilot >
+RouteSegment "1" *-- "1..*" AltitudeRange
+RouteSegment "1" *-- "1" Wind
 
-Aircraft --> AircraftModel : model >
-Aircraft --> EngineModel : selected engine >
+FlightPlan --> Flight : plans instance of >
+FlightPlan --> Aircraft : assigned aircraft >
+
 Aircraft --> AirTransportCompany : belongs to >
 FlightRoute --> AirTransportCompany : owned by >
-FlightRoute --> Airport : origin >
-FlightRoute --> Airport : destination >
-
 @enduml

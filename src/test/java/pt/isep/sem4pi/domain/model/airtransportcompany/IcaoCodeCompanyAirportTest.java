@@ -4,32 +4,32 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class IcaoCodeTest {
+public class IcaoCodeCompanyAirportTest {
 
     @Test
     public void ensureValidTwoLetterIcaoCodeIsCreated() {
-        IcaoCode code = new IcaoCode("TP");
+        IcaoCodeCompany code = new IcaoCodeCompany("TP");
         assertEquals("TP", code.code());
     }
 
     @Test
     public void ensureValidThreeLetterIcaoCodeIsCreated() {
-        IcaoCode code = new IcaoCode("TAP");
+        IcaoCodeCompany code = new IcaoCodeCompany("TAP");
         assertEquals("TAP", code.code());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureIcaoCodeFailsIfNull() {
-        new IcaoCode(null);
+        new IcaoCodeCompany(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureIcaoCodeFailsIfFourLetters() {
-        new IcaoCode("TAPA");
+        new IcaoCodeCompany("TAPA");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void ensureIcaoCodeFailsIfContainsNumbers() {
-        new IcaoCode("TA1");
+        new IcaoCodeCompany("TA1");
     }
 }

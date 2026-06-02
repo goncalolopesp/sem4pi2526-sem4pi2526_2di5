@@ -11,7 +11,7 @@ import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftRepository;
@@ -30,7 +30,7 @@ public class CompanyFleetBootstrapper implements Action {
         AirTransportCompanyCollaboratorRepository collabRepo = PersistenceContext.repositories().airTransportCompanyCollaborators();
 
         try {
-            Optional<AirTransportCompany> tapOpt = companyRepo.findByIataCode(new IataCode("TP"));
+            Optional<AirTransportCompany> tapOpt = companyRepo.findByIataCode(new IataCodeCompany("TP"));
 
             if (tapOpt.isPresent()) {
                 AirTransportCompany tap = tapOpt.get();

@@ -2,8 +2,8 @@ package pt.isep.sem4pi.application.service.airtransportcompany;
 
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 
 public class RegisterAirTransportCompanyService {
@@ -16,8 +16,8 @@ public class RegisterAirTransportCompanyService {
 
     public AirTransportCompany registerCompany(String rawName, String rawIata, String rawIcao) {
         CompanyName name = new CompanyName(rawName);
-        IataCode iataCode = new IataCode(rawIata);
-        IcaoCode icaoCode = new IcaoCode(rawIcao);
+        IataCodeCompany iataCode = new IataCodeCompany(rawIata);
+        IcaoCodeCompany icaoCode = new IcaoCodeCompany(rawIcao);
 
         if (repository.findByIataCode(iataCode).isPresent()) {
             throw new IllegalStateException("A company with this IATA code already exists.");

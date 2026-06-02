@@ -2,9 +2,9 @@ package pt.isep.sem4pi.infrastructure.persistence;
 
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlArea;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaBoundary;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirControlAreaRepository;
 
 import java.util.ArrayList;
