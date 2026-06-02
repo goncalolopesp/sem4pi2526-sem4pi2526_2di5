@@ -1,34 +1,19 @@
 package pt.isep.sem4pi.infrastructure.persistence.memory;
 
+import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainRepository;
 import pt.isep.sem4pi.domain.model.airport.Airport;
-import pt.isep.sem4pi.domain.model.airport.IataCode;
-import pt.isep.sem4pi.domain.model.airport.IcaoCode;
+import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
+import pt.isep.sem4pi.domain.model.airport.IcaoCodeAirport;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
-public class InMemoryAirportRepository implements AirportRepository {
-
-    private final List<Airport> database = new ArrayList<>();
-
-    @Override
-    public Airport save(Airport airport) {
-        database.add(airport);
-        return airport;
-    }
+public class InMemoryAirportRepository extends InMemoryDomainRepository<Airport, IataCodeAirport> implements AirportRepository {
 
     @Override
-    public Optional<Airport> findByIataCode(IataCode iataCode) {
-        return database.stream()
-                .filter(a -> a.identityIata().equals(iataCode))
-                .findFirst();
-    }
-
-    @Override
-    public Optional<Airport> findByIcaoCode(IcaoCode icaoCode) {
-        return database.stream()
+    public Optional<Airport> findByIcaoCode(IcaoCodeAirport icaoCode) {
+        return StreamSupport.stream(findAll().spliterator(), false)
                 .filter(a -> a.identityIcao().equals(icaoCode))
                 .findFirst();
     }

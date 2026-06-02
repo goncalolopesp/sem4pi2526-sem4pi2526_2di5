@@ -18,8 +18,8 @@ public class ChangePasswordUI extends AbstractUI {
 
     @Override
     protected boolean doShow() {
-        final String oldPassword = Console.readLine("Old Password:");
-        final String newPassword = Console.readLine("New Password:");
+        final String oldPassword = Console.readNonEmptyLine("Old Password:", "Old password is required");
+        final String newPassword = Console.readNonEmptyLine("New Password:", "New password is required");
 
         try {
             final AuthenticationController.ChangePasswordResult result =

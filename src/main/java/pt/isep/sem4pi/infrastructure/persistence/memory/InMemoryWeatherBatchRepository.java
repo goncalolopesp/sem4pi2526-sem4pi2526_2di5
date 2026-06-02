@@ -23,4 +23,11 @@ public class InMemoryWeatherBatchRepository implements WeatherBatchRepository {
                 .filter(b -> b.getAirControlAreaId().equals(areaId))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public long totalWeatherRecords() {
+        return database.stream()
+                .mapToLong(WeatherImportBatch::getImportedRecords)
+                .sum();
+    }
 }

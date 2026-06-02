@@ -1,46 +1,69 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import java.io.Serializable;
-import java.util.Objects;
+import jakarta.persistence.Embedded;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
+
+/**
+ * The ID for Aircraft Model, which is a value object that uniquely identifies an Aircraft Model by its manufacturerId and modelName. It implements Comparable to allow sorting by code.
+ */
 
 @Embeddable
-public class AircraftModelId implements ValueObject, Comparable<AircraftModelId>, Serializable {
+public class AircraftModelId implements ValueObject, Comparable<AircraftModelId> {
 
-    private String code;
+    @Embedded
+    @AttributeOverride(name = "code", column = @Column(name = "manufacturer_id"))
+    private ManufacturerId manufacturerId;
+
+    @Column(name = "model_name", nullable = false)
+    private String modelName;
 
     protected AircraftModelId() {
-        // for ORM
+        // JPA
     }
 
-    public AircraftModelId(String code) {
-        if (code == null || code.trim().isEmpty()) {
-            throw new IllegalArgumentException("The Aircraft Model code cannot be null or empty!");
-        }
-        this.code = code;
+    public AircraftModelId(ManufacturerId manufacturerId, String modelName) {
+        Preconditions.nonNull(manufacturerId, "ManufacturerId cannot be null.");
+        Preconditions.nonEmpty(modelName, "ModelName cannot be empty.");
+
+        this.manufacturerId = manufacturerId;
+        this.modelName = modelName;
     }
 
-    @Override
-    public int compareTo(AircraftModelId o) {
-        return this.code.compareTo(o.code);
+    public ManufacturerId manufacturerId() {
+        return manufacturerId;
+    }
+
+    public String modelName() {
+        return modelName;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof AircraftModelId)) return false;
         AircraftModelId that = (AircraftModelId) o;
-        return code.equals(that.code);
+        return manufacturerId.equals(that.manufacturerId) && modelName.equals(that.modelName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code);
+        return manufacturerId.hashCode() + modelName.hashCode();
+    }
+
+    @Override
+    public int compareTo(AircraftModelId other) {
+        int manCompare = this.manufacturerId.compareTo(other.manufacturerId);
+        if (manCompare != 0) return manCompare;
+        return this.modelName.compareTo(other.modelName);
     }
 
     @Override
     public String toString() {
-        return this.code;
+        return this.manufacturerId.toString() + " - " + this.modelName;
     }
 }

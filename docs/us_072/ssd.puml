@@ -1,0 +1,59 @@
+### Sequence Diagram (SD)
+
+```plantuml
+@startuml US072_SD
+title US072 - List Company Fleet - Sequence Diagram
+
+actor "Air Transport\nCompany Collaborator" as Collab
+
+participant "ListCompanyFleetUI" as UI
+participant "ListCompanyFleetController" as Controller
+participant "AuthorizationService" as Authz
+participant "AirTransportCompany\nCollaboratorRepository" as CollabRepo
+participant "AirTransportCompany\nCollaborator" as CollabEntity
+participant "AirTransportCompany" as Company
+participant "Aircraft" as AircraftEntity
+
+Collab -> UI : request to list fleet
+UI --> Collab : ask for sort option (Registration, Maker, Model, Capacity, Age)
+
+Collab -> UI : select sort option
+UI -> Controller : listMyCompanyFleet(sortOption)
+
+Controller -> Authz : ensureAuthenticatedUserHasAnyOf(AIR_TRANSPORT_COMPANY_COLLABORATOR)
+Controller -> Authz : session().get().authenticatedUser()
+Authz --> Controller : systemUser
+
+Controller -> CollabRepo : findBySystemUser(systemUser)
+CollabRepo --> Controller : Optional<AirTransportCompanyCollaborator>
+
+alt collaborator not found
+    Controller --> UI : throw IllegalStateException
+    UI --> Collab : show error message
+else collaborator found
+    Controller -> CollabEntity : company()
+    CollabEntity --> Controller : company
+
+    Controller -> Company : getFleet()
+    Company --> Controller : Iterable<Aircraft>
+
+    Controller -> Controller : convert Iterable to List
+
+    alt sortOption == AGE
+        Controller -> AircraftEntity : age()
+        AircraftEntity --> Controller : int (calculated dynamic age)
+    else sortOption == CAPACITY
+        Controller -> AircraftEntity : seats().totalCapacity()
+        AircraftEntity --> Controller : int
+    else sortOption == MAKER, MODEL, REGISTRATION
+        Controller -> AircraftEntity : identity(), modelId()...
+        AircraftEntity --> Controller : String
+    end
+
+    Controller -> Controller : apply Comparator.sort()
+
+    Controller --> UI : List<Aircraft> (sorted)
+    UI --> Collab : display formatted table (Registration, Maker, Model, Capacity, Age, Status)
+end
+
+@enduml
