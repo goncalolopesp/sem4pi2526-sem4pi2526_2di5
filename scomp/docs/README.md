@@ -581,6 +581,46 @@ Incorreto:
 --flight data/Flight_Plan_v0a.json data/Flight_Plan_v0c.json
 ```
 
+## Execução em AntiX
+
+A execução do projeto foi validada numa máquina AntiX.
+
+Antes de correr o projeto, foi necessário preparar o ambiente com Java, javac e Maven:
+
+```bash
+sudo apt update
+sudo apt install default-jdk maven
+````
+
+Foi confirmado que as ferramentas ficaram instaladas corretamente:
+
+```bash
+java --version
+javac --version
+mvn -version
+```
+
+Como o script `run.sh` vinha com terminações de linha de Windows, foi necessário corrigir o ficheiro:
+
+```bash
+sed -i 's/\r$//' run.sh
+```
+
+Depois foram dadas permissões de execução:
+
+```bash
+chmod +x run.sh
+chmod +x scomp/flight_simulator
+```
+
+Por fim, o projeto foi executado com:
+
+```bash
+./run.sh
+```
+
+Nota: o simulador SCOMP é implementado em C, mas o projeto completo também depende de Java e Maven por causa da componente EAPLI e da execução integrada.
+
 ---
 
 # 13. Diagrama de Componentes
