@@ -585,14 +585,14 @@ Incorreto:
 
 A execução do projeto foi validada numa máquina AntiX.
 
-Antes de correr o projeto, foi necessário preparar o ambiente com Java, javac e Maven:
+### 1. Instalar dependências necessárias
 
 ```bash
 sudo apt update
 sudo apt install default-jdk maven
 ````
 
-Foi confirmado que as ferramentas ficaram instaladas corretamente:
+Confirmar instalação:
 
 ```bash
 java --version
@@ -600,26 +600,44 @@ javac --version
 mvn -version
 ```
 
-Como o script `run.sh` vinha com terminações de linha de Windows, foi necessário corrigir o ficheiro:
+### 2. Corrigir terminações de linha do script (caso necessário)
+
+Como o `run.sh` foi desenvolvido em ambientes diferentes, pode ser necessário remover terminações Windows:
 
 ```bash
 sed -i 's/\r$//' run.sh
 ```
 
-Depois foram dadas permissões de execução:
+### 3. Compilar o simulador SCOMP
+
+Entrar na pasta do simulador e gerar o executável:
+
+```bash
+cd scomp
+make
+cd ..
+```
+
+### 4. Dar permissões de execução
 
 ```bash
 chmod +x run.sh
 chmod +x scomp/flight_simulator
 ```
 
-Por fim, o projeto foi executado com:
+### 5. Executar o projeto
+
+A partir da pasta raiz do projeto:
 
 ```bash
 ./run.sh
 ```
 
-Nota: o simulador SCOMP é implementado em C, mas o projeto completo também depende de Java e Maven por causa da componente EAPLI e da execução integrada.
+### Notas
+
+* O executável `scomp/flight_simulator` deve existir antes da execução do `run.sh`.
+* O simulador SCOMP é implementado em C, mas o projeto completo depende também de Java e Maven devido à componente EAPLI e à execução integrada.
+* Todos os testes e validações apresentados na documentação foram executados em ambiente AntiX.
 
 ---
 
