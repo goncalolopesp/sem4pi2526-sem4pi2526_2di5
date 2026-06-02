@@ -1,13 +1,13 @@
 package pt.isep.sem4pi.application.service.route;
 
 import eapli.framework.application.ApplicationService;
-import pt.isep.sem4pi.domain.airport.Coordinates;
-import pt.isep.sem4pi.domain.airport.IataCodeAirport;
-import pt.isep.sem4pi.domain.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.airport.Coordinates;
+import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.route.*;
 import pt.isep.sem4pi.domain.route.*;
-import pt.isep.sem4pi.domain.route.DTO.FlightRouteDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.FlightRouteDTO;
 import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
-import pt.isep.sem4pi.domain.route.Wind;
 
 import java.util.List;
 import java.util.stream.Collectors;

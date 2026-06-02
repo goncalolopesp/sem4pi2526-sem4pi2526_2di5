@@ -2,7 +2,7 @@ package pt.isep.sem4pi.application.controller.aircraftModel;
 
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
-import pt.isep.sem4pi.application.service.model.aircraftModel.AircraftModelCertificationService;
+import pt.isep.sem4pi.application.service.aircraftModel.AircraftModelCertificationService;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;

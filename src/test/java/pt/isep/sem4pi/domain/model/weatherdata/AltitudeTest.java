@@ -1,7 +1,6 @@
 package pt.isep.sem4pi.domain.model.weatherdata;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.weatherdata.Altitude;
 
 import static org.junit.Assert.*;
 

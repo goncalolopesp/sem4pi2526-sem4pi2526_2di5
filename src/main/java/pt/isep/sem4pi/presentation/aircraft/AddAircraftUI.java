@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.aircraft;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.aircraft.AddAircraftController;
-import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 import java.util.ArrayList;

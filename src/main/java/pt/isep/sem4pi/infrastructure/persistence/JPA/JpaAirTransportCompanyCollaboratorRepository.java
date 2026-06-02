@@ -3,8 +3,8 @@ package pt.isep.sem4pi.infrastructure.persistence.JPA;
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
-import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompanyCollaborator;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository;
 
 import java.util.HashMap;

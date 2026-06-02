@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.aircontrolarea;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.aircontrolarea.RegisterAirControlAreaController;
-import pt.isep.sem4pi.domain.aircontrolarea.DTO.AirControlAreaCreateDTO;
+import pt.isep.sem4pi.domain.model.aircontrolarea.DTO.AirControlAreaCreateDTO;
 
 public class RegisterAirControlAreaUI extends AbstractUI {
 

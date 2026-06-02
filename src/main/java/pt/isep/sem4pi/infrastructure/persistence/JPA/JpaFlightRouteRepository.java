@@ -2,8 +2,8 @@ package pt.isep.sem4pi.infrastructure.persistence.JPA;
 
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
 import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
-import pt.isep.sem4pi.domain.route.FlightRoute;
-import pt.isep.sem4pi.domain.route.FlightRouteID;
+import pt.isep.sem4pi.domain.model.route.FlightRoute;
+import pt.isep.sem4pi.domain.model.route.FlightRouteID;
 
 /**
  * JPA repository implementation for Flight Route.

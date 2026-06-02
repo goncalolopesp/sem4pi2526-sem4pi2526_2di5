@@ -2,7 +2,6 @@ package pt.isep.sem4pi.domain.model.airport;
 
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.airport.Coordinates;
 
 import static org.junit.Assert.*;
 

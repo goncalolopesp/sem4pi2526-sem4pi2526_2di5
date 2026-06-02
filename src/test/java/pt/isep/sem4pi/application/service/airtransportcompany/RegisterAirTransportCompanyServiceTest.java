@@ -2,11 +2,11 @@ package pt.isep.sem4pi.application.service.airtransportcompany;
 
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.airtransportcompany.CompanyName;
-import pt.isep.sem4pi.domain.airtransportcompany.IataCodeCompany;
-import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 
 import java.util.ArrayList;

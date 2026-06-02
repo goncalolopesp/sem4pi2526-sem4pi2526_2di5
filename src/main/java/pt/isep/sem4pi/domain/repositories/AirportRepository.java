@@ -1,11 +1,9 @@
 package pt.isep.sem4pi.domain.repositories;
 
 import eapli.framework.domain.repositories.DomainRepository;
-import pt.isep.sem4pi.domain.airport.Airport;
-import pt.isep.sem4pi.domain.airport.IataCodeAirport;
-import pt.isep.sem4pi.domain.airport.IcaoCodeAirport;
-import pt.isep.sem4pi.domain.route.FlightRoute;
-import pt.isep.sem4pi.domain.route.FlightRouteID;
+import pt.isep.sem4pi.domain.model.airport.Airport;
+import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
+import pt.isep.sem4pi.domain.model.airport.IcaoCodeAirport;
 
 import java.util.Optional;
 

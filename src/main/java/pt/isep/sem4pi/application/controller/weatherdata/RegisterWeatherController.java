@@ -1,7 +1,7 @@
 package pt.isep.sem4pi.application.controller.weatherdata;
 
 import pt.isep.sem4pi.application.service.weatherdata.RegisterWeatherService;
-import pt.isep.sem4pi.domain.weatherdata.WeatherImportBatch;
+import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 

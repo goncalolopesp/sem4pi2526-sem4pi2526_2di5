@@ -4,7 +4,7 @@ import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.airtransportcompany.ListCustomerCollaboratorsController;
 import pt.isep.sem4pi.application.controller.airtransportcompany.ListCustomerCollaboratorsController.CollaboratorView;
-import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 import java.util.List;

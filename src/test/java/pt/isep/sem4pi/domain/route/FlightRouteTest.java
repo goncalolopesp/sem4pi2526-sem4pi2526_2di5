@@ -1,9 +1,10 @@
 package pt.isep.sem4pi.domain.route;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.airport.Coordinates;
-import pt.isep.sem4pi.domain.airport.IataCodeAirport;
-import pt.isep.sem4pi.domain.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.airport.Coordinates;
+import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.route.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;

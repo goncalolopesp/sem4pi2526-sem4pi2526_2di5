@@ -1,7 +1,7 @@
 package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainRepository;
-import pt.isep.sem4pi.domain.manufacturer.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;

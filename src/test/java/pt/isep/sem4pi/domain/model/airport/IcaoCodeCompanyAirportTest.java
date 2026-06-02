@@ -1,7 +1,6 @@
 package pt.isep.sem4pi.domain.model.airport;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.airport.IcaoCodeAirport;
 
 import static org.junit.Assert.*;
 

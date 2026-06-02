@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.airtransportcompany;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.airtransportcompany.RegisterCustomerCollaboratorController;
-import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 public class RegisterCompanyCollaboratorUI extends AbstractUI {

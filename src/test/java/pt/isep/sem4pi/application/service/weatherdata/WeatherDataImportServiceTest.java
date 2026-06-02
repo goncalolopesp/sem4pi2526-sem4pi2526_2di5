@@ -3,9 +3,10 @@ package pt.isep.sem4pi.application.service.weatherdata;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.application.service.weatherdata.importer.WeatherDataImporterFactory;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlArea;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary;
-import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherImportResultDTO;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaBoundary;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirControlAreaRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryWeatherBatchRepository;
 
@@ -65,7 +66,7 @@ public class WeatherDataImportServiceTest {
 
         assertTrue(result.getImportedRecords() > 0);
         assertTrue(localAirControlAreaRepository.containsOfIdentity(
-                new pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID("121")));
+                new AirControlAreaID("121")));
     }
 
     @Test(expected = IllegalArgumentException.class)

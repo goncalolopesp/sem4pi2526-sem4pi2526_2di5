@@ -1,11 +1,11 @@
 package pt.isep.sem4pi.application.service.addairport;
 
-import pt.isep.sem4pi.domain.airport.Airport;
-import pt.isep.sem4pi.domain.airport.Coordinates;
-import pt.isep.sem4pi.domain.airport.Elevation;
-import pt.isep.sem4pi.domain.airport.IataCodeAirport;
-import pt.isep.sem4pi.domain.airport.IcaoCodeAirport;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.airport.Airport;
+import pt.isep.sem4pi.domain.model.airport.Coordinates;
+import pt.isep.sem4pi.domain.model.airport.Elevation;
+import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
+import pt.isep.sem4pi.domain.model.airport.IcaoCodeAirport;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 
 public class AddAirportService {

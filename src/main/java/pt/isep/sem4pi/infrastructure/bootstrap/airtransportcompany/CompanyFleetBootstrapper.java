@@ -7,11 +7,11 @@ import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
 import eapli.framework.infrastructure.authz.domain.model.Username;
 
-import pt.isep.sem4pi.domain.aircraft.Aircraft;
-import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompanyCollaborator;
-import pt.isep.sem4pi.domain.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftRepository;

@@ -4,10 +4,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
-import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.airtransportcompany.IataCodeCompany;
-import pt.isep.sem4pi.domain.airtransportcompany.IcaoCodeCompany;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 
 import java.util.Optional;

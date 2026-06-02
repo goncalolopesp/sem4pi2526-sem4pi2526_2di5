@@ -1,9 +1,9 @@
 package pt.isep.sem4pi.application.service.flight;
 
-import pt.isep.sem4pi.domain.aircraft.Aircraft;
-import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.flight.Flight;
-import pt.isep.sem4pi.domain.flight.FlightId;
+import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.flight.Flight;
+import pt.isep.sem4pi.domain.model.flight.FlightId;
 import pt.isep.sem4pi.domain.repositories.AircraftRepository;
 import pt.isep.sem4pi.domain.repositories.FlightRepository;
 

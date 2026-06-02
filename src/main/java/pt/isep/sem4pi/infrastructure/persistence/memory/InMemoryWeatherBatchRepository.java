@@ -1,6 +1,6 @@
 package pt.isep.sem4pi.infrastructure.persistence.memory;
 
-import pt.isep.sem4pi.domain.weatherdata.WeatherImportBatch;
+import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 
 import java.util.ArrayList;

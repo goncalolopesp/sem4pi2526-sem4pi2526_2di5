@@ -1,8 +1,7 @@
 package pt.isep.sem4pi.application.service.weatherdata;
 
-import pt.isep.sem4pi.domain.weatherdata.*;
+import pt.isep.sem4pi.domain.model.weatherdata.*;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
-import pt.isep.sem4pi.domain.weatherdata.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

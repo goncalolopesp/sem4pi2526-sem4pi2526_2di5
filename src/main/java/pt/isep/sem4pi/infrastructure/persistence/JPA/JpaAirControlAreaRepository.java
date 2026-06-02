@@ -2,8 +2,8 @@ package pt.isep.sem4pi.infrastructure.persistence.JPA;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlArea;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
 import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
 
 public class JpaAirControlAreaRepository

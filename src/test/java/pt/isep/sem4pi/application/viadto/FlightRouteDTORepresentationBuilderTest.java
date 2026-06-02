@@ -2,8 +2,11 @@ package pt.isep.sem4pi.application.viadto;
 
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.airport.DTO.CoordinatesDTO;
-import pt.isep.sem4pi.domain.route.DTO.*;
+import pt.isep.sem4pi.domain.model.airport.DTO.CoordinatesDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.AltitudeRangeDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.FlightRouteDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.RouteSegmentDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.WindDTO;
 
 import static org.junit.Assert.*;
 

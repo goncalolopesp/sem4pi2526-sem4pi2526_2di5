@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.airtransportcompany;
 import eapli.framework.presentation.console.AbstractUI;
 import eapli.framework.io.util.Console;
 import pt.isep.sem4pi.application.controller.airtransportcompany.ListCompanyFleetController;
-import pt.isep.sem4pi.domain.aircraft.Aircraft;
+import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 
 
 

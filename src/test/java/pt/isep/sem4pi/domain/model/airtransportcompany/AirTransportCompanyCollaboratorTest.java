@@ -3,7 +3,6 @@ package pt.isep.sem4pi.domain.model.airtransportcompany;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.airtransportcompany.*;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 

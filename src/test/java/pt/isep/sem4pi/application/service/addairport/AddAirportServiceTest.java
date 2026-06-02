@@ -3,8 +3,8 @@ package pt.isep.sem4pi.application.service.addairport;
 import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainRepository;
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.airport.*;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.airport.*;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 
 import java.util.Optional;

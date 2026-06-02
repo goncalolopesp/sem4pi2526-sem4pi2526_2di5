@@ -3,13 +3,15 @@ package pt.isep.sem4pi.application.service.route;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import pt.isep.sem4pi.domain.airport.DTO.CoordinatesDTO;
+import pt.isep.sem4pi.domain.model.airport.DTO.CoordinatesDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.AltitudeRangeDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.FlightRouteDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.RouteSegmentDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.WindDTO;
 import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
-import pt.isep.sem4pi.domain.route.FlightRoute;
-import pt.isep.sem4pi.domain.route.DTO.*;
+import pt.isep.sem4pi.domain.model.route.FlightRoute;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;

@@ -2,7 +2,7 @@ package pt.isep.sem4pi.presentation.weatherdata;
 
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.weatherdata.ImportWeatherDataController;
-import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherImportResultDTO;
+import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
 
 import java.util.List;
 import java.util.Scanner;

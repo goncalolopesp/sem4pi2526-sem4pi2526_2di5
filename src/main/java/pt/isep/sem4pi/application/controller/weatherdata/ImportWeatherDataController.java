@@ -2,7 +2,7 @@ package pt.isep.sem4pi.application.controller.weatherdata;
 
 import pt.isep.sem4pi.application.service.weatherdata.WeatherDataImportService;
 import pt.isep.sem4pi.application.service.weatherdata.importer.WeatherDataImporterFactory;
-import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherImportResultDTO;
+import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 public class ImportWeatherDataController {

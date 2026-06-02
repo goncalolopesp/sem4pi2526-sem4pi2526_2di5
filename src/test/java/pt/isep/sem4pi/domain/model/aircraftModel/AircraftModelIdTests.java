@@ -1,7 +1,7 @@
 package pt.isep.sem4pi.domain.model.aircraftModel;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.manufacturer.ManufacturerId;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import static org.junit.Assert.*;
 
 /**

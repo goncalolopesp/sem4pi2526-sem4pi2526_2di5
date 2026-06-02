@@ -2,9 +2,9 @@ package pt.isep.sem4pi.infrastructure.persistence.JPA;
 
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
 import jakarta.persistence.TypedQuery;
-import pt.isep.sem4pi.domain.airport.Airport;
-import pt.isep.sem4pi.domain.airport.IataCodeAirport;
-import pt.isep.sem4pi.domain.airport.IcaoCodeAirport;
+import pt.isep.sem4pi.domain.model.airport.Airport;
+import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
+import pt.isep.sem4pi.domain.model.airport.IcaoCodeAirport;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 
 import java.util.Optional;

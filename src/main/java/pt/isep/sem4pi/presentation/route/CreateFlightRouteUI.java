@@ -3,10 +3,13 @@ package pt.isep.sem4pi.presentation.route;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.route.CreateFlightRouteController;
-import pt.isep.sem4pi.domain.route.DTO.*;
-import pt.isep.sem4pi.domain.airport.DTO.CoordinatesDTO;
-import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
-import pt.isep.sem4pi.domain.airport.Airport;
+import pt.isep.sem4pi.domain.model.route.DTO.AltitudeRangeDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.FlightRouteDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.RouteSegmentDTO;
+import pt.isep.sem4pi.domain.model.route.DTO.WindDTO;
+import pt.isep.sem4pi.domain.model.airport.DTO.CoordinatesDTO;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.model.airport.Airport;
 
 import java.util.ArrayList;
 import java.util.List;

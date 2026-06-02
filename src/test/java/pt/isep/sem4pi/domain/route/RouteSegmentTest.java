@@ -1,11 +1,13 @@
 package pt.isep.sem4pi.domain.route;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.airport.Coordinates;
+import pt.isep.sem4pi.domain.model.airport.Coordinates;
+import pt.isep.sem4pi.domain.model.route.AltitudeRange;
+import pt.isep.sem4pi.domain.model.route.RouteSegment;
+import pt.isep.sem4pi.domain.model.route.Wind;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;

@@ -2,9 +2,8 @@ package pt.isep.sem4pi.application.controller.weatherdata;
 
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.weatherdata.*;
-import pt.isep.sem4pi.domain.weatherdata.DTO.WeatherDataViewDTO;
-import pt.isep.sem4pi.domain.weatherdata.*;
+import pt.isep.sem4pi.domain.model.weatherdata.*;
+import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataViewDTO;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryWeatherBatchRepository;
 
 import java.time.LocalDate;

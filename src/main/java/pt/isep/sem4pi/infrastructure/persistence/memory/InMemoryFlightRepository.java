@@ -1,9 +1,9 @@
 package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainRepository;
-import pt.isep.sem4pi.domain.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.flight.Flight;
-import pt.isep.sem4pi.domain.flight.FlightId;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.flight.Flight;
+import pt.isep.sem4pi.domain.model.flight.FlightId;
 import pt.isep.sem4pi.domain.repositories.FlightRepository;
 
 public class InMemoryFlightRepository extends InMemoryDomainRepository<Flight, FlightId> implements FlightRepository {

@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.route;
 
 import org.junit.Test;
+import pt.isep.sem4pi.domain.model.route.FlightRouteID;
 
 import static org.junit.Assert.*;
 

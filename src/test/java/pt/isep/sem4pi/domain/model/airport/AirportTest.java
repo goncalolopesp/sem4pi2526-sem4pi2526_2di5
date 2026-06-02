@@ -1,8 +1,7 @@
 package pt.isep.sem4pi.domain.model.airport;
 
 import org.junit.Test;
-import pt.isep.sem4pi.domain.airport.*;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
 
 import static org.junit.Assert.*;
 

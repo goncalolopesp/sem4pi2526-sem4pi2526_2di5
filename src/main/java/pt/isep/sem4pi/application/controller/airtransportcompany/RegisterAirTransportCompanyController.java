@@ -1,7 +1,7 @@
 package pt.isep.sem4pi.application.controller.airtransportcompany;
 
 import pt.isep.sem4pi.application.service.airtransportcompany.RegisterAirTransportCompanyService;
-import pt.isep.sem4pi.domain.airtransportcompany.AirTransportCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 
 public class RegisterAirTransportCompanyController {
