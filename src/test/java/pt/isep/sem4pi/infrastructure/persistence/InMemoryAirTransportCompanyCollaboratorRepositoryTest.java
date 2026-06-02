@@ -6,8 +6,8 @@ import org.junit.Test;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
 import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.domain.usermanagement.UserBuilderHelper;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportCompanyCollaboratorRepository;
@@ -42,13 +42,13 @@ public class InMemoryAirTransportCompanyCollaboratorRepositoryTest {
 
         company1 = new AirTransportCompany(
                 new CompanyName("TAP Portugal"),
-                new IataCode("TP"),
-                new IcaoCode("TAP")
+                new IataCodeCompany("TP"),
+                new IcaoCodeCompany("TAP")
         );
         company2 = new AirTransportCompany(
                 new CompanyName("Lufthansa"),
-                new IataCode("LH"),
-                new IcaoCode("DLH")
+                new IataCodeCompany("LH"),
+                new IcaoCodeCompany("DLH")
         );
 
         user1 = UserBuilderHelper.builder()

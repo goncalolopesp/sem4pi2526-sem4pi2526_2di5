@@ -25,6 +25,7 @@
         <class>pt.isep.sem4pi.domain.model.flight.Flight</class>
         <class>pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea</class>
         <class>pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator</class>
+        <class>pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator</class>
         <class>pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch</class>
         <class>pt.isep.sem4pi.domain.model.weatherdata.WeatherData</class>
 

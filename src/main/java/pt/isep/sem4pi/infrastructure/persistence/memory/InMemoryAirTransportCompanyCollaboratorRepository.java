@@ -30,6 +30,6 @@ public class InMemoryAirTransportCompanyCollaboratorRepository
 
     @Override
     public Iterable<AirTransportCompanyCollaborator> findByCompany(AirTransportCompany company) {
-        return match(e -> e.company().identityIcao().equals(company.identityIcao()));
+        return match(e -> e.company().getIcaoCode().equals(company.getIcaoCode()));
     }
 }
