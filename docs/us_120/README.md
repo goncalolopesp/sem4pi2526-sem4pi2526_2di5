@@ -34,3 +34,9 @@ The `US120SemanticVisitor` enforces the following constraints:
 Ensure the ANTLR4 tool is properly configured in your environment. Run the following command in the directory containing the `US120.g4` file:
 ```bash
 java org.antlr.v4.Tool -visitor -listener US120.g4
+```
+Then, `cd` to the project's root and run:
+```bash
+mvn generate-sources compile exec:java@us120 -Pus120 -Dexec.args="docs/us_120/testFiles/exemplo.dsldig5"
+```
+The argument in the `-Dexec.args=` is the path to the file. In this case, I'm testing the example file created for the US.

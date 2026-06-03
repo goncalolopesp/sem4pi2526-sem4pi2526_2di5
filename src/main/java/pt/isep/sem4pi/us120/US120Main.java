@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import pt.isep.sem4pi.us120.US120Lexer;
-import pt.isep.sem4pi.us120.US120Parser;
 
 public class US120Main {
 
