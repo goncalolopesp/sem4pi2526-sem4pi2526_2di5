@@ -108,7 +108,6 @@ typedef struct
     char flight_id[FLIGHT_ID_SIZE];
     pid_t pid;
     int pipe_fd; /* filho -> pai: PositionUpdate */
-    int sync_fd; /* pai -> filho: autoriza próximo passo (US103) */
     int active;
     int departure_time; /* hora de partida do plano, em segundos */
     HistoryEntry *history;
@@ -182,6 +181,8 @@ typedef struct
 {
     sem_t mutex;
     sem_t update_sem;
+    sem_t step_start[MAX_FLIGHTS];
+    int terminate;
 
     pthread_mutex_t pthread_mutex;
     pthread_cond_t pthread_cond;
@@ -199,8 +200,8 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
 int parse_departure_time_seconds(const char *path, int *out_seconds, char *err, size_t err_size);
 
 void run_flight_process(const char *flight_file,
+                        int flight_index,
                         int update_write_fd,
-                        int sync_read_fd,
                         const SimulationConfig *config);
 
 int append_history(FlightRuntime *runtime, const PositionUpdate *update);

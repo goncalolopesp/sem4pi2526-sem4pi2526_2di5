@@ -115,8 +115,8 @@ static int send_update(int fd, const FlightPlan *plan, int t, Position p, int st
 }
 
 void run_flight_process(const char *flight_file,
+                        int flight_index,
                         int update_write_fd,
-                        int sync_read_fd,
                         const SimulationConfig *config)
 {
 
@@ -191,7 +191,6 @@ void run_flight_process(const char *flight_file,
     if (terminate_requested)
     {
         close(update_write_fd);
-        close(sync_read_fd);
         _exit(EXIT_SUCCESS);
     }
 
@@ -201,7 +200,6 @@ void run_flight_process(const char *flight_file,
     {
         dprintf(STDERR_FILENO, "Flight process error: %s\n", err);
         close(update_write_fd);
-        close(sync_read_fd);
         _exit(EXIT_FAILURE);
     }
 
@@ -210,20 +208,22 @@ void run_flight_process(const char *flight_file,
     int current_time = config->start_time;
     while (current_time < departure_time && current_time <= config->end_time && !terminate_requested)
     {
-        char command;
-        ssize_t n = read(sync_read_fd, &command, sizeof(command));
-        if (n <= 0 || command != 'N')
+        /* Aguarda autorização do processo pai para avançar
+           enquanto o voo ainda não chegou à sua DepartureTime. */
+        sem_wait(&shared->step_start[flight_index]);
+
+        if (terminate_requested || shared->terminate)
         {
             terminate_requested = 1;
             break;
         }
+
         current_time += config->step_seconds;
     }
 
     if (terminate_requested || current_time > config->end_time)
     {
         close(update_write_fd);
-        close(sync_read_fd);
         _exit(EXIT_SUCCESS);
     }
 
@@ -338,10 +338,12 @@ void run_flight_process(const char *flight_file,
             if (ratio >= 1.0)
                 break;
 
-            /* US103: aguarda autorização do pai para avançar de passo */
-            char command;
-            ssize_t n = read(sync_read_fd, &command, sizeof(command));
-            if (n <= 0 || command != 'N')
+            /* Aguarda autorização do processo pai para avançar
+               para o próximo timestep da simulação. */
+            sem_wait(
+                &shared->step_start[flight_index]);
+
+            if (terminate_requested || shared->terminate)
             {
                 terminate_requested = 1;
                 break;
@@ -356,7 +358,6 @@ void run_flight_process(const char *flight_file,
                 terminate_requested ? STATUS_ABORTED : STATUS_FINISHED);
 
     close(update_write_fd);
-    close(sync_read_fd);
 
     munmap(shared, sizeof(*shared));
     close(shm_fd);
