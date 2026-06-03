@@ -291,7 +291,7 @@ static void write_report(const FlightRuntime *runtimes, int count,
     if (!report)
         return;
 
-    fprintf(report, "US100/US101/US102 Simulation Report\n");
+    fprintf(report, "US100/US101/US102/US107 Simulation Report\n");
     fprintf(report, "Area: lat [%.6f, %.6f], lon [%.6f, %.6f]\n",
             config->min_lat, config->max_lat, config->min_lon, config->max_lon);
     fprintf(report, "Time range: %d to %d, step: %d seconds\n",
@@ -397,37 +397,6 @@ static void write_report(const FlightRuntime *runtimes, int count,
     fclose(report);
 }
 
-static void *shared_monitor_thread(void *arg)
-{
-    SharedSimulationState *state = arg;
-    int last_seen = 0;
-
-    while (!stop_requested)
-    {
-        pthread_mutex_lock(&state->pthread_mutex);
-
-        while (state->shared_update_counter == last_seen && !stop_requested)
-        {
-            pthread_cond_wait(&state->pthread_cond, &state->pthread_mutex);
-        }
-
-        last_seen = state->shared_update_counter;
-
-        pthread_mutex_unlock(&state->pthread_mutex);
-
-        sem_wait(&state->mutex);
-
-        fprintf(stderr,
-                "[shared] active=%d updates=%d\n",
-                state->active_flights,
-                state->shared_update_counter);
-
-        sem_post(&state->mutex);
-    }
-
-    return NULL;
-}
-
 int main(int argc, char **argv)
 {
     SimulationConfig config;
@@ -456,20 +425,24 @@ int main(int argc, char **argv)
     SharedSimulationState *shared =
         shared_create();
 
-    pthread_t shared_thread;
-
-    pthread_create(
-        &shared_thread,
-        NULL,
-        shared_monitor_thread,
-        shared);
-
     /* US102: log de violações de segurança */
     SafetyLog safety_log;
     safety_log_init(&safety_log);
 
     FlightRuntime runtimes[MAX_FLIGHTS];
     memset(runtimes, 0, sizeof(runtimes));
+
+    /* US106/US107: threads de deteção e relatório em tempo real */
+    SimulationThreadContext thread_ctx;
+    simulation_threads_init(&thread_ctx, shared, &config, &safety_log,
+                            runtimes, config.flight_count);
+
+    pthread_t safety_thread;
+    pthread_t report_thread;
+
+    pthread_create(&safety_thread, NULL, safety_detection_thread, &thread_ctx);
+    pthread_create(&report_thread, NULL, report_generation_thread, &thread_ctx);
+
     struct pollfd poll_fds[MAX_FLIGHTS];
     memset(poll_fds, 0, sizeof(poll_fds));
 
@@ -674,17 +647,19 @@ int main(int argc, char **argv)
             }
         }
 
-        /* ===== US102: deteção de violações de segurança ===== */
-        int new_v = safety_check_step(&tracker, &config, current_step,
-                                      &safety_log, runtimes, config.flight_count);
-        if (new_v > 0)
+        /* US107: deteção de violações delegada à safety thread via shared memory */
+        pthread_mutex_lock(&thread_ctx.report_mutex);
+        int total_violations = safety_log.total_detected;
+        pthread_mutex_unlock(&thread_ctx.report_mutex);
+
+        if (total_violations > 0)
         {
-            fprintf(stderr, "[ATC] step=%d: %d new safety violation(s) detected. Total=%d\n",
-                    current_step, new_v, safety_log.total_detected);
+            fprintf(stderr, "[ATC] step=%d: total safety violations=%d\n",
+                    current_step, total_violations);
         }
 
         /* Threshold: termina antecipadamente se exceder */
-        if (safety_log.total_detected >= config.violation_threshold)
+        if (total_violations >= config.violation_threshold)
         {
             fprintf(stderr,
                     "[ATC] Violation threshold (%d) exceeded. Aborting simulation.\n",
@@ -762,20 +737,24 @@ int main(int argc, char **argv)
     free_runtimes(runtimes, config.flight_count);
 
     stop_requested = 1;
+    thread_ctx.stop = 1;
 
     pthread_mutex_lock(&shared->pthread_mutex);
-
     pthread_cond_broadcast(&shared->pthread_cond);
-
     pthread_mutex_unlock(&shared->pthread_mutex);
 
-    pthread_join(
-        shared_thread,
-        NULL);
+    pthread_mutex_lock(&thread_ctx.report_mutex);
+    pthread_cond_signal(&thread_ctx.violation_cond);
+    pthread_mutex_unlock(&thread_ctx.report_mutex);
 
-    shared_destroy(
-        shared);
+    pthread_join(safety_thread, NULL);
+    pthread_join(report_thread, NULL);
+
+    simulation_threads_destroy(&thread_ctx);
+
+    shared_destroy(shared);
 
     printf("Simulation finished. Report saved in %s\n", config.output_file);
+    printf("Real-time violation log saved in %s\n", thread_ctx.realtime_log_path);
     return EXIT_SUCCESS;
 }

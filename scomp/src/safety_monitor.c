@@ -54,6 +54,74 @@ static int log_violation(SafetyLog *log, const SafetyViolation *v)
     return 0;
 }
 
+static int violation_already_logged(const SafetyLog *log, const SafetyViolation *candidate)
+{
+    for (int i = 0; i < log->count; ++i)
+    {
+        const SafetyViolation *v = &log->events[i];
+
+        if (v->time_step != candidate->time_step || v->type != candidate->type)
+            continue;
+
+        if (candidate->type == VIOLATION_ALTITUDE)
+        {
+            if (strcmp(v->flight_a, candidate->flight_a) == 0)
+                return 1;
+        }
+        else if ((strcmp(v->flight_a, candidate->flight_a) == 0 &&
+                  strcmp(v->flight_b, candidate->flight_b) == 0) ||
+                 (strcmp(v->flight_a, candidate->flight_b) == 0 &&
+                  strcmp(v->flight_b, candidate->flight_a) == 0))
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int register_violation(SafetyLog *log, SafetyViolation *v)
+{
+    if (violation_already_logged(log, v))
+        return 0;
+
+    if (!log_violation(log, v))
+        return 0;
+
+    if (v->pid_a > 0)
+        kill(v->pid_a, SIGUSR1);
+    if (v->pid_b > 0)
+        kill(v->pid_b, SIGUSR1);
+
+    return 1;
+}
+
+void safety_log_event_realtime(FILE *file, const SafetyViolation *v,
+                               const SimulationConfig *config)
+{
+    if (!file || !v || !config)
+        return;
+
+    if (v->type == VIOLATION_ALTITUDE)
+    {
+        fprintf(file,
+                "[US107] t=%d ALTITUDE flight=%s pid=%d alt=%.1fm (min=%.1fm)\n",
+                v->time_step, v->flight_a, v->pid_a,
+                v->altitude_m, config->safety_min_alt_m);
+    }
+    else
+    {
+        fprintf(file,
+                "[US107] t=%d SEPARATION %s(pid=%d) <-> %s(pid=%d) dist=%.2f NM (min=%.2f NM)\n",
+                v->time_step,
+                v->flight_a, v->pid_a,
+                v->flight_b, v->pid_b,
+                v->distance_nm, config->safety_min_sep_nm);
+    }
+
+    fflush(file);
+}
+
 int safety_check_step(const PositionTracker *tracker,
                       const SimulationConfig *config,
                       int current_step,
@@ -84,10 +152,8 @@ int safety_check_step(const PositionTracker *tracker,
             v.pid_a = pid_for_flight(a->flight_id, runtimes, runtime_count);
             v.altitude_m = a->current_position.altitude_m;
 
-            if (log_violation(log, &v))
+            if (register_violation(log, &v))
                 new_violations++;
-            if (v.pid_a > 0)
-                kill(v.pid_a, SIGUSR1);
         }
 
         /* (2) Violação de separação horizontal entre pares */
@@ -118,12 +184,86 @@ int safety_check_step(const PositionTracker *tracker,
                 v.pid_b = pid_for_flight(b->flight_id, runtimes, runtime_count);
                 v.distance_nm = dist;
 
-                if (log_violation(log, &v))
+                if (register_violation(log, &v))
                     new_violations++;
-                if (v.pid_a > 0)
-                    kill(v.pid_a, SIGUSR1);
-                if (v.pid_b > 0)
-                    kill(v.pid_b, SIGUSR1);
+            }
+        }
+    }
+
+    return new_violations;
+}
+
+int safety_check_shared(SharedSimulationState *shared,
+                        const SimulationConfig *config,
+                        SafetyLog *log,
+                        const FlightRuntime *runtimes,
+                        int runtime_count)
+{
+    SharedFlightState snapshot[MAX_TRACKED_FLIGHTS];
+    int flight_count = 0;
+    int new_violations = 0;
+
+    sem_wait(&shared->mutex);
+
+    flight_count = shared->active_flights;
+    if (flight_count > MAX_TRACKED_FLIGHTS)
+        flight_count = MAX_TRACKED_FLIGHTS;
+
+    memcpy(snapshot, shared->flights, (size_t)flight_count * sizeof(SharedFlightState));
+
+    sem_post(&shared->mutex);
+
+    for (int i = 0; i < flight_count; ++i)
+    {
+        const SharedFlightState *a = &snapshot[i];
+        if (a->status != STATUS_RUNNING)
+            continue;
+
+        if (a->position.altitude_m < config->safety_min_alt_m)
+        {
+            SafetyViolation v;
+            memset(&v, 0, sizeof(v));
+            v.time_step = a->time_step;
+            v.type = VIOLATION_ALTITUDE;
+            snprintf(v.flight_a, sizeof(v.flight_a), "%s", a->flight_id);
+            v.pid_a = pid_for_flight(a->flight_id, runtimes, runtime_count);
+            if (v.pid_a == 0)
+                v.pid_a = a->pid;
+            v.altitude_m = a->position.altitude_m;
+
+            if (register_violation(log, &v))
+                new_violations++;
+        }
+
+        for (int j = i + 1; j < flight_count; ++j)
+        {
+            const SharedFlightState *b = &snapshot[j];
+            if (b->status != STATUS_RUNNING)
+                continue;
+            if (a->time_step != b->time_step)
+                continue;
+
+            double dist = haversine_nm(a->position, b->position);
+            double dalt = fabs(a->position.altitude_m - b->position.altitude_m);
+
+            if (dist < config->safety_min_sep_nm && dalt < config->safety_min_alt_m)
+            {
+                SafetyViolation v;
+                memset(&v, 0, sizeof(v));
+                v.time_step = a->time_step;
+                v.type = VIOLATION_SEPARATION;
+                snprintf(v.flight_a, sizeof(v.flight_a), "%s", a->flight_id);
+                snprintf(v.flight_b, sizeof(v.flight_b), "%s", b->flight_id);
+                v.pid_a = pid_for_flight(a->flight_id, runtimes, runtime_count);
+                v.pid_b = pid_for_flight(b->flight_id, runtimes, runtime_count);
+                if (v.pid_a == 0)
+                    v.pid_a = a->pid;
+                if (v.pid_b == 0)
+                    v.pid_b = b->pid;
+                v.distance_nm = dist;
+
+                if (register_violation(log, &v))
+                    new_violations++;
             }
         }
     }
