@@ -5,8 +5,25 @@ import pt.isep.sem4pi.domain.model.route.AltitudeRange;
 
 import static org.junit.Assert.*;
 
+/**
+ * Test suite for AltitudeRange value object.
+ *
+ * Tests cover:
+ * - Valid altitude range creation with various configurations
+ * - Minimum altitude validation (non-negative)
+ * - Maximum altitude validation (>= minimum)
+ * - Width validation (positive values only)
+ * - Null parameter detection
+ * - Boundary conditions (zero minimum, equal min/max)
+ * - Invalid values (negative min, max < min, zero/negative width)
+ *
+ * @author SEM4PI Team
+ */
 public class AltitudeRangeTest {
 
+    /**
+     * Test that a valid altitude range can be created.
+     */
     @Test
     public void ensureValidAltitudeRangeIsCreated() {
         AltitudeRange range = new AltitudeRange(1000, 5000, 100.0);

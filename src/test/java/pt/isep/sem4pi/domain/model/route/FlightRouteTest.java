@@ -6,30 +6,69 @@ import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
 import pt.isep.sem4pi.domain.model.route.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
+/**
+ * Test suite for FlightRoute domain entity.
+ *
+ * Tests cover:
+ * - Valid route creation and identity
+ * - Null/empty validation for all parameters
+ * - Route naming conventions (format and company code matching)
+ * - Multiple segments support
+ * - Route activation/deactivation
+ * - sameAs identity comparison
+ *
+ * @author SEM4PI Team
+ */
 public class FlightRouteTest {
 
+    /**
+     * Helper method to create a valid route ID for testing.
+     *
+     * @return a valid FlightRouteID
+     */
     private FlightRouteID validRouteID() {
         return new FlightRouteID("TP12");
     }
 
+    /**
+     * Helper method to create a valid company code for testing.
+     *
+     * @return a valid IataCodeCompany
+     */
     private IataCodeCompany validCompanyCode() {
         return new IataCodeCompany("TP");
     }
 
+    /**
+     * Helper method to create a valid origin airport for testing.
+     *
+     * @return a valid IataCodeAirport for origin
+     */
     private IataCodeAirport validOriginAirport() {
         return new IataCodeAirport("OPO");
     }
 
+    /**
+     * Helper method to create a valid destination airport for testing.
+     *
+     * @return a valid IataCodeAirport for destination
+     */
     private IataCodeAirport validDestinationAirport() {
         return new IataCodeAirport("LIS");
     }
 
+    /**
+     * Helper method to create valid segments for testing.
+     *
+     * @return a list with one valid RouteSegment
+     */
     private List<RouteSegment> validSegments() {
         Coordinates start = new Coordinates(41.15, -8.61);
         Coordinates end = new Coordinates(38.77, -9.13);
@@ -39,6 +78,9 @@ public class FlightRouteTest {
         return Arrays.asList(segment);
     }
 
+    /**
+     * Test that a valid flight route can be created successfully.
+     */
     @Test
     public void ensureValidFlightRouteIsCreated() {
         FlightRoute route = new FlightRoute(validRouteID(), validCompanyCode(),
@@ -168,5 +210,82 @@ public class FlightRouteTest {
         FlightRoute route = new FlightRoute(routeID, validCompanyCode(),
                 validOriginAirport(), validDestinationAirport(), validSegments());
         assertNotNull(route);
+    }
+
+    @Test
+    public void ensureNewFlightRouteIsActiveByDefault() {
+        FlightRoute route = new FlightRoute(validRouteID(), validCompanyCode(),
+                validOriginAirport(), validDestinationAirport(), validSegments());
+
+        assertTrue(route.isActive());
+    }
+
+    @Test
+    public void ensureFlightRouteIsInactiveAfterDeactivation() {
+        FlightRoute route = new FlightRoute(validRouteID(), validCompanyCode(),
+                validOriginAirport(), validDestinationAirport(), validSegments());
+
+        route.deactivate(java.time.LocalDate.now());
+
+        assertFalse(route.isActive());
+    }
+
+    @Test
+    public void ensureDeactivateSucceedsWithFutureDate() {
+        FlightRoute route = new FlightRoute(validRouteID(), validCompanyCode(),
+                validOriginAirport(), validDestinationAirport(), validSegments());
+        LocalDate futureDate = LocalDate.now().plusDays(5);
+
+        route.deactivate(futureDate);
+
+        assertFalse(route.isActiveOn(futureDate));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureDeactivateFailsWithNullDate() {
+        FlightRoute route = new FlightRoute(validRouteID(), validCompanyCode(),
+                validOriginAirport(), validDestinationAirport(), validSegments());
+
+        route.deactivate(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureDeactivateFailsWithPastDate() {
+        FlightRoute route = new FlightRoute(validRouteID(), validCompanyCode(),
+                validOriginAirport(), validDestinationAirport(), validSegments());
+
+        route.deactivate(LocalDate.now().minusDays(1));
+    }
+
+    @Test
+    public void ensureIsActiveOnReturnsTrueWhenNotDeactivated() {
+        FlightRoute route = new FlightRoute(validRouteID(), validCompanyCode(),
+                validOriginAirport(), validDestinationAirport(), validSegments());
+
+        assertTrue(route.isActiveOn(LocalDate.now().plusDays(10)));
+    }
+
+    @Test
+    public void ensureIsActiveOnReturnsTrueBeforeDeactivationDate() {
+        FlightRoute route = new FlightRoute(validRouteID(), validCompanyCode(),
+                validOriginAirport(), validDestinationAirport(), validSegments());
+        LocalDate deactivationDate = LocalDate.now().plusDays(5);
+
+        route.deactivate(deactivationDate);
+
+        assertTrue(route.isActiveOn(LocalDate.now().plusDays(2)));
+    }
+
+    @Test
+    public void ensureIsActiveOnReturnsFalseOnOrAfterDeactivationDate() {
+        FlightRoute route = new FlightRoute(validRouteID(), validCompanyCode(),
+                validOriginAirport(), validDestinationAirport(), validSegments());
+        LocalDate deactivationDate = LocalDate.now().plusDays(5);
+
+        route.deactivate(deactivationDate);
+
+        assertFalse(route.isActiveOn(deactivationDate));
+
+        assertFalse(route.isActiveOn(LocalDate.now().plusDays(6)));
     }
 }

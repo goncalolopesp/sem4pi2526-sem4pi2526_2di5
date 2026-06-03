@@ -83,7 +83,8 @@ public class BackofficeConfigurationBootstrapper {
         registerAircraft("CS-B73", "BOEING", "B737", 180, 10, 0, "Portugal", LocalDate.of(2008, 2, 15)); // Mais Velho
         registerAircraft("CS-B78", "BOEING", "B787", 200, 40, 10, "Portugal", LocalDate.of(2023, 11, 1)); // Novíssimo
 
-        registerFlight("TP100", "CS-TST");
+        // Atualizado com a Rota (ex: TP1001) e uma data para o voo
+        registerFlight("TP100", "CS-TST", "TP1001", LocalDate.now().plusDays(5));
 
         registerAirControlArea("LIS_FIR", 36.0, 42.0, -10.0, -6.0, "Lisbon FIR", 1000.0);
         registerAirControlArea("MAD_FIR", 35.0, 43.0, -5.0, 0.0, "Madrid FIR", 1200.0);
@@ -167,12 +168,15 @@ public class BackofficeConfigurationBootstrapper {
         aircraftRepository.save(aircraft);
     }
 
-    private void registerFlight(final String flightCode, final String registrationCode) {
+    private void registerFlight(final String flightCode, final String registrationCode, final String routeIdCode, final LocalDate departureDate) {
         final FlightId flightId = new FlightId(flightCode);
         if (flightRepository.containsOfIdentity(flightId)) {
             return;
         }
-        final Flight flight = new Flight(flightId, new AircraftRegistration(registrationCode));
+
+        final pt.isep.sem4pi.domain.model.route.FlightRouteID routeId = new pt.isep.sem4pi.domain.model.route.FlightRouteID(routeIdCode);
+
+        final Flight flight = new Flight(flightId, new AircraftRegistration(registrationCode), routeId, departureDate);
         flightRepository.save(flight);
     }
 

@@ -5,8 +5,25 @@ import pt.isep.sem4pi.domain.model.route.FlightRouteID;
 
 import static org.junit.Assert.*;
 
+/**
+ * Test suite for FlightRouteID value object.
+ * 
+ * Tests cover:
+ * - Valid ID creation and format validation (2 letters + 1-4 digits)
+ * - Case normalization (lowercase to uppercase)
+ * - Null/empty/blank input handling
+ * - Invalid format rejection (letters only, digits only, wrong letter count, etc.)
+ * - Equality and hash code consistency
+ * - Comparison operations
+ * - String representation
+ * 
+ * @author SEM4PI Team
+ */
 public class FlightRouteIDTest {
 
+    /**
+     * Test that a valid flight route ID can be created.
+     */
     @Test
     public void ensureValidFlightRouteIDIsCreated() {
         FlightRouteID id = new FlightRouteID("TP123");

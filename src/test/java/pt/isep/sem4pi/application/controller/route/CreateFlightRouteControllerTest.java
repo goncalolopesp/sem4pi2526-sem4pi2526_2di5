@@ -22,14 +22,37 @@ import java.util.Collections;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Test suite for CreateFlightRouteController.
+ *
+ * Tests cover:
+ * - Authorization checks for createFlightRoute, getCompanies, getAirports
+ * - Delegation to service layer
+ * - Authorization failure handling
+ * - Exception propagation from service
+ *
+ * @author SEM4PI Team
+ */
 public class CreateFlightRouteControllerTest {
 
+    /** Mock authorization service */
     private AuthorizationService mockAuthz;
+
+    /** Mock flight route creation service */
     private CreateFlightRouteService mockService;
+
+    /** Mock company repository */
     private AirTransportCompanyRepository mockCompanyRepo;
+
+    /** Mock airport repository */
     private AirportRepository mockAirportRepo;
+
+    /** Controller being tested */
     private CreateFlightRouteController controller;
 
+    /**
+     * Sets up test fixtures before each test.
+     */
     @Before
     public void setUp() {
         mockAuthz = Mockito.mock(AuthorizationService.class);
@@ -40,6 +63,11 @@ public class CreateFlightRouteControllerTest {
         controller = new CreateFlightRouteController(mockAuthz, mockService, mockCompanyRepo, mockAirportRepo);
     }
 
+    /**
+     * Helper method to create a valid DTO for testing.
+     *
+     * @return a FlightRouteDTO with valid data
+     */
     private FlightRouteDTO buildValidDTO() {
         AltitudeRangeDTO altDTO = new AltitudeRangeDTO(1000, 5000, 100.0);
         WindDTO windDTO = new WindDTO(180, 15.0);

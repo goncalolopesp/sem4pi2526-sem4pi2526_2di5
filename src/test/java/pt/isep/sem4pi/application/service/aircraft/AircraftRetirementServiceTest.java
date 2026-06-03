@@ -3,11 +3,12 @@ package pt.isep.sem4pi.application.service.aircraft;
 import org.junit.Test;
 import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.model.aircraft.CabinConfiguration; // <-- Adicionado o Import
+import pt.isep.sem4pi.domain.model.aircraft.CabinConfiguration;
 import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
 import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
+import pt.isep.sem4pi.domain.model.route.FlightRouteID;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAircraftRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryFlightRepository;
 
@@ -46,7 +47,12 @@ public class AircraftRetirementServiceTest {
         final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(new ManufacturerId("Airbus"),"A320"), dummySeats, "Portugal", LocalDate.of(2020, 1, 1));
         aircraftRepository.save(aircraft);
 
-        final Flight flight = new Flight(new FlightId("TP200"), registration);
+        final Flight flight = new Flight(
+                new FlightId("TP200"),
+                registration,
+                new FlightRouteID("TP1001"),
+                LocalDate.now().plusDays(5)
+        );
         flightRepository.save(flight);
 
         service.retireAircraft(registration);
