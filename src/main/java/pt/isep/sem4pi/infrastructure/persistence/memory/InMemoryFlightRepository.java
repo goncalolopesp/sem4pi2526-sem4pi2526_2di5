@@ -4,7 +4,10 @@ import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainR
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
+import pt.isep.sem4pi.domain.model.route.FlightRouteID;
 import pt.isep.sem4pi.domain.repositories.FlightRepository;
+
+import java.time.LocalDate;
 
 public class InMemoryFlightRepository extends InMemoryDomainRepository<Flight, FlightId> implements FlightRepository {
 
@@ -18,6 +21,11 @@ public class InMemoryFlightRepository extends InMemoryDomainRepository<Flight, F
         return match(flight -> flight.aircraftRegistration().equals(registration) && flight.isPending())
                 .iterator()
                 .hasNext();
+    }
+
+    @Override
+    public boolean hasFlightsForRouteAfterDate(FlightRouteID routeId, LocalDate date) {
+        return match(flight -> flight.routeId().equals(routeId) && !flight.departureDate().isBefore(date)).iterator().hasNext();
     }
 }
 

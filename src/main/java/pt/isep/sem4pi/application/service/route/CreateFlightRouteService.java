@@ -12,18 +12,43 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Service responsible for orchestrating the creation of a Flight Route.
- * It transforms the incoming DTO into Domain Objects and persists the aggregate.
+ * Application service for creating new flight routes.
+ *
+ * This service orchestrates the creation of a new flight route by transforming
+ * the incoming DTO into domain objects and persisting them using the repository.
+ * It handles the business logic of converting DTOs to domain entities and ensures
+ * they are properly validated and persisted.
+ *
+ * @author SEM4PI Team
  */
 @ApplicationService
 public class CreateFlightRouteService {
 
+    /** Repository for flight route persistence */
     private final FlightRouteRepository routeRepository;
 
+    /**
+     * Constructs a CreateFlightRouteService with the specified repository.
+     *
+     * @param routeRepository the repository used to persist flight routes
+     */
     public CreateFlightRouteService(FlightRouteRepository routeRepository) {
         this.routeRepository = routeRepository;
     }
 
+    /**
+     * Creates a new flight route from the provided DTO.
+     *
+     * Converts the DTO's data into domain objects (RouteSegments with coordinates,
+     * wind, and altitude info), creates a new FlightRoute aggregate, and persists it
+     * through the repository.
+     *
+     * @param dto the data transfer object containing the route information
+     * @return the created and persisted FlightRoute
+     *
+     * @throws IllegalArgumentException if the DTO data is invalid (e.g., invalid route ID format,
+     *                                   mismatched company codes, invalid coordinates)
+     */
     public FlightRoute createFlightRoute(FlightRouteDTO dto) {
 
         List<RouteSegment> segments = dto.getSegments().stream().map(segDto -> {

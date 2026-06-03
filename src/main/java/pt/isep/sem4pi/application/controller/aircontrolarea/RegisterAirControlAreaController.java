@@ -6,7 +6,7 @@ import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
 import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaBoundary;
 import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
-import pt.isep.sem4pi.domain.model.model.aircontrolarea.DTO.AirControlAreaCreateDTO;
+import pt.isep.sem4pi.domain.model.aircontrolarea.DTO.AirControlAreaCreateDTO;
 import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
