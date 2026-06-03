@@ -97,3 +97,24 @@ Presentation -> Application -> Domain -> Infrastructure
 
 ### 4.2 Sequence Diagram (SD)
 ![SD](US073_SSD-Create_Flight_Route_SSD.svg)
+
+# 5. Tests and Implementation
+
+The aggregate creation is heavily protected by unit tests (FlightRouteTest), ensuring invalid states are impossible to instantiate.
+
+Domain Tests (FlightRouteTest)
+
+    ensureValidFlightRouteIsCreated: Happy path for single and multiple segments.
+
+    ensureFlightRouteFailsWithNullRouteID, ensureFlightRouteFailsWithNullCompanyCode, ensureFlightRouteFailsWithNullOriginAirport, etc.: Verifies strict null checks.
+
+    ensureFlightRouteFailsWithEmptySegments: Ensures a route cannot exist without a trajectory.
+
+    ensureFlightRouteFailsWhenRouteNameDoesNotStartWithCompanyCode: Validates the specific business rule linking the Route ID to the Company.
+
+    ensureSameAs...: Validates entity identity comparison.
+
+(Additional tests were created for the Service/Controller layers using Mockito to guarantee correct repository delegation and exception propagation).
+# 6. Conclusion
+
+The implementation of US073 successfully establishes the foundation for flight planning. By utilizing DTOs, the system safely transfers complex nested data from the UI to the Application layer. The FlightRoute aggregate strictly enforces business invariants, ensuring that only structurally sound and properly identified routes are persisted in the database.
