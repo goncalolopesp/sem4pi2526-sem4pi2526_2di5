@@ -25,17 +25,22 @@
         <class>pt.isep.sem4pi.domain.model.flight.Flight</class>
         <class>pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea</class>
         <class>pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator</class>
+        <class>pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator</class>
         <class>pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch</class>
         <class>pt.isep.sem4pi.domain.model.weatherdata.WeatherData</class>
+        <class>pt.isep.sem4pi.domain.model.simulation.Simulation</class>
+        <class>pt.isep.sem4pi.domain.model.simulation.SimulatedFlightInput</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:./db/sem4pi;AUTO_SERVER=TRUE"/>
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:h2:file:./database/sem4pi;AUTO_SERVER=TRUE"/>
             <property name="jakarta.persistence.jdbc.user" value="sa"/>
             <property name="jakarta.persistence.jdbc.password" value=""/>
 
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.hbm2ddl.auto"
+                      value="update"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="false"/>
         </properties>

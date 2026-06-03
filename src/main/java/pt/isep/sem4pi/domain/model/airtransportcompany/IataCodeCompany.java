@@ -1,15 +1,17 @@
 package pt.isep.sem4pi.domain.model.airtransportcompany;
 
+import eapli.framework.domain.model.ValueObject;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public class IataCode {
+public class IataCodeCompany implements ValueObject, Comparable<IataCodeCompany> {
+
     private String iataCode;
 
-    protected IataCode() {
+    protected IataCodeCompany() {
     }
 
-    public IataCode(String iataCode) {
+    public IataCodeCompany(String iataCode) {
         if (iataCode == null || !iataCode.matches("^[A-Za-z]{2}$")) {
             throw new IllegalArgumentException("IATA code must be exactly 2 letters.");
         }
@@ -23,19 +25,22 @@ public class IataCode {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof IataCode that)) return false;
+        if (!(o instanceof IataCodeCompany that)) return false;
         return iataCode.equals(that.iataCode);
-    }
-
-    @Override
-    public String toString() {
-        return "IataCode{" +
-                "iataCode='" + iataCode + '\'' +
-                '}';
     }
 
     @Override
     public int hashCode() {
         return iataCode.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return iataCode;
+    }
+
+    @Override
+    public int compareTo(IataCodeCompany other) {
+        return this.iataCode.compareTo(other.iataCode);
     }
 }

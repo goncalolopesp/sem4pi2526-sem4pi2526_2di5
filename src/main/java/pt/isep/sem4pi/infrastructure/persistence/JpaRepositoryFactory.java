@@ -83,7 +83,35 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     }
 
     @Override
+    public SimulationRepository simulations() {
+        return new JpaSimulationRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public SimulationRepository simulations(final TransactionalContext tx) {
+        return new JpaSimulationRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports() {
+        return new JpaSimulationReportRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports(final TransactionalContext tx) {
+        return new JpaSimulationReportRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
     public WeatherBatchRepository weatherBatches() {
         return new JpaWeatherBatchRepository();
+    }
+
+    @Override
+    public FlightRouteRepository flightRoutes() {return new JpaFlightRouteRepository();}
+
+    @Override
+    public AirportRepository airports() {
+        return new  JpaAirportRepository();
     }
 }
