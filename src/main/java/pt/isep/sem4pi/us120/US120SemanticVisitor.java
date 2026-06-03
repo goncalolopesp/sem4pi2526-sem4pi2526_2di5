@@ -4,6 +4,8 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import pt.isep.sem4pi.us120.US120BaseVisitor;
+import pt.isep.sem4pi.us120.US120Parser;
 
 public class US120SemanticVisitor extends US120BaseVisitor<Void> {
     private static final String REQUIRED_EXTENSION = ".dsldig5";
@@ -110,12 +112,9 @@ public class US120SemanticVisitor extends US120BaseVisitor<Void> {
         return null;
     }
 
-    // --- NOVA VALIDAÇÃO: COORDENADAS ---
     @Override
     public Void visitCoord(US120Parser.CoordContext ctx) {
         String text = ctx.getText();
-        // O formato esperado pelo lexer/parser é "lat|lon" ou "-lat|-lon".
-        // O caractere '|' precisa de ser escapado no regex do split ("\\|")
         String[] parts = text.split("\\|");
 
         if (parts.length == 2) {

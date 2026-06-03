@@ -8,10 +8,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import pt.isep.sem4pi.us120.US120Lexer;
+import pt.isep.sem4pi.us120.US120Parser;
 
-/**
- * Main de apoio à US120 para validar ficheiros .dsldig5.
- */
 public class US120Main {
 
     public static void main(String[] args) throws IOException {
@@ -26,27 +25,22 @@ public class US120Main {
             System.exit(1);
         }
 
-        // 1. Criar o nosso Listener de erros Léxicos/Sintáticos
         US120ErrorListener errorListener = new US120ErrorListener();
 
-        // 2. Lexer
         US120Lexer lexer = new US120Lexer(CharStreams.fromPath(path));
-        lexer.removeErrorListeners(); // Remover listener por defeito que imprime na consola
+        lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
 
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
-        // 3. Parser
         US120Parser parser = new US120Parser(tokens);
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
 
-        // Iniciar o parser processando a regra base "flightPlan"
         ParseTree tree = parser.flightPlan();
 
         System.out.println("=== Resultados de validação para " + path.getFileName() + " ===");
 
-        // 4. Verificar se a fase de parse detetou problemas
         if (errorListener.hasErrors()) {
             printErrors("Léxico/Sintático", errorListener.getErrors());
             System.out.println("\nA validação semântica não foi executada devido a erros estruturais no ficheiro.");
@@ -55,7 +49,6 @@ public class US120Main {
             System.out.println("[Léxico/Sintático] Ficheiro estruturalmente válido. Sem erros.");
         }
 
-        // 5. Visitor Semântico (SÓ corre se não houver erros sintáticos)
         US120SemanticVisitor visitor = new US120SemanticVisitor();
         visitor.visit(tree);
 
