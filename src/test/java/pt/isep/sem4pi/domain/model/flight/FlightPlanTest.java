@@ -89,10 +89,6 @@ public class FlightPlanTest {
         final FlightLeg leg = new FlightLeg(
                 new Departure(new IataCodeAirport("OPO"), new Date(15, 6, year), new Time(9, 0, 0)),
                 new Arrival(new IataCodeAirport("MAD"), new Time(11, 0, 0)),
-                new Route(new RouteID(1), List.of(
-                        new Coordinates(41.0, -8.0),
-                        new Coordinates(40.0, -3.0)
-                )),
                 List.of(),
                 new Fuel(new FuelCapacity(4200.0), FuelUnit.KG)
         );

@@ -192,7 +192,7 @@ public class CreateFlightPlanService {
             );
             final Route planRoute = new Route(new RouteID(routeLegIndex), routeWaypoints);
 
-            legs.add(new FlightLeg(departure, arrival, planRoute, List.of(), fuel));
+            legs.add(new FlightLeg(departure, arrival, List.of(), fuel));
             routeLegIndex++;
         }
         return legs;
