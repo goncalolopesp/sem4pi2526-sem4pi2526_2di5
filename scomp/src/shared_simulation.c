@@ -43,6 +43,20 @@ SharedSimulationState *shared_create(void)
         1,
         0);
 
+/* Semáforos usados para sincronização timestep a timestep
+   entre o processo pai e cada processo filho (US108). */
+    for (int i = 0; i < MAX_FLIGHTS; ++i)
+    {
+        sem_init(
+            &state->step_start[i],
+            1,
+            0);
+    }
+
+/* Flag global para terminar todos os processos filho
+   quando a simulação termina ou ocorre falha. */
+    state->terminate = 0;
+
     pthread_mutexattr_t mutex_attr;
     pthread_condattr_t cond_attr;
 
@@ -70,6 +84,11 @@ void shared_destroy(SharedSimulationState *state)
     sem_destroy(&state->mutex);
 
     sem_destroy(&state->update_sem);
+
+    for (int i = 0; i < MAX_FLIGHTS; ++i)
+    {
+        sem_destroy(&state->step_start[i]);
+    }
 
     pthread_mutex_destroy(&state->pthread_mutex);
     pthread_cond_destroy(&state->pthread_cond);
