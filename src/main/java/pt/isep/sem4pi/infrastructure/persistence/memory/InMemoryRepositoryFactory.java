@@ -36,6 +36,8 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private static AirportRepository airportRepository;
     private static SimulationRepository simulationRepository;
     private static SimulationReportRepository simulationReportRepository;
+    private static FlightPlanRepository flightPlanRepository;
+    private static PilotRepository pilotRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -257,5 +259,31 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     @Override
     public SimulationReportRepository simulationReports(TransactionalContext tx) {
         return simulationReports();
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans() {
+        if (flightPlanRepository == null) {
+            flightPlanRepository = new InMemoryFlightPlanRepository();
+        }
+        return flightPlanRepository;
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans(TransactionalContext tx) {
+        return flightPlans();
+    }
+
+    @Override
+    public PilotRepository pilots() {
+        if (pilotRepository == null) {
+            pilotRepository = new InMemoryPilotRepository();
+        }
+        return pilotRepository;
+    }
+
+    @Override
+    public PilotRepository pilots(TransactionalContext tx) {
+        return pilots();
     }
 }

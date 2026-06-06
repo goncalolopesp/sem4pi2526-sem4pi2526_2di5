@@ -1,4 +1,7 @@
-**Fluxo de classes para implementacao:
+# US042 - Structure and Implementation
+
+## Class Flow
+
 ```txt
 +--------------------------------------------------+
 |                      <<UI>>                      |
@@ -71,7 +74,7 @@
                    | implements              | implements
                    |                         |
    +--------------------------------+   +--------------------------------+
-   |     WeatherDataCSVImporter     |   |    WeatherDataJSONImporter     |
+   |     WeatherDataCSVImporter     |   |    WeatherDataXLSXImporter     |
    +--------------------------------+   +--------------------------------+
    | + boolean validate(            |   | + boolean validate(            |
    |     String filePath)           |   |     String filePath)           |
@@ -80,9 +83,10 @@
    +--------------------------------+   +--------------------------------+
 ```
 
-O importer tem 2 exemplos CSV e JSON, mas podem ser adicionados outros tipos de ficheiros no futuro sem impactar o resto do sistema, seguindo o princípio de aberto/fechado.
+The importer supports CSV and XLSX files. Other formats can be added through new
+`WeatherDataImporter` implementations without changing the import workflow.
 
-Fluxo por defeito:
+## Default Flow
 
 ```txt
 Manual input:
@@ -92,7 +96,7 @@ File input:
 UI -> filePath + fileType -> Controller -> Service -> Factory -> Importer -> WeatherDataDTO -> Service
 ```
 
-Notas de implementacao:
+## Implementation Notes
 - O importador CSV suporta o ficheiro de vento (colunas ACA, Alt_inf, Alt_Sup, Direction, Value, Day, Start, End).
 - O importador XLSX suporta a mesma estrutura do CSV, procurando a linha de cabecalho para mapear colunas.
 - Se o ACA nao existir, o sistema tenta cria-lo a partir do ficheiro ACA correspondente.

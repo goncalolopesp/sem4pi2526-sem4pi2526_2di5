@@ -1,0 +1,54 @@
+@startuml
+autonumber
+actor "Weather Person / Pilot /\nFlight Control Operator" as Actor
+participant "ConsultWeatherDataUI" as UI
+participant "ConsultWeatherDataController" as Controller
+participant "AuthorizationService" as Authz
+participant "ConsultWeatherDataService" as Service
+participant "WeatherBatchRepository" as Repo
+participant "WeatherImportBatch" as Batch
+
+Actor -> UI : provides area ID and date
+activate UI
+UI -> UI : parse date (YYYY-MM-DD)
+
+alt invalid date format
+    UI --> Actor : displays invalid date error
+else valid date
+    UI -> Controller : consultByAreaAndDate(areaId, date)
+    activate Controller
+
+    Controller -> Authz : ensureAuthenticatedUserHasAnyOf(\nADMIN, WEATHER_PERSON,\nPILOT, FLIGHT_CONTROL_OPERATOR)
+    activate Authz
+    Authz --> Controller : authorized
+    deactivate Authz
+
+    Controller -> Service : findByAreaAndDate(areaId, date)
+    activate Service
+    Service -> Service : validate areaId and date
+    Service -> Repo : findAllByAreaId(areaId)
+    activate Repo
+    Repo --> Service : matching batches
+    deactivate Repo
+
+    loop each batch
+        Service -> Batch : getRecords()
+        Batch --> Service : weather records
+        Service -> Service : filter by date and map to DTO
+    end
+
+    Service -> Service : sort by start and end time
+    Service --> Controller : List<WeatherDataViewDTO>
+    deactivate Service
+    Controller --> UI : results
+    deactivate Controller
+
+    alt results found
+        UI --> Actor : displays weather data table
+    else no results
+        UI --> Actor : informs that no data was found
+    end
+end
+
+deactivate UI
+@enduml

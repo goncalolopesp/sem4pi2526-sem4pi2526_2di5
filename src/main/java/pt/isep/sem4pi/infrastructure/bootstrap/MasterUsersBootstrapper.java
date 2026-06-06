@@ -21,6 +21,7 @@ public class MasterUsersBootstrapper {
         registerAdmin(users, backofficeUsers);
         registerBackoffice(users, backofficeUsers);
         registerWeatherPerson(users, backofficeUsers);
+        registerPilot(users);
 
 //        DEBUG
 //        System.out.println("BOOTSTRAP USERS:");
@@ -107,6 +108,19 @@ public class MasterUsersBootstrapper {
                     LocalDate.now().plusYears(1),
                     LocalDate.now()
             ));
+        }
+    }
+
+    private void registerPilot(final UserRepository users) {
+        if (users.ofIdentity(eapli.framework.infrastructure.authz.domain.model.Username.valueOf("pilot")).isEmpty()) {
+            final SystemUserBuilder builder = UserBuilderHelper.builder();
+            builder.withUsername("pilot")
+                    .withPassword("Password1")
+                    .withName("Pilot", "User")
+                    .withEmail("pilot@example.org")
+                    .withRoles(SEM4PIRoles.PILOT);
+
+            users.save(builder.build());
         }
     }
 }
