@@ -124,6 +124,7 @@ public final class WeatherClientHandler implements Runnable {
         final String user = parts[1];
         final String pass = parts[2];
 
+        final String roles;
         synchronized (AUTHZ_LOCK) {
             final AuthorizationService authz = AuthzRegistry.authorizationService();
             try {
@@ -139,6 +140,7 @@ public final class WeatherClientHandler implements Runnable {
                     send(out, WeatherProtocol.ERR + " Access denied: Weather Person role required.");
                     return;
                 }
+                roles = collectRoles(authz);
             } finally {
                 authz.clearSession();
             }
@@ -147,7 +149,32 @@ public final class WeatherClientHandler implements Runnable {
         this.username = user;
         this.password = pass;
         this.authenticated = true;
-        send(out, WeatherProtocol.OK + " Welcome " + user + ".");
+        // OK <username> <comma-separated roles> - the client uses the roles to build its menu.
+        send(out, WeatherProtocol.OK + " " + user + " " + roles);
+    }
+
+    /** Collects the SEM4PI roles held by the currently authenticated user. */
+    private static String collectRoles(final AuthorizationService authz) {
+        final java.util.List<String> roles = new java.util.ArrayList<>();
+        if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {
+            roles.add("ADMIN");
+        }
+        if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.WEATHER_PERSON)) {
+            roles.add("WEATHER_PERSON");
+        }
+        if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.PILOT)) {
+            roles.add("PILOT");
+        }
+        if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.FLIGHT_CONTROL_OPERATOR)) {
+            roles.add("FLIGHT_CONTROL_OPERATOR");
+        }
+        if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)) {
+            roles.add("AIR_TRANSPORT_COMPANY_COLLABORATOR");
+        }
+        if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.BACKOFFICE_OPERATOR)) {
+            roles.add("BACKOFFICE_OPERATOR");
+        }
+        return roles.isEmpty() ? "-" : String.join(",", roles);
     }
 
     private void handleRegister(final String line, final BufferedWriter out) throws IOException {
