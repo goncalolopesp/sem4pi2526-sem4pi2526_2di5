@@ -19,6 +19,8 @@ import pt.isep.sem4pi.presentation.aircraftModel.AddAircraftModelAction;
 import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.*;
 import pt.isep.sem4pi.presentation.authz.ListUsersAction;
+import pt.isep.sem4pi.presentation.flightplan.CreateFlightPlanAction;
+import pt.isep.sem4pi.presentation.flightplan.ListFlightPlansAction;
 import pt.isep.sem4pi.presentation.route.CreateFlightRouteAction;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
@@ -84,6 +86,10 @@ public class MainMenu extends AbstractUI {
     private static final int AIR_CONTROL_AREA_OPTIONS = 7;
     private static final int SIMULATION_OPTIONS = 8;
     private static final int WEATHER_DATA_OPTIONS = 9;
+    private static final int FLIGHT_PLANNING_OPTIONS = 10;
+
+    private static final int CREATE_FLIGHT_PLAN_OPTION = 1;
+    private static final int LIST_FLIGHT_PLANS_OPTION = 2;
 
     private static final String SEPARATOR_LABEL = "--------------";
 
@@ -153,6 +159,11 @@ public class MainMenu extends AbstractUI {
                             SEM4PIRoles.PILOT,
                             SEM4PIRoles.FLIGHT_CONTROL_OPERATOR);
 
+            final boolean isPilot =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.PILOT,
+                            SEM4PIRoles.ADMIN);
+
             if (isAdmin) {
                 final var adminMenu = buildAdminMenu();
                 mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
@@ -173,6 +184,10 @@ public class MainMenu extends AbstractUI {
 
             if (isWeatherManager || isWeatherConsultant) {
                 mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu(isWeatherManager, isWeatherConsultant));
+            }
+
+            if (isPilot) {
+                mainMenu.addSubMenu(FLIGHT_PLANNING_OPTIONS, buildFlightPlanningMenu());
             }
         }
 
@@ -242,6 +257,14 @@ public class MainMenu extends AbstractUI {
         menu.addItem(ADD_AIR_CONTROL_AREA_OPTIONS, "Register Air Control Area", new RegisterAirControlAreaAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
+        return menu;
+    }
+
+    private Menu buildFlightPlanningMenu() {
+        final var menu = new Menu("Flight Planning >");
+        menu.addItem(CREATE_FLIGHT_PLAN_OPTION, "Create flight plan", new CreateFlightPlanAction());
+        menu.addItem(LIST_FLIGHT_PLANS_OPTION, "List flight plans", new ListFlightPlansAction());
+        menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
     }
 

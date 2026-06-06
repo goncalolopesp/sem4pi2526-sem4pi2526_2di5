@@ -64,6 +64,14 @@ public class RouteSegment implements DomainEntity<Long> {
         this.wind = wind;
     }
 
+    public Coordinates startNode() {
+        return startNodeCoords;
+    }
+
+    public Coordinates endNode() {
+        return endNodeCoords;
+    }
+
     @Override
     public Long identity() {
         return segmentId;

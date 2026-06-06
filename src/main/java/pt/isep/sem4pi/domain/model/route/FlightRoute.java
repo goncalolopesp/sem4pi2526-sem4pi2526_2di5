@@ -73,6 +73,22 @@ public class FlightRoute implements AggregateRoot<FlightRouteID> {
         return this.routeID;
     }
 
+    public IataCodeCompany companyCode() {
+        return companyCode;
+    }
+
+    public IataCodeAirport originAirport() {
+        return originAirport;
+    }
+
+    public IataCodeAirport destinationAirport() {
+        return destinationAirport;
+    }
+
+    public List<RouteSegment> segments() {
+        return List.copyOf(segments);
+    }
+
     @Override
     public boolean sameAs(Object other) {
         if (!(other instanceof FlightRoute)) {
