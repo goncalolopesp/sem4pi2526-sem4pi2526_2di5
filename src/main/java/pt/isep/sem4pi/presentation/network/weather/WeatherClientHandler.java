@@ -134,12 +134,6 @@ public final class WeatherClientHandler implements Runnable {
                     send(out, WeatherProtocol.ERR + " Invalid credentials or access denied.");
                     return;
                 }
-                final boolean roleOk = authz.isAuthenticatedUserAuthorizedTo(
-                        SEM4PIRoles.WEATHER_PERSON, SEM4PIRoles.ADMIN);
-                if (!roleOk) {
-                    send(out, WeatherProtocol.ERR + " Access denied: Weather Person role required.");
-                    return;
-                }
                 roles = collectRoles(authz);
             } finally {
                 authz.clearSession();
@@ -149,11 +143,9 @@ public final class WeatherClientHandler implements Runnable {
         this.username = user;
         this.password = pass;
         this.authenticated = true;
-        // OK <username> <comma-separated roles> - the client uses the roles to build its menu.
         send(out, WeatherProtocol.OK + " " + user + " " + roles);
     }
 
-    /** Collects the SEM4PI roles held by the currently authenticated user. */
     private static String collectRoles(final AuthorizationService authz) {
         final java.util.List<String> roles = new java.util.ArrayList<>();
         if (authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN)) {

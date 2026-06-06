@@ -16,21 +16,6 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
-/**
- * US44 - Weather Person remote access client application.
- *
- * <p>Standalone TCP client. It communicates with the embedded server exclusively
- * through the text protocol; it never touches the database or any domain code,
- * satisfying the acceptance criterion that all interaction is limited to the TCP
- * connection.</p>
- *
- * <p>Interaction flow: on startup the user is asked to authenticate immediately.
- * After a successful login the menu is built according to the roles reported by
- * the server, so the same client structure can be reused/extended for other
- * remote-access user stories.</p>
- *
- * <p>Usage: {@code java pt.isep.sem4pi.client.weather.WeatherClientApp [host] [port]}.</p>
- */
 public final class WeatherClientApp {
 
     private static final String DEFAULT_HOST = "127.0.0.1";
@@ -80,7 +65,6 @@ public final class WeatherClientApp {
     private void run() throws IOException {
         boolean exitProgram = false;
         while (!exitProgram) {
-            // Authentication is required up-front before any menu is shown.
             final boolean loggedIn = loginLoop();
             if (!loggedIn) {
                 sendLine("QUIT");
@@ -88,15 +72,10 @@ public final class WeatherClientApp {
                 System.out.println("Goodbye.");
                 return;
             }
-            // Returns true to quit the program, false to log out and ask for login again.
             exitProgram = sessionMenu();
         }
     }
 
-    /**
-     * Prompts for credentials until the login succeeds.
-     * @return true once authenticated, false if the user chose to leave instead.
-     */
     private boolean loginLoop() throws IOException {
         while (true) {
             System.out.println();
@@ -124,7 +103,6 @@ public final class WeatherClientApp {
         }
     }
 
-    /** Parses {@code OK <username> <role1,role2,...>}. */
     private void parseLogin(final String response, final String fallbackUser) {
         final String[] parts = response.split("\\s+");
         this.username = parts.length >= 2 ? parts[1] : fallbackUser;
@@ -134,8 +112,6 @@ public final class WeatherClientApp {
         }
     }
 
-    // Capability flags mirror MainMenu's role logic so the remote menu matches the
-    // local backoffice menu and can be extended for other remote-access user stories.
     private boolean isWeatherManager() {
         return roles.contains(ROLE_ADMIN) || roles.contains(ROLE_WEATHER_PERSON);
     }
@@ -146,10 +122,6 @@ public final class WeatherClientApp {
                 || roles.contains(ROLE_FLIGHT_CONTROL_OPERATOR);
     }
 
-    /**
-     * Shows the role-specific menu.
-     * @return true if the user wants to quit the program, false to go back to login.
-     */
     private boolean sessionMenu() throws IOException {
         while (true) {
             printMenu();
@@ -248,7 +220,6 @@ public final class WeatherClientApp {
             System.out.println(header);
             return;
         }
-        // OK <total> <imported> <rejected> <errCount>
         final String[] parts = header.split("\\s+");
         if (parts.length >= 5) {
             System.out.println("Import completed.");

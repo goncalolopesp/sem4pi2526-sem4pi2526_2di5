@@ -88,6 +88,20 @@ public class WeatherRemoteAccessIT {
     }
 
     @Test
+    public void otherRoleLogsInButCannotRunWeatherOperations() throws Exception {
+        try (Conn c = new Conn(port)) {
+            c.greeting();
+            c.send("LOGIN backoffice Password1");
+            final String login = c.read();
+            assertTrue(login.startsWith("OK"), "other roles must be allowed to log in");
+
+            c.send("CONSULT CW001 " + LocalDate.now());
+            assertTrue(c.read().startsWith("ERR"),
+                    "weather operations must be denied for non-weather roles");
+        }
+    }
+
+    @Test
     public void registerAndConsultRoundTrip() throws Exception {
         try (Conn c = new Conn(port)) {
             c.greeting();
@@ -126,7 +140,6 @@ public class WeatherRemoteAccessIT {
         throw new IllegalStateException("Server did not start on port " + port);
     }
 
-    /** Minimal socket helper for the text protocol. */
     private static final class Conn implements AutoCloseable {
         private final Socket socket;
         private final BufferedReader in;
