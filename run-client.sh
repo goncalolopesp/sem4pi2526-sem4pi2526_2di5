@@ -3,7 +3,7 @@
 # US44 - Starts the Weather Person remote access TCP client.
 #
 # Usage:
-#   ./run-weather-client.sh [host] [port]
+#   ./run-client.sh [host] [port]
 #
 # Defaults: host=127.0.0.1, port=8044
 #
