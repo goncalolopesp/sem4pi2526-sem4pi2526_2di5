@@ -5,8 +5,24 @@ import pt.isep.sem4pi.domain.model.route.Wind;
 
 import static org.junit.Assert.*;
 
+/**
+ * Test suite for Wind value object.
+ *
+ * Tests cover:
+ * - Valid wind creation with various direction and speed values
+ * - Direction validation (0-359 degrees)
+ * - Speed validation (non-negative)
+ * - Null parameter detection
+ * - Boundary conditions (direction 0, 359; speed 0)
+ * - Invalid values (direction -1, 360+; negative speed)
+ *
+ * @author SEM4PI Team
+ */
 public class WindTest {
 
+    /**
+     * Test that valid wind conditions can be created.
+     */
     @Test
     public void ensureValidWindIsCreated() {
         Wind wind = new Wind(180, 15.5);

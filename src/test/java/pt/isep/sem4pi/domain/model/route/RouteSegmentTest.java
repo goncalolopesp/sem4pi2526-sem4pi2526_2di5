@@ -12,24 +12,59 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
+/**
+ * Test suite for RouteSegment domain entity.
+ * 
+ * Tests cover:
+ * - Valid segment creation with single and multiple altitude ranges
+ * - Null/empty/negative input validation
+ * - Maximum speed validation (positive values only)
+ * - Identity and sameAs comparison
+ * - Persistence behavior (identity null before persistence)
+ * 
+ * @author SEM4PI Team
+ */
 public class RouteSegmentTest {
 
+    /**
+     * Helper method to create valid starting coordinates for testing.
+     * 
+     * @return valid Coordinates with latitude/longitude for OPO airport
+     */
     private Coordinates validStartCoords() {
         return new Coordinates(41.15, -8.61);
     }
 
+    /**
+     * Helper method to create valid ending coordinates for testing.
+     * 
+     * @return valid Coordinates with latitude/longitude for LIS airport
+     */
     private Coordinates validEndCoords() {
         return new Coordinates(38.77, -9.13);
     }
 
+    /**
+     * Helper method to create valid wind conditions for testing.
+     * 
+     * @return valid Wind object
+     */
     private Wind validWind() {
         return new Wind(180, 15.0);
     }
 
+    /**
+     * Helper method to create valid altitude ranges for testing.
+     * 
+     * @return list with one valid AltitudeRange
+     */
     private List<AltitudeRange> validAltitudes() {
         return Arrays.asList(new AltitudeRange(1000, 5000, 100.0));
     }
 
+    /**
+     * Test that a valid route segment can be created.
+     */
     @Test
     public void ensureValidRouteSegmentIsCreated() {
         RouteSegment segment = new RouteSegment(
