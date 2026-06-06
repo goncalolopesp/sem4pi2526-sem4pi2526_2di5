@@ -52,6 +52,42 @@ public class US120BaseListener implements US120Listener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAircraft(US120Parser.AircraftContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAircraft(US120Parser.AircraftContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPilot(US120Parser.PilotContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPilot(US120Parser.PilotContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterRoute(US120Parser.RouteContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRoute(US120Parser.RouteContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterLeg(US120Parser.LegContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -83,18 +119,6 @@ public class US120BaseListener implements US120Listener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitArrival(US120Parser.ArrivalContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterRoute(US120Parser.RouteContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRoute(US120Parser.RouteContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -215,6 +239,30 @@ public class US120BaseListener implements US120Listener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitFuel(US120Parser.FuelContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterRegistration(US120Parser.RegistrationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRegistration(US120Parser.RegistrationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPilotId(US120Parser.PilotIdContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPilotId(US120Parser.PilotIdContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

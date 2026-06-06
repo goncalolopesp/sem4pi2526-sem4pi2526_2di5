@@ -31,6 +31,24 @@ public class US120SemanticVisitor extends US120BaseVisitor<Void> {
     }
 
     @Override
+    public Void visitRegistration(US120Parser.RegistrationContext ctx) {
+        String registration = ctx.getText();
+        if (registration.isBlank()) {
+            addError(ctx.getStart().getLine(), "Matrícula da aeronave não pode ser vazia");
+        }
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public Void visitPilotId(US120Parser.PilotIdContext ctx) {
+        String pilotId = ctx.getText();
+        if (pilotId.isBlank()) {
+            addError(ctx.getStart().getLine(), "Identificador do piloto não pode ser vazio");
+        }
+        return visitChildren(ctx);
+    }
+
+    @Override
     public Void visitDate(US120Parser.DateContext ctx) {
         String date = ctx.getText();
         String[] parts = date.split("/");

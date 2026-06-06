@@ -1,8 +1,10 @@
 flight F123 regular {
+aircraft CS-TUA;
+pilot P001;
+route R1 { (41.15|-8.61) (38.72|-9.13) };
 leg {
 departure { OPO, 27/05/2026, 14:30 };
 arrival { LIS, 15:20 };
-route R1 { (41.15|-8.61) };
 segment { (41.15|-8.61), (38.72|-9.13), {(1000,2000)}, 50, 180, 250 };
 fuel { 1000, kg };
 };

@@ -37,6 +37,36 @@ public interface US120Listener extends ParseTreeListener {
 	 */
 	void exitFlightType(US120Parser.FlightTypeContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link US120Parser#aircraft}.
+	 * @param ctx the parse tree
+	 */
+	void enterAircraft(US120Parser.AircraftContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link US120Parser#aircraft}.
+	 * @param ctx the parse tree
+	 */
+	void exitAircraft(US120Parser.AircraftContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link US120Parser#pilot}.
+	 * @param ctx the parse tree
+	 */
+	void enterPilot(US120Parser.PilotContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link US120Parser#pilot}.
+	 * @param ctx the parse tree
+	 */
+	void exitPilot(US120Parser.PilotContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link US120Parser#route}.
+	 * @param ctx the parse tree
+	 */
+	void enterRoute(US120Parser.RouteContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link US120Parser#route}.
+	 * @param ctx the parse tree
+	 */
+	void exitRoute(US120Parser.RouteContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link US120Parser#leg}.
 	 * @param ctx the parse tree
 	 */
@@ -66,16 +96,6 @@ public interface US120Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitArrival(US120Parser.ArrivalContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link US120Parser#route}.
-	 * @param ctx the parse tree
-	 */
-	void enterRoute(US120Parser.RouteContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link US120Parser#route}.
-	 * @param ctx the parse tree
-	 */
-	void exitRoute(US120Parser.RouteContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link US120Parser#segment}.
 	 * @param ctx the parse tree
@@ -176,6 +196,26 @@ public interface US120Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFuel(US120Parser.FuelContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link US120Parser#registration}.
+	 * @param ctx the parse tree
+	 */
+	void enterRegistration(US120Parser.RegistrationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link US120Parser#registration}.
+	 * @param ctx the parse tree
+	 */
+	void exitRegistration(US120Parser.RegistrationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link US120Parser#pilotId}.
+	 * @param ctx the parse tree
+	 */
+	void enterPilotId(US120Parser.PilotIdContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link US120Parser#pilotId}.
+	 * @param ctx the parse tree
+	 */
+	void exitPilotId(US120Parser.PilotIdContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link US120Parser#airport}.
 	 * @param ctx the parse tree
