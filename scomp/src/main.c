@@ -267,12 +267,6 @@ static void deactivate_runtime(FlightRuntime *runtime, struct pollfd *poll_fd)
         runtime->pipe_fd = -1;
     }
 
-    if (runtime->sync_fd >= 0)
-    {
-        close(runtime->sync_fd);
-        runtime->sync_fd = -1;
-    }
-
     runtime->active = 0;
     if (poll_fd)
     {
@@ -446,8 +440,8 @@ int main(int argc, char **argv)
     sigaction(SIGINT, &interrupt_action, NULL);
     sigaction(SIGTERM, &interrupt_action, NULL);
 
-    /* O pai ignora SIGPIPE — evita morrer se um filho terminar antes de
-       conseguirmos escrever no sync_pipe. */
+    /* O pai ignora SIGPIPE para evitar terminar caso um filho encerre
+       antes de o pipe de updates ser fechado corretamente. */
     signal(SIGPIPE, SIG_IGN);
 
     PositionTracker tracker;
@@ -499,7 +493,6 @@ int main(int argc, char **argv)
     for (int i = 0; i < config.flight_count; ++i)
     {
         int update_pipe[2]; /* filho -> pai */
-        int sync_pipe[2];   /* pai -> filho */
         int departure_time = config.start_time;
         char departure_err[256];
 
@@ -524,16 +517,6 @@ int main(int argc, char **argv)
             tracker_destroy(&tracker);
             return EXIT_FAILURE;
         }
-        if (pipe(sync_pipe) != 0)
-        {
-            perror("pipe sync_pipe");
-            close(update_pipe[0]);
-            close(update_pipe[1]);
-            sigprocmask(SIG_SETMASK, &previous_mask, NULL);
-            free_runtimes(runtimes, i);
-            tracker_destroy(&tracker);
-            return EXIT_FAILURE;
-        }
 
         pid_t pid = fork();
         if (pid < 0)
@@ -541,8 +524,6 @@ int main(int argc, char **argv)
             perror("fork");
             close(update_pipe[0]);
             close(update_pipe[1]);
-            close(sync_pipe[0]);
-            close(sync_pipe[1]);
             sigprocmask(SIG_SETMASK, &previous_mask, NULL);
             free_runtimes(runtimes, i);
             tracker_destroy(&tracker);
@@ -553,19 +534,15 @@ int main(int argc, char **argv)
         {
             /* Filho */
             close(update_pipe[0]); /* não lê updates */
-            close(sync_pipe[1]);   /* não escreve sync */
-            run_flight_process(config.flight_files[i],
-                               update_pipe[1], sync_pipe[0], &config);
+            run_flight_process(config.flight_files[i], i, update_pipe[1], &config);
             /* run_flight_process termina o processo com _exit() */
         }
 
         /* Pai */
         close(update_pipe[1]); /* não escreve updates */
-        close(sync_pipe[0]);   /* não lê sync */
 
         runtimes[i].pid = pid;
         runtimes[i].pipe_fd = update_pipe[0];
-        runtimes[i].sync_fd = sync_pipe[1];
         runtimes[i].active = 1;
         runtimes[i].departure_time = departure_time;
 
@@ -699,11 +676,7 @@ int main(int argc, char **argv)
             {
                 if (runtimes[i].active)
                 {
-                    char command = 'N';
-                    if (write(runtimes[i].sync_fd, &command, sizeof(command)) < 0)
-                    {
-                        /* filho pode ter morrido entretanto; ignoramos (SIGPIPE está IGN) */
-                    }
+                    sem_post(&shared->step_start[i]);
                 }
             }
         }
@@ -720,15 +693,16 @@ int main(int argc, char **argv)
         }
     }
 
-    /* Fecha todos os pipes do pai — força EOF no read() dos filhos
-    que ainda estejam à espera de comandos de sincronização. */
+    /* Sinaliza terminação global e desbloqueia todos os filhos
+       que possam estar bloqueados à espera do próximo timestep. */
+    shared->terminate = 1;
+
     for (int i = 0; i < config.flight_count; ++i)
     {
-        if (runtimes[i].sync_fd >= 0)
-        {
-            close(runtimes[i].sync_fd);
-            runtimes[i].sync_fd = -1;
-        }
+        /* Liberta o próximo timestep apenas depois de o pai
+           terminar o processamento do passo atual. */
+        sem_post(&shared->step_start[i]);
+
         if (runtimes[i].active && runtimes[i].pipe_fd >= 0)
         {
             close(runtimes[i].pipe_fd);

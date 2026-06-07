@@ -40,10 +40,6 @@ public class FlightLeg {
     })
     private Arrival arrival;
 
-    @Embedded
-    @AttributeOverride(name = "routeID.routeID", column = @Column(name = "leg_route_id"))
-    private Route route;
-
     @Transient
     private List<Segment> segments = new ArrayList<>();
 
@@ -54,10 +50,9 @@ public class FlightLeg {
         //for ORM
     }
 
-    public FlightLeg(Departure dp, Arrival ar, Route rt, List<Segment> segmentList, Fuel f){
+    public FlightLeg(Departure dp, Arrival ar, List<Segment> segmentList, Fuel f){
         this.departure = dp;
         this.arrival = ar;
-        this.route = rt;
         if (segmentList != null) {
             this.segments = new ArrayList<>(segmentList);
         }
