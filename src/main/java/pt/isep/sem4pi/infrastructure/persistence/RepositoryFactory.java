@@ -53,4 +53,12 @@ public interface RepositoryFactory {
     SimulationReportRepository simulationReports();
 
     SimulationReportRepository simulationReports(TransactionalContext tx);
+
+    FlightPlanRepository flightPlans();
+
+    FlightPlanRepository flightPlans(TransactionalContext tx);
+
+    PilotRepository pilots();
+
+    PilotRepository pilots(TransactionalContext tx);
 }

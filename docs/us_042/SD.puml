@@ -1,0 +1,65 @@
+@startuml
+autonumber
+actor "Weather Person" as Actor
+participant "ImportWeatherDataUI" as UI
+participant "ImportWeatherDataController" as Controller
+participant "AuthorizationService" as Authz
+participant "WeatherDataImportService" as Service
+participant "WeatherDataImporterFactory" as Factory
+participant "WeatherDataImporter\n(CSV/XLSX)" as Importer
+participant "AirControlAreaRepository" as AreaRepo
+participant "WeatherImportBatch" as Batch
+participant "WeatherBatchRepository" as BatchRepo
+
+Actor -> UI : provides file path and type
+activate UI
+UI -> Controller : importWeatherData(filePath, fileType)
+activate Controller
+
+Controller -> Authz : ensureAuthenticatedUserHasAnyOf(\nADMIN, WEATHER_PERSON)
+activate Authz
+Authz --> Controller : authorized
+deactivate Authz
+
+Controller -> Service : importWeatherData(filePath, fileType)
+activate Service
+Service -> Service : resolveFilePath(...)
+Service -> Service : loadAirControlAreas(...)
+
+Service -> Factory : createImporter(fileType, resolvedPath)
+activate Factory
+Factory --> Service : CSV or XLSX importer
+deactivate Factory
+
+Service -> Importer : validate(resolvedPath)
+activate Importer
+Importer --> Service : valid
+Service -> Importer : execute(resolvedPath)
+Importer --> Service : WeatherImportPayload
+deactivate Importer
+
+loop each parsed record
+    Service -> AreaRepo : containsOfIdentity(areaId)
+    alt area does not exist and definition is available
+        Service -> AreaRepo : save(new AirControlArea)
+    end
+    alt area exists and record is valid
+        Service -> Service : create WeatherData and group by area
+    else invalid record or missing area
+        Service -> Service : add error to result
+    end
+end
+
+loop each area with valid records
+    Service -> Batch ** : forBulkImport(areaId, records)
+    Batch --> Service : completed batch
+    Service -> BatchRepo : save(batch)
+end
+
+Service --> Controller : WeatherImportResultDTO
+deactivate Service
+Controller --> UI : result
+deactivate Controller
+UI --> Actor : displays totals and errors
+deactivate UI
+@enduml

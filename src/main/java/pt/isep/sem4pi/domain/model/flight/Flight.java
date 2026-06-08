@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.model.flight;
 
 import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -11,6 +12,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.route.FlightRouteID;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "Flight")
@@ -24,6 +28,13 @@ public class Flight implements AggregateRoot<FlightId> {
     @AttributeOverride(name = "code", column = @Column(name = "aircraft_registration"))
     private AircraftRegistration aircraftRegistration;
 
+    @Embedded
+    @AttributeOverride(name = "routeId", column = @Column(name = "route_id", nullable = false))
+    private FlightRouteID routeId;
+
+    @Column(name = "departure_date", nullable = false)
+    private LocalDate departureDate;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private FlightStatus status;
@@ -35,15 +46,17 @@ public class Flight implements AggregateRoot<FlightId> {
         // for ORM
     }
 
-    public Flight(final FlightId id, final AircraftRegistration aircraftRegistration) {
-        if (id == null) {
-            throw new IllegalArgumentException("Flight id cannot be null.");
-        }
-        if (aircraftRegistration == null) {
-            throw new IllegalArgumentException("Aircraft registration cannot be null.");
-        }
+    public Flight(final FlightId id, final AircraftRegistration aircraftRegistration,
+                  final FlightRouteID routeId, final LocalDate departureDate) {
+        Preconditions.nonNull(id, "Flight id cannot be null.");
+        Preconditions.nonNull(aircraftRegistration, "Aircraft registration cannot be null.");
+        Preconditions.nonNull(routeId, "Flight route ID cannot be null.");
+        Preconditions.nonNull(departureDate, "Departure date cannot be null.");
+
         this.id = id;
         this.aircraftRegistration = aircraftRegistration;
+        this.routeId = routeId;
+        this.departureDate = departureDate;
         this.status = FlightStatus.PENDING;
     }
 
@@ -59,6 +72,14 @@ public class Flight implements AggregateRoot<FlightId> {
         return aircraftRegistration;
     }
 
+    public FlightRouteID routeId() {
+        return routeId;
+    }
+
+    public LocalDate departureDate() {
+        return departureDate;
+    }
+
     @Override
     public FlightId identity() {
         return id;
@@ -71,4 +92,3 @@ public class Flight implements AggregateRoot<FlightId> {
         return identity().equals(that.identity());
     }
 }
-

@@ -78,6 +78,10 @@ public class RegisterBackofficeUserServiceTest {
         @Override public pt.isep.sem4pi.domain.repositories.SimulationRepository simulations(TransactionalContext tx) { return null; }
         @Override public pt.isep.sem4pi.domain.repositories.SimulationReportRepository simulationReports() { return null; }
         @Override public pt.isep.sem4pi.domain.repositories.SimulationReportRepository simulationReports(TransactionalContext tx) { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.FlightPlanRepository flightPlans() { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.FlightPlanRepository flightPlans(TransactionalContext tx) { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.PilotRepository pilots() { return null; }
+        @Override public pt.isep.sem4pi.domain.repositories.PilotRepository pilots(TransactionalContext tx) { return null; }
     }
 
     private TestRepositoryFactory factory;
@@ -301,6 +305,10 @@ public class RegisterBackofficeUserServiceTest {
             @Override public pt.isep.sem4pi.domain.repositories.SimulationRepository simulations(TransactionalContext tx) { return null; }
             @Override public pt.isep.sem4pi.domain.repositories.SimulationReportRepository simulationReports() { return null; }
             @Override public pt.isep.sem4pi.domain.repositories.SimulationReportRepository simulationReports(TransactionalContext tx) { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.FlightPlanRepository flightPlans() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.FlightPlanRepository flightPlans(TransactionalContext tx) { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.PilotRepository pilots() { return null; }
+            @Override public pt.isep.sem4pi.domain.repositories.PilotRepository pilots(TransactionalContext tx) { return null; }
         };
 
         final RegisterBackofficeUserService svc = new RegisterBackofficeUserService(customFactory);

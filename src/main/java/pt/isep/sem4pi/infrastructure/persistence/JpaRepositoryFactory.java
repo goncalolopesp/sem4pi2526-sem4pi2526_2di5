@@ -112,6 +112,26 @@ public class JpaRepositoryFactory implements RepositoryFactory {
 
     @Override
     public AirportRepository airports() {
-        return new  JpaAirportRepository();
+        return new JpaAirportRepository();
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans() {
+        return new JpaFlightPlanRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans(final TransactionalContext tx) {
+        return new JpaFlightPlanRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public PilotRepository pilots() {
+        return new JpaPilotRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public PilotRepository pilots(final TransactionalContext tx) {
+        return new JpaPilotRepository(PERSISTENCE_UNIT_NAME);
     }
 }
