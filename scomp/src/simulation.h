@@ -4,6 +4,8 @@
 #include <sys/types.h>
 #include <semaphore.h>
 #include <pthread.h>
+#include <signal.h>
+#include <stdio.h>
 
 /* ===== Limites e constantes ===== */
 #define MAX_FLIGHTS 32
@@ -229,5 +231,45 @@ SharedSimulationState *shared_create(void);
 
 void shared_destroy(
     SharedSimulationState *state);
+
+/* ===== US106/US107: Parent process threads ===== */
+
+typedef struct
+{
+    SharedSimulationState *shared;
+    const SimulationConfig *config;
+    SafetyLog *safety_log;
+    FlightRuntime *runtimes;
+    int runtime_count;
+
+    pthread_mutex_t report_mutex;
+    pthread_cond_t violation_cond;
+
+    int violations_reported;
+    volatile sig_atomic_t stop;
+
+    char realtime_log_path[MAX_PATH];
+} SimulationThreadContext;
+
+void simulation_threads_init(SimulationThreadContext *ctx,
+                             SharedSimulationState *shared,
+                             const SimulationConfig *config,
+                             SafetyLog *safety_log,
+                             FlightRuntime *runtimes,
+                             int runtime_count);
+
+void simulation_threads_destroy(SimulationThreadContext *ctx);
+
+void *safety_detection_thread(void *arg);
+void *report_generation_thread(void *arg);
+
+int safety_check_shared(SharedSimulationState *shared,
+                        const SimulationConfig *config,
+                        SafetyLog *log,
+                        const FlightRuntime *runtimes,
+                        int runtime_count);
+
+void safety_log_event_realtime(FILE *file, const SafetyViolation *v,
+                               const SimulationConfig *config);
 
 #endif
