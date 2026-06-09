@@ -165,7 +165,6 @@
     </build>
 
     <profiles>
-        <!-- Executa o validador US120 (usa compile normal — não limita o compilador) -->
         <profile>
             <id>us120</id>
             <build>
@@ -180,7 +179,7 @@
                                     <goal>java</goal>
                                 </goals>
                                 <configuration>
-                                    <mainClass>pt.isep.sem4pi.us120.US120Main</mainClass>
+                                    <mainClass>pt.isep.sem4pi.Main</mainClass>
                                 </configuration>
                             </execution>
                         </executions>

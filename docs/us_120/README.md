@@ -52,13 +52,6 @@ The `US120SemanticVisitor` enforces the following constraints:
 
 ## How to Run
 
-### 1. Generate ANTLR Files (Lexer, Parser, Visitor, Listener)
-Ensure the ANTLR4 tool is properly configured in your environment. Run the following command in the directory containing the `US120.g4` file:
-```bash
-java org.antlr.v4.Tool -visitor -listener US120.g4
-```
-Then, `cd` to the project's root and run:
-```bash
-mvn generate-sources compile exec:java@us120 -Pus120 -Dexec.args="docs/us_120/testFiles/exemplo.dsldig5"
-```
-The argument in the `-Dexec.args=` is the path to the file. In this case, I'm testing the example file created for the US.
+Compile and start the application as usual (`run.sh`, `run-client.sh`, or `mvn exec:java`). After login, open **Air Transport Company > Validate flight plan** and enter the path to a `.dsldig5` file (e.g. `docs/us_120/testFiles/exemplo.dsldig5`).
+
+The ANTLR lexer, parser, visitor and listener are generated automatically during `mvn compile` from `src/main/antlr4/US120.g4`.
