@@ -36,6 +36,7 @@ public final class WeatherClientHandler implements Runnable {
     private String username;
     private String password;
     private boolean authenticated;
+    private WeatherImportSession pendingImport;
 
     public WeatherClientHandler(final Socket socket) {
         this.socket = socket;
@@ -60,6 +61,13 @@ public final class WeatherClientHandler implements Runnable {
             String line;
             while ((line = in.readLine()) != null) {
                 final String trimmed = line.trim();
+                if (pendingImport != null) {
+                    WeatherServerLog.log("<< " + remote + " IMPORT_CHUNK "
+                            + pendingImport.getReceivedChunks() + 1 + "/"
+                            + pendingImport.getExpectedChunks());
+                    receiveImportChunk(trimmed, out);
+                    continue;
+                }
                 WeatherServerLog.log("<< " + remote + " " + WeatherServerLog.summarizeIncoming(trimmed));
                 final boolean keepGoing = dispatch(trimmed, out);
                 if (!keepGoing) {
@@ -101,6 +109,9 @@ public final class WeatherClientHandler implements Runnable {
                     return true;
                 case WeatherProtocol.CMD_IMPORT:
                     handleImport(line, out);
+                    return true;
+                case WeatherProtocol.CMD_IMPORT_BEGIN:
+                    handleImportBegin(line, out);
                     return true;
                 case WeatherProtocol.CMD_CONSULT:
                     handleConsult(line, out);
@@ -217,7 +228,60 @@ public final class WeatherClientHandler implements Runnable {
             send(out, WeatherProtocol.ERR + " Invalid base64 payload.");
             return;
         }
+        executeImport(content, fileName, fileType, out);
+    }
 
+    private void handleImportBegin(final String line, final BufferedWriter out) throws IOException {
+        ensureAuthenticated();
+        if (pendingImport != null) {
+            send(out, WeatherProtocol.ERR + " Import already in progress.");
+            return;
+        }
+        final String[] p = line.split("\\s+", 4);
+        if (p.length != 4) {
+            send(out, WeatherProtocol.ERR
+                    + " Usage: IMPORT_BEGIN <fileName> <fileType|-> <chunkCount>");
+            return;
+        }
+        final String fileName = sanitizeFileName(p[1]);
+        final String fileType = WeatherProtocol.AUTODETECT.equals(p[2]) ? "" : p[2];
+        final int chunkCount;
+        try {
+            chunkCount = Integer.parseInt(p[3]);
+        } catch (final NumberFormatException e) {
+            send(out, WeatherProtocol.ERR + " Invalid chunk count.");
+            return;
+        }
+        if (chunkCount <= 0 || chunkCount > 100000) {
+            send(out, WeatherProtocol.ERR + " Invalid chunk count.");
+            return;
+        }
+        pendingImport = new WeatherImportSession(fileName, fileType, chunkCount);
+        send(out, WeatherProtocol.OK + " " + WeatherProtocol.SEND_CHUNKS);
+    }
+
+    private void receiveImportChunk(final String chunk, final BufferedWriter out) throws IOException {
+        if (pendingImport == null) {
+            send(out, WeatherProtocol.ERR + " No import in progress.");
+            return;
+        }
+        pendingImport.addChunk(chunk);
+        if (pendingImport.isComplete()) {
+            final WeatherImportSession session = pendingImport;
+            pendingImport = null;
+            try {
+                executeImport(session.decodeContent(), session.getFileName(), session.getFileType(), out);
+            } catch (final IllegalArgumentException e) {
+                send(out, WeatherProtocol.ERR + " Invalid base64 payload.");
+            }
+        }
+    }
+
+    private void executeImport(
+            final byte[] content,
+            final String fileName,
+            final String fileType,
+            final BufferedWriter out) throws IOException {
         Path tempDir = null;
         Path tempFile = null;
         try {
@@ -336,7 +400,8 @@ public final class WeatherClientHandler implements Runnable {
         send(out, WeatherProtocol.OK + " Available commands:");
         send(out, "  LOGIN <username> <password>");
         send(out, "  REGISTER <areaId> <temp> <windSpeed> <windDir> <humidity> <pressure> <altitude>");
-        send(out, "  IMPORT <fileName> <fileType|-> <base64Content>");
+        send(out, "  IMPORT_BEGIN <fileName> <fileType|-> <chunkCount>  (+ base64 chunk lines)");
+        send(out, "  IMPORT <fileName> <fileType|-> <base64Content>  (legacy, small files)");
         send(out, "  CONSULT <areaId> <yyyy-MM-dd>");
         send(out, "  LOGOUT | QUIT | HELP");
     }

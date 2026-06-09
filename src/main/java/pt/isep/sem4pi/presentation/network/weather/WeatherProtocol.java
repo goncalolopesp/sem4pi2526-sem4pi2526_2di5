@@ -12,6 +12,7 @@ public final class WeatherProtocol {
     public static final String CMD_LOGIN = "LOGIN";
     public static final String CMD_REGISTER = "REGISTER";
     public static final String CMD_IMPORT = "IMPORT";
+    public static final String CMD_IMPORT_BEGIN = "IMPORT_BEGIN";
     public static final String CMD_CONSULT = "CONSULT";
     public static final String CMD_LOGOUT = "LOGOUT";
     public static final String CMD_QUIT = "QUIT";
@@ -26,6 +27,11 @@ public final class WeatherProtocol {
 
     /** Sent periodically while a bulk import is being processed (keeps the TCP session alive). */
     public static final String IMPORT_IN_PROGRESS = "IMPORT_IN_PROGRESS";
+
+    /** Server is ready to receive base64 chunks after IMPORT_BEGIN. */
+    public static final String SEND_CHUNKS = "SEND_CHUNKS";
+
+    public static final int IMPORT_BASE64_CHUNK_SIZE = 4096;
 
     public static int resolvePort() {
         final String prop = System.getProperty("weather.server.port");

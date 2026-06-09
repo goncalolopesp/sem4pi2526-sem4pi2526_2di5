@@ -29,6 +29,8 @@ public final class WeatherTcpServer {
             try {
                 final Socket client = serverSocket.accept();
                 client.setKeepAlive(true);
+                client.setReceiveBufferSize(256 * 1024);
+                client.setSendBufferSize(256 * 1024);
                 workers.submit(new WeatherClientHandler(client));
             } catch (final IOException e) {
                 if (running) {

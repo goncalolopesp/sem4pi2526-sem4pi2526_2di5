@@ -10,12 +10,16 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 
+import pt.isep.sem4pi.presentation.network.weather.WeatherDataFileResolver;
 import pt.isep.sem4pi.presentation.network.weather.WeatherProtocol;
 
 public final class WeatherClientApp {
@@ -49,6 +53,8 @@ public final class WeatherClientApp {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT_MS);
             socket.setKeepAlive(true);
+            socket.setSendBufferSize(256 * 1024);
+            socket.setReceiveBufferSize(256 * 1024);
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
                  BufferedWriter out = new BufferedWriter(
@@ -197,15 +203,23 @@ public final class WeatherClientApp {
     }
 
     private void importWeather() throws IOException {
-        System.out.print("Local file path (csv/xlsx): ");
-        final String filePath = console.nextLine().trim();
-        final Path path = Path.of(filePath);
-        if (!Files.exists(path)) {
-            System.out.println("File not found: " + filePath);
+        System.out.print("Enter file path or name (extension optional): ");
+        final String userInput = console.nextLine().trim();
+        final Optional<WeatherDataFileResolver.ResolvedWeatherFile> resolved;
+        try {
+            resolved = WeatherDataFileResolver.resolve(userInput);
+        } catch (final IOException e) {
+            System.out.println("Could not read file: " + e.getMessage());
             return;
         }
-        System.out.print("File type (csv/xlsx, blank to auto-detect): ");
-        final String fileType = console.nextLine().trim();
+        if (resolved.isEmpty()) {
+            System.out.println("File not found: " + userInput);
+            return;
+        }
+
+        final Path path = resolved.get().path();
+        final String fileType = resolved.get().fileType();
+        System.out.println("Using file: " + path + " (" + fileType + ")");
 
         final byte[] content;
         try {
@@ -214,9 +228,23 @@ public final class WeatherClientApp {
             System.out.println("Could not read file: " + e.getMessage());
             return;
         }
+
         final String base64 = Base64.getEncoder().encodeToString(content);
-        final String type = fileType.isEmpty() ? "-" : fileType;
-        sendLine("IMPORT " + path.getFileName() + " " + type + " " + base64);
+        final List<String> chunks = splitBase64(base64, WeatherProtocol.IMPORT_BASE64_CHUNK_SIZE);
+        final String typeToken = fileType.isEmpty() ? WeatherProtocol.AUTODETECT : fileType;
+        final String fileName = path.getFileName().toString();
+
+        sendLine("IMPORT_BEGIN " + fileName + " " + typeToken + " " + chunks.size());
+        final String ack = readLine();
+        if (ack == null || !ack.startsWith(WeatherProtocol.OK)) {
+            System.out.println(ack != null ? ack : "Connection closed by server.");
+            return;
+        }
+
+        System.out.println("Uploading file (" + chunks.size() + " chunks)...");
+        for (final String chunk : chunks) {
+            sendLine(chunk);
+        }
 
         String header = readImportResponse();
         if (header == null || !header.startsWith("OK")) {
@@ -298,5 +326,17 @@ public final class WeatherClientApp {
             line = readLine();
         }
         return line;
+    }
+
+    private static List<String> splitBase64(final String base64, final int chunkSize) {
+        final List<String> chunks = new ArrayList<>();
+        if (base64.isEmpty()) {
+            chunks.add("");
+            return chunks;
+        }
+        for (int i = 0; i < base64.length(); i += chunkSize) {
+            chunks.add(base64.substring(i, Math.min(i + chunkSize, base64.length())));
+        }
+        return chunks;
     }
 }

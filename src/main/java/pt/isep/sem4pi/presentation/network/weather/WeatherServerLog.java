@@ -31,6 +31,9 @@ public final class WeatherServerLog {
             }
             return "IMPORT (incomplete)";
         }
+        if (WeatherProtocol.CMD_IMPORT_BEGIN.equals(command)) {
+            return line;
+        }
         if (line.length() > 200) {
             return line.substring(0, 200) + "...";
         }

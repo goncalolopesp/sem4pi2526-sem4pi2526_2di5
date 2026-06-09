@@ -18,7 +18,12 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
@@ -102,6 +107,31 @@ public class WeatherRemoteAccessIT {
     }
 
     @Test
+    public void chunkedImportWorks() throws Exception {
+        final Path file = Path.of(
+                "src", "main", "java", "pt", "isep", "sem4pi", "data", "weatherData", "CW_WeatherData_v0.xlsx");
+        final byte[] content = Files.readAllBytes(file);
+        final String base64 = Base64.getEncoder().encodeToString(content);
+        final List<String> chunks = splitBase64(base64, WeatherProtocol.IMPORT_BASE64_CHUNK_SIZE);
+
+        try (Conn c = new Conn(port)) {
+            c.greeting();
+            c.send("LOGIN weather Password1");
+            assertTrue(c.read().startsWith("OK"));
+
+            c.send("IMPORT_BEGIN CW_WeatherData_v0.xlsx xlsx " + chunks.size());
+            assertTrue(c.read().contains(WeatherProtocol.SEND_CHUNKS));
+
+            for (final String chunk : chunks) {
+                c.send(chunk);
+            }
+
+            final String header = c.read();
+            assertTrue(header.startsWith("OK"), "expected import summary, got: " + header);
+        }
+    }
+
+    @Test
     public void registerAndConsultRoundTrip() throws Exception {
         try (Conn c = new Conn(port)) {
             c.greeting();
@@ -120,6 +150,18 @@ public class WeatherRemoteAccessIT {
                 assertNotNull(c.read());
             }
         }
+    }
+
+    private static List<String> splitBase64(final String base64, final int chunkSize) {
+        final List<String> chunks = new ArrayList<>();
+        if (base64.isEmpty()) {
+            chunks.add("");
+            return chunks;
+        }
+        for (int i = 0; i < base64.length(); i += chunkSize) {
+            chunks.add(base64.substring(i, Math.min(i + chunkSize, base64.length())));
+        }
+        return chunks;
     }
 
     private static int freePort() throws Exception {
