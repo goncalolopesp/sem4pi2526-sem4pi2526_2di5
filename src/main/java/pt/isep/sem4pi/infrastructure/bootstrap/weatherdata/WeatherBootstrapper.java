@@ -1,8 +1,10 @@
 package pt.isep.sem4pi.infrastructure.bootstrap.weatherdata;
 
+import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import pt.isep.sem4pi.application.controller.weatherdata.RegisterWeatherController;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
-import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+
+import java.time.LocalDate;
 
 public class WeatherBootstrapper {
     private final RegisterWeatherController controller;
@@ -21,7 +23,7 @@ public class WeatherBootstrapper {
 
     private void registerSafely(String areaId, double t, double ws, double wd, double h, double p, double a) {
         try {
-            controller.registerWeather(areaId, t, ws, wd, h, p, a);
+            controller.registerWeather(areaId, LocalDate.now(), t, ws, wd, h, p, a);
             System.out.println("   -> Bootstrapped Weather for: " + areaId);
         } catch (Exception e) {
             System.out.println("   -> Skipped Weather for " + areaId);

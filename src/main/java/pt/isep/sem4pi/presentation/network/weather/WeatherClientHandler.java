@@ -8,6 +8,7 @@ import pt.isep.sem4pi.application.controller.weatherdata.ImportWeatherDataContro
 import pt.isep.sem4pi.application.controller.weatherdata.RegisterWeatherController;
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataViewDTO;
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
+import pt.isep.sem4pi.domain.model.weatherdata.WeatherTimeFormatter;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 
 import java.io.BufferedReader;
@@ -192,23 +193,30 @@ public final class WeatherClientHandler implements Runnable {
     private void handleRegister(final String line, final BufferedWriter out) throws IOException {
         ensureAuthenticated();
         final String[] p = line.split("\\s+");
-        if (p.length != 8) {
+        if (p.length != 9) {
             send(out, WeatherProtocol.ERR
-                    + " Usage: REGISTER <areaId> <temp> <windSpeed> <windDir> <humidity> <pressure> <altitude>");
+                    + " Usage: REGISTER <areaId> <yyyy-MM-dd> <temp> <windSpeed> <windDir> <humidity> <pressure> <altitude>");
             return;
         }
         final String areaId = p[1];
-        final double temp = Double.parseDouble(p[2]);
-        final double windSpeed = Double.parseDouble(p[3]);
-        final double windDir = Double.parseDouble(p[4]);
-        final double humidity = Double.parseDouble(p[5]);
-        final double pressure = Double.parseDouble(p[6]);
-        final double altitude = Double.parseDouble(p[7]);
+        final LocalDate date;
+        try {
+            date = LocalDate.parse(p[2].trim());
+        } catch (final DateTimeParseException e) {
+            send(out, WeatherProtocol.ERR + " Invalid date format. Use yyyy-MM-dd.");
+            return;
+        }
+        final double temp = Double.parseDouble(p[3]);
+        final double windSpeed = Double.parseDouble(p[4]);
+        final double windDir = Double.parseDouble(p[5]);
+        final double humidity = Double.parseDouble(p[6]);
+        final double pressure = Double.parseDouble(p[7]);
+        final double altitude = Double.parseDouble(p[8]);
 
         runAuthenticated(() -> new RegisterWeatherController()
-                .registerWeather(areaId, temp, windSpeed, windDir, humidity, pressure, altitude));
+                .registerWeather(areaId, date, temp, windSpeed, windDir, humidity, pressure, altitude));
 
-        send(out, WeatherProtocol.OK + " Weather data registered for area " + areaId + ".");
+        send(out, WeatherProtocol.OK + " Weather data registered for area " + areaId + " on " + date + ".");
     }
 
     private void handleImport(final String line, final BufferedWriter out) throws IOException {
@@ -327,10 +335,10 @@ public final class WeatherClientHandler implements Runnable {
 
         send(out, WeatherProtocol.OK + " " + results.size());
         for (final WeatherDataViewDTO dto : results) {
-            send(out, String.join(WeatherProtocol.FIELD_SEP,
+            sendQuiet(out, String.join(WeatherProtocol.FIELD_SEP,
                     String.valueOf(dto.getDate()),
-                    String.valueOf(dto.getStartTime()),
-                    String.valueOf(dto.getEndTime()),
+                    WeatherTimeFormatter.format(dto.getStartTime()),
+                    WeatherTimeFormatter.format(dto.getEndTime()),
                     String.valueOf(dto.getTemperatureCelsius()),
                     String.valueOf(dto.getWindSpeedKnots()),
                     String.valueOf(dto.getWindDirectionDegrees()),
@@ -399,7 +407,7 @@ public final class WeatherClientHandler implements Runnable {
     private void sendHelp(final BufferedWriter out) throws IOException {
         send(out, WeatherProtocol.OK + " Available commands:");
         send(out, "  LOGIN <username> <password>");
-        send(out, "  REGISTER <areaId> <temp> <windSpeed> <windDir> <humidity> <pressure> <altitude>");
+        send(out, "  REGISTER <areaId> <yyyy-MM-dd> <temp> <windSpeed> <windDir> <humidity> <pressure> <altitude>");
         send(out, "  IMPORT_BEGIN <fileName> <fileType|-> <chunkCount>  (+ base64 chunk lines)");
         send(out, "  IMPORT <fileName> <fileType|-> <base64Content>  (legacy, small files)");
         send(out, "  CONSULT <areaId> <yyyy-MM-dd>");
@@ -417,12 +425,20 @@ public final class WeatherClientHandler implements Runnable {
     }
 
     private static void send(final BufferedWriter out, final String message) throws IOException {
+        writeLine(out, message);
+        WeatherServerLog.log(">> " + summarizeOutgoing(message));
+    }
+
+    private static void sendQuiet(final BufferedWriter out, final String message) throws IOException {
+        writeLine(out, message);
+    }
+
+    private static void writeLine(final BufferedWriter out, final String message) throws IOException {
         synchronized (out) {
             out.write(message);
             out.write('\n');
             out.flush();
         }
-        WeatherServerLog.log(">> " + summarizeOutgoing(message));
     }
 
     private static String summarizeOutgoing(final String message) {

@@ -3,6 +3,7 @@ package pt.isep.sem4pi.application.service.weatherdata;
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataViewDTO;
 import pt.isep.sem4pi.domain.model.weatherdata.WeatherData;
 import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
+import pt.isep.sem4pi.domain.model.weatherdata.WeatherTimeFormatter;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 
 import java.time.LocalDate;
@@ -40,8 +41,8 @@ public class ConsultWeatherDataService {
         return new WeatherDataViewDTO(
                 areaId,
                 record.getDate(),
-                record.getStartTime(),
-                record.getEndTime(),
+                WeatherTimeFormatter.normalize(record.getStartTime()),
+                WeatherTimeFormatter.normalize(record.getEndTime()),
                 record.getWind().getSpeedKnots(),
                 record.getWind().getDirectionDegrees(),
                 record.getTemperature().getCelsius(),

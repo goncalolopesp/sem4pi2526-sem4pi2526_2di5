@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataDTO;
+import pt.isep.sem4pi.domain.model.weatherdata.WeatherTimeFormatter;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -235,8 +236,7 @@ public class WeatherDataXLSXImporter implements WeatherDataImporter {
             return null;
         }
         if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-            LocalDateTime dateTime = cell.getLocalDateTimeCellValue();
-            return dateTime.toLocalTime();
+            return WeatherTimeFormatter.normalize(cell.getLocalDateTimeCellValue().toLocalTime());
         }
         String value = formatter.formatCellValue(cell).trim();
         if (value.isEmpty()) {

@@ -10,6 +10,8 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -190,6 +192,14 @@ public final class WeatherClientApp {
     private void registerWeather() throws IOException {
         System.out.print("Air Control Area ID: ");
         final String areaId = console.nextLine().trim();
+        System.out.print("Date (yyyy-MM-dd): ");
+        final String dateInput = console.nextLine().trim();
+        try {
+            LocalDate.parse(dateInput);
+        } catch (final DateTimeParseException e) {
+            System.out.println("Invalid date format. Use yyyy-MM-dd.");
+            return;
+        }
         final String temp = ask("Temperature (Celsius)");
         final String windSpeed = ask("Wind speed (knots)");
         final String windDir = ask("Wind direction (0-359)");
@@ -197,7 +207,7 @@ public final class WeatherClientApp {
         final String pressure = ask("Pressure (hPa)");
         final String altitude = ask("Altitude (meters)");
 
-        sendLine(String.join(" ", "REGISTER", areaId, temp, windSpeed, windDir,
+        sendLine(String.join(" ", "REGISTER", areaId, dateInput, temp, windSpeed, windDir,
                 humidity, pressure, altitude));
         System.out.println(readLine());
     }
@@ -302,6 +312,7 @@ public final class WeatherClientApp {
                 System.out.println(row);
             }
         }
+        System.out.println();
     }
 
     private String ask(final String label) {
