@@ -8,6 +8,7 @@ import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.flight.dep_and_arr.Date;
 import pt.isep.sem4pi.domain.model.pilot.Pilot;
 import pt.isep.sem4pi.domain.model.route.FlightRoute;
+import pt.isep.sem4pi.domain.model.weatherdata.WeatherData;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +48,14 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private FlightPlanStatus status;
+
+    @ManyToMany
+    @JoinTable(
+            name = "flight_plan_weather_data",
+            joinColumns = @JoinColumn(name = "flight_plan_id"),
+            inverseJoinColumns = @JoinColumn(name = "weather_data_id")
+    )
+    private List<WeatherData> weatherData = new ArrayList<>();
 
     @Version
     private Long version;
@@ -112,6 +121,10 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
         return pilot;
     }
 
+    public List<WeatherData> weatherData() {
+        return Collections.unmodifiableList(weatherData);
+    }
+
     public List<FlightLeg> legs() {
         return Collections.unmodifiableList(legs);
     }
@@ -128,6 +141,19 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
             throw new IllegalStateException("Only draft flight plans can be rejected.");
         }
         this.status = FlightPlanStatus.REJECTED;
+    }
+
+    public boolean associateWeatherData(WeatherData weatherData) {
+        Preconditions.nonNull(weatherData, "Weather data is required");
+        if (this.weatherData.contains(weatherData)) {
+            return false;
+        }
+        final boolean previousTestInvalidated = status != FlightPlanStatus.DRAFT;
+        this.weatherData.add(weatherData);
+        if (previousTestInvalidated) {
+            this.status = FlightPlanStatus.DRAFT;
+        }
+        return previousTestInvalidated;
     }
 
 }

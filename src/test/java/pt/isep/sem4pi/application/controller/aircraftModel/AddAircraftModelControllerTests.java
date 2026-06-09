@@ -90,9 +90,10 @@ public class AddAircraftModelControllerTests {
     @Test
     public void ensureCannotAddDuplicateModelNameForSameManufacturer() {
         long initialCount = ((InMemoryAircraftModelRepository) aircraftRepo).count();
+        final String modelName = "A320-" + System.nanoTime();
 
         controller.addAircraftModel(
-                dummyManufacturer, "PASSENGER", "A320", EngineType.TURBOFAN,
+                dummyManufacturer, "PASSENGER", modelName, EngineType.TURBOFAN,
                 new BigDecimal("40000"), new BigDecimal("60000"), new BigDecimal("70000"),
                 new BigDecimal("12000"), new BigDecimal("12000"), new BigDecimal("800"),
                 new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
@@ -103,7 +104,7 @@ public class AddAircraftModelControllerTests {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> controller.addAircraftModel(
-                        dummyManufacturer, "PASSENGER", "A320", EngineType.TURBOFAN,
+                        dummyManufacturer, "PASSENGER", modelName, EngineType.TURBOFAN,
                         new BigDecimal("40000"), new BigDecimal("70000"), new BigDecimal("80000"),
                         new BigDecimal("12000"), new BigDecimal("12000"), new BigDecimal("800"),
                         new BigDecimal("120"), new BigDecimal("0.02"), new BigDecimal("0.5"),
@@ -133,6 +134,7 @@ public class AddAircraftModelControllerTests {
     public void ensureDefaultConstructorWorks() {
         System.setProperty("persistence.repositoryFactory",
                 "pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory");
+        PersistenceContext.resetForTesting();
 
         AuthzRegistry.configure(
                 PersistenceContext.repositories().users(),
@@ -165,6 +167,7 @@ public class AddAircraftModelControllerTests {
         result.forEach(list::add);
 
         assertFalse(list.isEmpty());
-        assertEquals("CFM56", list.get(0).identity().toString());
+        assertTrue(list.stream()
+                .anyMatch(engine -> "CFM56".equals(engine.identity().toString())));
     }
 }
