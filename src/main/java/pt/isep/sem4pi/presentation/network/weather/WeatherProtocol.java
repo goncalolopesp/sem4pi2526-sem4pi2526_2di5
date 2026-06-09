@@ -24,6 +24,9 @@ public final class WeatherProtocol {
 
     public static final String AUTODETECT = "-";
 
+    /** Sent periodically while a bulk import is being processed (keeps the TCP session alive). */
+    public static final String IMPORT_IN_PROGRESS = "IMPORT_IN_PROGRESS";
+
     public static int resolvePort() {
         final String prop = System.getProperty("weather.server.port");
         if (prop != null && !prop.isBlank()) {

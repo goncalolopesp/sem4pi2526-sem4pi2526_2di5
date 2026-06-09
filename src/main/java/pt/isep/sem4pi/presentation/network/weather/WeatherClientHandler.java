@@ -24,10 +24,12 @@ import java.time.format.DateTimeParseException;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class WeatherClientHandler implements Runnable {
 
     private static final Object AUTHZ_LOCK = new Object();
+    private static final int IMPORT_KEEPALIVE_INTERVAL_MS = 15000;
 
     private final Socket socket;
 
@@ -42,7 +44,12 @@ public final class WeatherClientHandler implements Runnable {
     @Override
     public void run() {
         final String remote = socket.getRemoteSocketAddress().toString();
-        System.out.println("[WeatherServer] Client connected: " + remote);
+        WeatherServerLog.log("Client connected: " + remote);
+        try {
+            socket.setKeepAlive(true);
+        } catch (final IOException ignored) {
+            // best effort
+        }
         try (BufferedReader in = new BufferedReader(
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
              BufferedWriter out = new BufferedWriter(
@@ -52,16 +59,18 @@ public final class WeatherClientHandler implements Runnable {
 
             String line;
             while ((line = in.readLine()) != null) {
-                final boolean keepGoing = dispatch(line.trim(), out);
+                final String trimmed = line.trim();
+                WeatherServerLog.log("<< " + remote + " " + WeatherServerLog.summarizeIncoming(trimmed));
+                final boolean keepGoing = dispatch(trimmed, out);
                 if (!keepGoing) {
                     break;
                 }
             }
         } catch (final IOException e) {
-            System.out.println("[WeatherServer] Connection error (" + remote + "): " + e.getMessage());
+            WeatherServerLog.log("Connection error (" + remote + "): " + e.getMessage());
         } finally {
             closeQuietly();
-            System.out.println("[WeatherServer] Client disconnected: " + remote);
+            WeatherServerLog.log("Client disconnected: " + remote);
         }
     }
 
@@ -217,7 +226,7 @@ public final class WeatherClientHandler implements Runnable {
             Files.write(tempFile, content);
 
             final String pathForImport = tempFile.toString();
-            final WeatherImportResultDTO result = runAuthenticated(() ->
+            final WeatherImportResultDTO result = runImportWithKeepalive(out, () ->
                     new ImportWeatherDataController().importWeatherData(pathForImport, fileType));
 
             final List<String> errors = result.getErrors();
@@ -264,6 +273,34 @@ public final class WeatherClientHandler implements Runnable {
                     String.valueOf(dto.getPressureHpa()),
                     String.valueOf(dto.getHumidityPercentage()),
                     String.valueOf(dto.getAltitudeMeters())));
+        }
+    }
+
+    private WeatherImportResultDTO runImportWithKeepalive(
+            final BufferedWriter out,
+            final Callable<WeatherImportResultDTO> importTask) throws IOException {
+        final AtomicBoolean done = new AtomicBoolean(false);
+        final Thread keepalive = new Thread(() -> {
+            while (!done.get()) {
+                try {
+                    Thread.sleep(IMPORT_KEEPALIVE_INTERVAL_MS);
+                    if (!done.get()) {
+                        send(out, WeatherProtocol.OK + " " + WeatherProtocol.IMPORT_IN_PROGRESS);
+                    }
+                } catch (final InterruptedException e) {
+                    break;
+                } catch (final IOException e) {
+                    break;
+                }
+            }
+        }, "weather-import-keepalive");
+        keepalive.setDaemon(true);
+        keepalive.start();
+        try {
+            return runAuthenticated(importTask);
+        } finally {
+            done.set(true);
+            keepalive.interrupt();
         }
     }
 
@@ -315,9 +352,25 @@ public final class WeatherClientHandler implements Runnable {
     }
 
     private static void send(final BufferedWriter out, final String message) throws IOException {
-        out.write(message);
-        out.write('\n');
-        out.flush();
+        synchronized (out) {
+            out.write(message);
+            out.write('\n');
+            out.flush();
+        }
+        WeatherServerLog.log(">> " + summarizeOutgoing(message));
+    }
+
+    private static String summarizeOutgoing(final String message) {
+        if (message == null) {
+            return "";
+        }
+        if (message.contains(WeatherProtocol.IMPORT_IN_PROGRESS)) {
+            return message;
+        }
+        if (message.length() > 200) {
+            return message.substring(0, 200) + "...";
+        }
+        return message;
     }
 
     private static void deleteQuietly(final Path path) {

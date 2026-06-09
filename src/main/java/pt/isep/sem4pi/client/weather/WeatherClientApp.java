@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
+import pt.isep.sem4pi.presentation.network.weather.WeatherProtocol;
+
 public final class WeatherClientApp {
 
     private static final String DEFAULT_HOST = "127.0.0.1";
@@ -46,6 +48,7 @@ public final class WeatherClientApp {
         System.out.println("Connecting to remote access server at " + host + ":" + port + " ...");
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT_MS);
+            socket.setKeepAlive(true);
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
                  BufferedWriter out = new BufferedWriter(
@@ -215,7 +218,7 @@ public final class WeatherClientApp {
         final String type = fileType.isEmpty() ? "-" : fileType;
         sendLine("IMPORT " + path.getFileName() + " " + type + " " + base64);
 
-        final String header = readLine();
+        String header = readImportResponse();
         if (header == null || !header.startsWith("OK")) {
             System.out.println(header);
             return;
@@ -286,5 +289,14 @@ public final class WeatherClientApp {
 
     private String readLine() throws IOException {
         return in.readLine();
+    }
+
+    private String readImportResponse() throws IOException {
+        String line = readLine();
+        while (line != null && line.contains(WeatherProtocol.IMPORT_IN_PROGRESS)) {
+            System.out.println("Server is processing import, please wait...");
+            line = readLine();
+        }
+        return line;
     }
 }

@@ -21,17 +21,18 @@ public final class WeatherTcpServer {
     public void start() throws IOException {
         this.serverSocket = new ServerSocket(port);
         this.running = true;
-        System.out.println("[WeatherServer] Listening on TCP port " + port + " ...");
+        WeatherServerLog.log("Listening on TCP port " + port + " ...");
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
         while (running) {
             try {
                 final Socket client = serverSocket.accept();
+                client.setKeepAlive(true);
                 workers.submit(new WeatherClientHandler(client));
             } catch (final IOException e) {
                 if (running) {
-                    System.out.println("[WeatherServer] Accept failed: " + e.getMessage());
+                    WeatherServerLog.log("Accept failed: " + e.getMessage());
                 }
             }
         }
@@ -42,7 +43,7 @@ public final class WeatherTcpServer {
             return;
         }
         this.running = false;
-        System.out.println("[WeatherServer] Shutting down ...");
+        WeatherServerLog.log("Shutting down ...");
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
