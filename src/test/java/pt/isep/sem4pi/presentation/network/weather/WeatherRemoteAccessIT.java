@@ -152,7 +152,7 @@ public class WeatherRemoteAccessIT {
             c.send("LOGIN weather Password1");
             assertTrue(c.read().startsWith("OK"));
 
-            c.send("REGISTER CW001 " + LocalDate.now() + " 15 10 90 50 1013 1000");
+            c.send("REGISTER CW001 " + LocalDate.now() + " 08:00 10:00 15 10 90 50 1013 1000");
             assertTrue(c.read().startsWith("OK"));
 
             c.send("CONSULT CW001 " + LocalDate.now());

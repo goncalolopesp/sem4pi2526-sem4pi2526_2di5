@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +31,7 @@ public final class WeatherClientApp {
     private static final String DEFAULT_HOST = "127.0.0.1";
     private static final int DEFAULT_PORT = 8044;
     private static final int CONNECT_TIMEOUT_MS = 5000;
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_WEATHER_PERSON = "WEATHER_PERSON";
@@ -202,10 +205,21 @@ public final class WeatherClientApp {
         final String areaId = console.nextLine().trim();
         System.out.print("Weather Data Date (yyyy-MM-dd): ");
         final String dateInput = console.nextLine().trim();
+        System.out.print("Start Time (HH:mm): ");
+        final String startTimeInput = console.nextLine().trim();
+        System.out.print("End Time (HH:mm, blank to use start time): ");
+        final String endTimeInput = console.nextLine().trim();
+        final LocalDate date;
+        final LocalTime startTime;
+        final LocalTime endTime;
         try {
-            LocalDate.parse(dateInput);
+            date = LocalDate.parse(dateInput);
+            startTime = LocalTime.parse(startTimeInput, TIME_FORMAT);
+            endTime = endTimeInput.isEmpty()
+                    ? startTime
+                    : LocalTime.parse(endTimeInput, TIME_FORMAT);
         } catch (final DateTimeParseException e) {
-            System.out.println("Invalid date format. Use yyyy-MM-dd.");
+            System.out.println("Invalid date or time format. Use yyyy-MM-dd and HH:mm.");
             return;
         }
         final String temp = ask("Temperature (Celsius)");
@@ -215,8 +229,9 @@ public final class WeatherClientApp {
         final String pressure = ask("Pressure (hPa)");
         final String altitude = ask("Altitude (meters)");
 
-        sendLine(String.join(" ", "REGISTER", areaId, dateInput, temp, windSpeed, windDir,
-                humidity, pressure, altitude));
+        sendLine(String.join(" ", "REGISTER", areaId, dateInput,
+                startTime.format(TIME_FORMAT), endTime.format(TIME_FORMAT),
+                temp, windSpeed, windDir, humidity, pressure, altitude));
         System.out.println(readLine());
     }
 

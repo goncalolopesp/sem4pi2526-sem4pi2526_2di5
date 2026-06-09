@@ -21,6 +21,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Base64;
 import java.util.List;
@@ -31,6 +33,7 @@ public final class WeatherClientHandler implements Runnable {
 
     private static final Object AUTHZ_LOCK = new Object();
     private static final int IMPORT_KEEPALIVE_INTERVAL_MS = 15000;
+    private static final DateTimeFormatter REGISTER_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final Socket socket;
 
@@ -194,30 +197,36 @@ public final class WeatherClientHandler implements Runnable {
     private void handleRegister(final String line, final BufferedWriter out) throws IOException {
         ensureAuthenticated();
         final String[] p = line.split("\\s+");
-        if (p.length != 9) {
+        if (p.length != 11) {
             send(out, WeatherProtocol.ERR
-                    + " Usage: REGISTER <areaId> <yyyy-MM-dd> <temp> <windSpeed> <windDir> <humidity> <pressure> <altitude>");
+                    + " Usage: REGISTER <areaId> <yyyy-MM-dd> <startHH:mm> <endHH:mm> "
+                    + "<temp> <windSpeed> <windDir> <humidity> <pressure> <altitude>");
             return;
         }
         final String areaId = p[1];
         final LocalDate date;
+        final LocalTime startTime;
+        final LocalTime endTime;
         try {
             date = LocalDate.parse(p[2].trim());
+            startTime = LocalTime.parse(p[3].trim(), REGISTER_TIME_FORMAT);
+            endTime = LocalTime.parse(p[4].trim(), REGISTER_TIME_FORMAT);
         } catch (final DateTimeParseException e) {
-            send(out, WeatherProtocol.ERR + " Invalid date format. Use yyyy-MM-dd.");
+            send(out, WeatherProtocol.ERR + " Invalid date or time format. Use yyyy-MM-dd and HH:mm.");
             return;
         }
-        final double temp = Double.parseDouble(p[3]);
-        final double windSpeed = Double.parseDouble(p[4]);
-        final double windDir = Double.parseDouble(p[5]);
-        final double humidity = Double.parseDouble(p[6]);
-        final double pressure = Double.parseDouble(p[7]);
-        final double altitude = Double.parseDouble(p[8]);
+        final double temp = Double.parseDouble(p[5]);
+        final double windSpeed = Double.parseDouble(p[6]);
+        final double windDir = Double.parseDouble(p[7]);
+        final double humidity = Double.parseDouble(p[8]);
+        final double pressure = Double.parseDouble(p[9]);
+        final double altitude = Double.parseDouble(p[10]);
 
         runAuthenticated(() -> new RegisterWeatherController()
-                .registerWeather(areaId, date, temp, windSpeed, windDir, humidity, pressure, altitude));
+                .registerWeather(areaId, date, startTime, endTime, temp, windSpeed, windDir, humidity, pressure, altitude));
 
-        send(out, WeatherProtocol.OK + " Weather data registered for area " + areaId + " on " + date + ".");
+        send(out, WeatherProtocol.OK + " Weather data registered for area " + areaId + " on " + date
+                + " (" + startTime + " - " + endTime + ").");
     }
 
     private void handleImport(final String line, final BufferedWriter out) throws IOException {
@@ -413,7 +422,8 @@ public final class WeatherClientHandler implements Runnable {
     private void sendHelp(final BufferedWriter out) throws IOException {
         send(out, WeatherProtocol.OK + " Available commands:");
         send(out, "  LOGIN <username> <password>");
-        send(out, "  REGISTER <areaId> <yyyy-MM-dd> <temp> <windSpeed> <windDir> <humidity> <pressure> <altitude>");
+        send(out, "  REGISTER <areaId> <yyyy-MM-dd> <startHH:mm> <endHH:mm> "
+                + "<temp> <windSpeed> <windDir> <humidity> <pressure> <altitude>");
         send(out, "  IMPORT_BEGIN <fileName> <fileType|-> <chunkCount>  (+ base64 chunk lines)");
         send(out, "  IMPORT <fileName> <fileType|-> <base64Content>  (legacy, small files)");
         send(out, "  CONSULT <areaId> <yyyy-MM-dd>");

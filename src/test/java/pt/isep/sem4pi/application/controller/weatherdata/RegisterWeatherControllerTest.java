@@ -6,6 +6,7 @@ import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryWeatherBatchRepository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -21,7 +22,8 @@ public class RegisterWeatherControllerTest {
         RegisterWeatherController controller = new RegisterWeatherController(repository, authz);
 
         WeatherImportBatch batch = controller.registerWeather(
-                "121", LocalDate.of(2026, 6, 10), 20.0, 10.0, 90.0, 50.0, 1013.0, 150.0);
+                "121", LocalDate.of(2026, 6, 10), LocalTime.of(8, 0), LocalTime.of(10, 30),
+                20.0, 10.0, 90.0, 50.0, 1013.0, 150.0);
 
         assertNotNull(batch);
         assertEquals(1, repository.findAllByAreaId("121").size());

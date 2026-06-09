@@ -7,6 +7,7 @@ import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryWeatherBatchRepository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -25,7 +26,8 @@ public class RegisterWeatherServiceTest {
     @Test
     public void ensureSuccessfulManualWeatherRegistration() {
         WeatherImportBatch result = service.registerManualData(
-                "EUR_WEST", LocalDate.of(2026, 6, 10), 22.0, 10.0, 90.0, 60.0, 1012.0, 150.0);
+                "EUR_WEST", LocalDate.of(2026, 6, 10), LocalTime.of(9, 0), LocalTime.of(11, 0),
+                22.0, 10.0, 90.0, 60.0, 1012.0, 150.0);
 
         assertNotNull(result);
         assertEquals("EUR_WEST", result.getAirControlAreaId());
@@ -41,7 +43,8 @@ public class RegisterWeatherServiceTest {
         // Act & Assert
         try {
             service.registerManualData(
-                    "EUR_WEST", LocalDate.of(2026, 6, 10), 22.0, 10.0, 90.0, 60.0, 1012.0, 60000.0);
+                    "EUR_WEST", LocalDate.of(2026, 6, 10), LocalTime.of(9, 0), LocalTime.of(11, 0),
+                    22.0, 10.0, 90.0, 60.0, 1012.0, 60000.0);
             fail("Expected exception due to invalid altitude");
         } catch (IllegalArgumentException e) {
             assertEquals("Altitude must be a valid atmospheric height.", e.getMessage());
