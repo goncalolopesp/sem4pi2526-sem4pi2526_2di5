@@ -103,6 +103,7 @@ public final class WeatherClientHandler implements Runnable {
                     this.authenticated = false;
                     this.username = null;
                     this.password = null;
+                    this.pendingImport = null;
                     send(out, WeatherProtocol.OK + " Logged out.");
                     return true;
                 case WeatherProtocol.CMD_REGISTER:
@@ -332,6 +333,11 @@ public final class WeatherClientHandler implements Runnable {
 
         final List<WeatherDataViewDTO> results = runAuthenticated(() ->
                 new ConsultWeatherDataController().consultByAreaAndDate(areaId, date));
+
+        if (results.isEmpty()) {
+            send(out, WeatherProtocol.OK + " 0 " + WeatherProtocol.NO_DATA);
+            return;
+        }
 
         send(out, WeatherProtocol.OK + " " + results.size());
         for (final WeatherDataViewDTO dto : results) {

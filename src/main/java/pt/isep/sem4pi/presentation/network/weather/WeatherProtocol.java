@@ -31,6 +31,9 @@ public final class WeatherProtocol {
     /** Server is ready to receive base64 chunks after IMPORT_BEGIN. */
     public static final String SEND_CHUNKS = "SEND_CHUNKS";
 
+    /** No weather records matched the consult query. */
+    public static final String NO_DATA = "NO_DATA";
+
     public static final int IMPORT_BASE64_CHUNK_SIZE = 4096;
 
     public static int resolvePort() {

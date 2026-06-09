@@ -75,6 +75,20 @@ public class WeatherRemoteAccessIT {
     }
 
     @Test
+    public void consultWithNoResultsReturnsNoData() throws Exception {
+        try (Conn c = new Conn(port)) {
+            c.greeting();
+            c.send("LOGIN weather Password1");
+            assertTrue(c.read().startsWith("OK"));
+
+            c.send("CONSULT CW001 2099-01-01");
+            final String response = c.read();
+            assertTrue(response.startsWith("OK 0"), "expected empty consult response, got: " + response);
+            assertTrue(response.contains(WeatherProtocol.NO_DATA));
+        }
+    }
+
+    @Test
     public void operationsRequireAuthentication() throws Exception {
         try (Conn c = new Conn(port)) {
             c.greeting();

@@ -2,12 +2,10 @@ package pt.isep.sem4pi.application.service.weatherdata;
 
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataViewDTO;
 import pt.isep.sem4pi.domain.model.weatherdata.WeatherData;
-import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
 import pt.isep.sem4pi.domain.model.weatherdata.WeatherTimeFormatter;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,13 +25,12 @@ public class ConsultWeatherDataService {
             throw new IllegalArgumentException("Date is required.");
         }
 
-        List<WeatherImportBatch> batches = repository.findAllByAreaId(areaId.trim());
-        return batches.stream()
-                .flatMap(batch -> batch.getRecords().stream()
-                        .filter(record -> date.equals(record.getDate()))
-                        .map(record -> toViewDTO(batch.getAirControlAreaId(), record)))
-                .sorted(Comparator.comparing(WeatherDataViewDTO::getStartTime)
-                        .thenComparing(WeatherDataViewDTO::getEndTime))
+        final String normalizedAreaId = areaId.trim();
+        if (repository.countWeatherDataByAreaIdAndDate(normalizedAreaId, date) == 0) {
+            return List.of();
+        }
+        return repository.findWeatherDataByAreaIdAndDate(normalizedAreaId, date).stream()
+                .map(record -> toViewDTO(normalizedAreaId, record))
                 .collect(Collectors.toList());
     }
 

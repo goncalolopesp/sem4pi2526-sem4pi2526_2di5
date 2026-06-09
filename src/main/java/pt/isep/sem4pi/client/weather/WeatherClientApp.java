@@ -139,15 +139,23 @@ public final class WeatherClientApp {
             final String option = console.nextLine().trim();
 
             if (isWeatherManager() && ("1".equals(option) || "2".equals(option))) {
-                if ("1".equals(option)) {
-                    registerWeather();
-                } else {
-                    importWeather();
+                try {
+                    if ("1".equals(option)) {
+                        registerWeather();
+                    } else {
+                        importWeather();
+                    }
+                } catch (final IOException e) {
+                    System.out.println("Communication error: " + e.getMessage());
                 }
                 continue;
             }
             if (isWeatherConsultant() && "3".equals(option)) {
-                consultWeather();
+                try {
+                    consultWeather();
+                } catch (final IOException e) {
+                    System.out.println("Communication error: " + e.getMessage());
+                }
                 continue;
             }
 
@@ -192,7 +200,7 @@ public final class WeatherClientApp {
     private void registerWeather() throws IOException {
         System.out.print("Air Control Area ID: ");
         final String areaId = console.nextLine().trim();
-        System.out.print("Date (yyyy-MM-dd): ");
+        System.out.print("Weather Data Date (yyyy-MM-dd): ");
         final String dateInput = console.nextLine().trim();
         try {
             LocalDate.parse(dateInput);
@@ -287,14 +295,22 @@ public final class WeatherClientApp {
         sendLine("CONSULT " + areaId + " " + date);
 
         final String header = readLine();
-        if (header == null || !header.startsWith("OK")) {
+        if (header == null) {
+            System.out.println("Connection closed by server.");
+            return;
+        }
+        if (!header.startsWith(WeatherProtocol.OK)) {
             System.out.println(header);
             return;
         }
         final String[] parts = header.split("\\s+");
+        if (parts.length >= 2 && "0".equals(parts[1])) {
+            System.out.println("No weather data found for area " + areaId + " on " + date + ".");
+            return;
+        }
         final int count = parts.length >= 2 ? Integer.parseInt(parts[1]) : 0;
         if (count == 0) {
-            System.out.println("No weather data found.");
+            System.out.println("No weather data found for area " + areaId + " on " + date + ".");
             return;
         }
         System.out.printf("%-12s %-10s %-10s %-9s %-12s %-9s %-12s %-9s %-10s%n",

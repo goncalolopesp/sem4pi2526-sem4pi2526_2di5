@@ -11,12 +11,13 @@ public class RegisterWeatherUI extends AbstractUI {
     private final RegisterWeatherController controller = new RegisterWeatherController();
     private final Scanner scanner = new Scanner(System.in);
 
-    public boolean doShow() {
+    @Override
+    protected boolean doShow() {
         System.out.println("=== Register Manual Weather Data ===");
         try {
             System.out.print("Enter Air Control Area ID: ");
-            String areaId = scanner.nextLine();
-            System.out.print("Enter Date (yyyy-MM-dd): ");
+            String areaId = scanner.nextLine().trim();
+            System.out.print("Enter Weather Data Date (yyyy-MM-dd): ");
             LocalDate date = LocalDate.parse(scanner.nextLine().trim());
             System.out.print("Enter Temperature (Celsius): ");
             double temp = Double.parseDouble(scanner.nextLine());
