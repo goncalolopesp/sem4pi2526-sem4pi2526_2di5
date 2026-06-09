@@ -31,6 +31,7 @@ import pt.isep.sem4pi.presentation.weatherdata.ImportWeatherDataUI;
 import pt.isep.sem4pi.presentation.weatherdata.ConsultWeatherDataUI;
 import pt.isep.sem4pi.presentation.simulation.RunAreaSimulationAction;
 import pt.isep.sem4pi.presentation.simulation.CheckSimulationStatusUI;
+import pt.isep.sem4pi.presentation.us120.ValidateFlightPlanUI;
 
 /**
  * Menu principal da aplicacao SEM4PI.
@@ -61,7 +62,8 @@ public class MainMenu extends AbstractUI {
     private static final int ADD_AIRCRAFT_OPTION = 5;
     private static final int LIST_ATCC_FLEET = 6;
     private static final int CREATE_FLIGHT_ROUTE_OPTION = 7;
-    private static final int DEACTIVATE_FLIGHT_ROUTE_OPTION = 8;
+    private static final int VALIDATE_FLIGHT_PLAN_OPTION = 8;
+    private static final int DEACTIVATE_FLIGHT_ROUTE_OPTION = 9;
 
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
@@ -239,6 +241,7 @@ public class MainMenu extends AbstractUI {
         menu.addItem(ADD_AIRCRAFT_OPTION, "Add Aircraft", new AddAircraftUI()::show);
         menu.addItem(LIST_ATCC_FLEET, "List Company Fleet", new ListCompanyFleetAction());
         menu.addItem(CREATE_FLIGHT_ROUTE_OPTION, "Create flight route", new CreateFlightRouteAction());
+        menu.addItem(VALIDATE_FLIGHT_PLAN_OPTION, "Validate flight plan", new ValidateFlightPlanUI()::show);
         menu.addItem(DEACTIVATE_FLIGHT_ROUTE_OPTION, "Deactivate flight route", new DeactivateFlightRouteAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 

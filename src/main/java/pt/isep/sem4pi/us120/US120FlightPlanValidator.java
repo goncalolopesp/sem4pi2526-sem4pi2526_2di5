@@ -9,18 +9,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class US120Main {
+public final class US120FlightPlanValidator {
 
-    public static void main(String[] args) throws IOException {
-        if (args.length != 1) {
-            System.err.println("Uso: java pt.isep.sem4pi.us120.US120Main <ficheiro.dsldig5>");
-            System.exit(1);
-        }
+    private US120FlightPlanValidator() {
+        // utility
+    }
 
-        Path path = Path.of(args[0]);
+    public static void validate(Path path) throws IOException {
         if (!Files.exists(path)) {
-            System.err.println("Ficheiro não existe: " + path);
-            System.exit(1);
+            throw new IllegalArgumentException("File doesn't exist: " + path);
         }
 
         US120ErrorListener errorListener = new US120ErrorListener();
@@ -37,27 +34,25 @@ public class US120Main {
 
         ParseTree tree = parser.flightPlan();
 
-        System.out.println("=== Resultados de validação para " + path.getFileName() + " ===");
-
         if (errorListener.hasErrors()) {
-            printErrors("Léxico/Sintático", errorListener.getErrors());
-            System.out.println("\nA validação semântica não foi executada devido a erros estruturais no ficheiro.");
+            printErrors("Syntatic/Lexic errors: ", errorListener.getErrors());
+            System.out.println("\nThe semantic validation wasn't executed since the file is structurally invalid.");
             return;
-        } else {
-            System.out.println("[Léxico/Sintático] Ficheiro estruturalmente válido. Sem erros.");
         }
+
+        System.out.println("[Syntatic/Lexic] File structurally valid. No errors.");
 
         US120SemanticVisitor visitor = new US120SemanticVisitor();
         visitor.visit(tree);
 
-        printErrors("Semântico", visitor.getErrors());
+        printErrors("Semantic errors: ", visitor.getErrors());
     }
 
     private static void printErrors(String source, List<String> errors) {
         if (errors.isEmpty()) {
-            System.out.println("[" + source + "] Regras válidas. Sem erros.");
+            System.out.println("[" + source + "] Valid Rules. No errors.");
         } else {
-            System.out.println("[" + source + "] Erros detetados:");
+            System.out.println("[" + source + "] Detected errors:");
             for (String e : errors) {
                 System.out.println("  - " + e);
             }

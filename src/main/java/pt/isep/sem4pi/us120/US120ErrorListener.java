@@ -22,6 +22,6 @@ public class US120ErrorListener extends BaseErrorListener {
     public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
                             int line, int charPositionInLine,
                             String msg, RecognitionException e) {
-        errors.add("Linha " + line + ":" + charPositionInLine + " - Erro Sintático/Léxico: " + msg);
+        errors.add("Line " + line + ":" + charPositionInLine + " - Syntatic/Lexical error: " + msg);
     }
 }
