@@ -12,6 +12,9 @@ import java.util.Optional;
 public interface WeatherBatchRepository {
     WeatherImportBatch save(WeatherImportBatch batch);
     List<WeatherImportBatch> findAll();
+
+    List<WeatherData> findWeatherDataByAreaIdAndDate(String areaId, LocalDate date);
+
     List<WeatherImportBatch> findAllByAreaId(String areaId);
     long countWeatherDataByAreaIdAndDate(String areaId, LocalDate date);
     Optional<WeatherData> findWeatherData(String areaId, LocalDate date,

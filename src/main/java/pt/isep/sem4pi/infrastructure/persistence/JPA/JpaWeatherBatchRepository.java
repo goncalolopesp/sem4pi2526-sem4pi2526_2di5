@@ -6,7 +6,6 @@ import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
 import pt.isep.sem4pi.domain.model.weatherdata.WeatherData;
 import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
-import pt.isep.sem4pi.domain.model.weatherdata.WeatherData;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 
 import java.time.LocalDate;
@@ -54,7 +53,7 @@ public class JpaWeatherBatchRepository implements WeatherBatchRepository {
 
     @Override
     public List<WeatherImportBatch> findAll() {
-        EntityManager em = emf.createEntityManager();
+        EntityManager em = EMF.createEntityManager();
         List<WeatherImportBatch> results = em.createQuery(
                 "SELECT DISTINCT b FROM WeatherImportBatch b LEFT JOIN FETCH b.records",
                 WeatherImportBatch.class).getResultList();
@@ -92,7 +91,7 @@ public class JpaWeatherBatchRepository implements WeatherBatchRepository {
     @Override
     public Optional<WeatherData> findWeatherData(String areaId, LocalDate date,
                                                  LocalTime startTime, LocalTime endTime) {
-        EntityManager em = emf.createEntityManager();
+        EntityManager em = EMF.createEntityManager();
         TypedQuery<WeatherData> query = em.createQuery(
                 "SELECT w FROM WeatherImportBatch b JOIN b.records w "
                         + "WHERE b.airControlAreaId = :areaId AND w.date = :date "
