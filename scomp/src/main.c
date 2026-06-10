@@ -409,10 +409,6 @@ int main(int argc, char **argv)
     sigaction(SIGINT, &interrupt_action, NULL);
     sigaction(SIGTERM, &interrupt_action, NULL);
 
-    /* O pai ignora SIGPIPE para evitar terminar caso um filho encerre
-       antes de o pipe de updates ser fechado corretamente. */
-    signal(SIGPIPE, SIG_IGN);
-
     PositionTracker tracker;
     tracker_init(&tracker);
 
