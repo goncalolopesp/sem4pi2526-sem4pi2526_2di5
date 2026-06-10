@@ -13,7 +13,6 @@ void simulation_threads_init(SimulationThreadContext *ctx,
                              int runtime_count)
 {
     memset(ctx, 0, sizeof(*ctx));
-
     ctx->shared = shared;
     ctx->config = config;
     ctx->safety_log = safety_log;
@@ -24,66 +23,58 @@ void simulation_threads_init(SimulationThreadContext *ctx,
 
     snprintf(ctx->realtime_log_path, MAX_PATH, "%s", config->output_file);
     size_t len = strlen(ctx->realtime_log_path);
-    if (len >= 4 && strcmp(ctx->realtime_log_path + len - 4, ".txt") == 0)
-    {
-        snprintf(ctx->realtime_log_path + len - 4, MAX_PATH - (len - 4),
-                 "_violations.log");
-    }
-    else
-    {
+    if (len >= 4 && strcmp(ctx->realtime_log_path + len - 4, ".txt") == 0) {
+        snprintf(ctx->realtime_log_path + len - 4, MAX_PATH - (len - 4), "_violations.log");
+    } else {
         snprintf(ctx->realtime_log_path, MAX_PATH, "simulation_violations.log");
     }
 
     pthread_mutex_init(&ctx->report_mutex, NULL);
     pthread_cond_init(&ctx->violation_cond, NULL);
+
+    pthread_mutex_init(&ctx->step_mutex, NULL);
+    pthread_cond_init(&ctx->step_cond, NULL);
+    ctx->steps_ready = 0;
+    ctx->steps_checked = 0;
 }
 
 void simulation_threads_destroy(SimulationThreadContext *ctx)
 {
     pthread_mutex_destroy(&ctx->report_mutex);
     pthread_cond_destroy(&ctx->violation_cond);
+    pthread_mutex_destroy(&ctx->step_mutex);
+    pthread_cond_destroy(&ctx->step_cond);
 }
 
 void *safety_detection_thread(void *arg)
 {
     SimulationThreadContext *ctx = arg;
-    int last_seen = 0;
 
     while (!ctx->stop)
     {
-        pthread_mutex_lock(&ctx->shared->pthread_mutex);
-
-        while (ctx->shared->shared_update_counter == last_seen && !ctx->stop)
-        {
-            pthread_cond_wait(&ctx->shared->pthread_cond, &ctx->shared->pthread_mutex);
+        pthread_mutex_lock(&ctx->step_mutex);
+        while (ctx->steps_ready == ctx->steps_checked && !ctx->stop) {
+            pthread_cond_wait(&ctx->step_cond, &ctx->step_mutex);
         }
+        int target = ctx->steps_ready;
+        pthread_mutex_unlock(&ctx->step_mutex);
 
-        last_seen = ctx->shared->shared_update_counter;
-
-        pthread_mutex_unlock(&ctx->shared->pthread_mutex);
-
-        if (ctx->stop)
-            break;
+        if (ctx->stop) break;
 
         pthread_mutex_lock(&ctx->report_mutex);
+        int new_v = safety_check_shared(ctx->shared, ctx->config, ctx->safety_log, ctx->runtimes, ctx->runtime_count);
 
-        int new_v = safety_check_shared(ctx->shared,
-                                        ctx->config,
-                                        ctx->safety_log,
-                                        ctx->runtimes,
-                                        ctx->runtime_count);
-
-        if (new_v > 0)
-        {
-            fprintf(stderr,
-                    "[US107] safety thread: %d new violation(s), total=%d\n",
-                    new_v, ctx->safety_log->total_detected);
+        if (new_v > 0) {
+            fprintf(stderr, "[US107] safety thread: %d new violation(s), total=%d\n", new_v, ctx->safety_log->total_detected);
             pthread_cond_signal(&ctx->violation_cond);
         }
-
         pthread_mutex_unlock(&ctx->report_mutex);
-    }
 
+        pthread_mutex_lock(&ctx->step_mutex);
+        ctx->steps_checked = target;
+        pthread_cond_signal(&ctx->step_cond);
+        pthread_mutex_unlock(&ctx->step_mutex);
+    }
     return NULL;
 }
 
