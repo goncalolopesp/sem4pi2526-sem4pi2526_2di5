@@ -107,6 +107,17 @@ public class JpaWeatherBatchRepository implements WeatherBatchRepository {
     }
 
     @Override
+    public Optional<WeatherData> findWeatherDataById(Long weatherDataId) {
+        if (weatherDataId == null) {
+            return Optional.empty();
+        }
+        EntityManager em = EMF.createEntityManager();
+        Optional<WeatherData> result = Optional.ofNullable(em.find(WeatherData.class, weatherDataId));
+        em.close();
+        return result;
+    }
+
+    @Override
     public long totalWeatherRecords() {
         EntityManager em = EMF.createEntityManager();
         TypedQuery<Long> query = em.createQuery(

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class WeatherDataViewDTO {
+    private final Long weatherDataId;
     private final String airControlAreaId;
     private final LocalDate date;
     private final LocalTime startTime;
@@ -19,12 +20,23 @@ public class WeatherDataViewDTO {
                               double windSpeedKnots, double windDirectionDegrees,
                               double temperatureCelsius, double pressureHpa,
                               double humidityPercentage, double altitudeMeters) {
+        this(null, airControlAreaId, date, startTime, endTime, windSpeedKnots,
+                windDirectionDegrees, temperatureCelsius, pressureHpa,
+                humidityPercentage, altitudeMeters);
+    }
+
+    public WeatherDataViewDTO(Long weatherDataId, String airControlAreaId, LocalDate date,
+                              LocalTime startTime, LocalTime endTime,
+                              double windSpeedKnots, double windDirectionDegrees,
+                              double temperatureCelsius, double pressureHpa,
+                              double humidityPercentage, double altitudeMeters) {
         if (airControlAreaId == null || airControlAreaId.trim().isEmpty()) {
             throw new IllegalArgumentException("Air Control Area ID is required.");
         }
         if (date == null || startTime == null || endTime == null) {
             throw new IllegalArgumentException("Date and time range are required.");
         }
+        this.weatherDataId = weatherDataId;
         this.airControlAreaId = airControlAreaId;
         this.date = date;
         this.startTime = startTime;
@@ -35,6 +47,10 @@ public class WeatherDataViewDTO {
         this.pressureHpa = pressureHpa;
         this.humidityPercentage = humidityPercentage;
         this.altitudeMeters = altitudeMeters;
+    }
+
+    public Long getWeatherDataId() {
+        return weatherDataId;
     }
 
     public String getAirControlAreaId() {

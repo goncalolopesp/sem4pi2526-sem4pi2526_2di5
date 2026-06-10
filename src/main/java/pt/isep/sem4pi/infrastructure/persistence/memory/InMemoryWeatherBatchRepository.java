@@ -2,7 +2,6 @@ package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import pt.isep.sem4pi.domain.model.weatherdata.WeatherData;
 import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
-import pt.isep.sem4pi.domain.model.weatherdata.WeatherData;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 
 import java.time.LocalDate;
@@ -43,6 +42,15 @@ public class InMemoryWeatherBatchRepository implements WeatherBatchRepository {
                 .filter(record -> date.equals(record.getDate()))
                 .filter(record -> startTime.equals(record.getStartTime()))
                 .filter(record -> endTime.equals(record.getEndTime()))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<WeatherData> findWeatherDataById(Long weatherDataId) {
+        return database.stream()
+                .flatMap(batch -> batch.getRecords().stream())
+                .filter(record -> weatherDataId != null
+                        && weatherDataId.equals(record.getWeatherDataId()))
                 .findFirst();
     }
 

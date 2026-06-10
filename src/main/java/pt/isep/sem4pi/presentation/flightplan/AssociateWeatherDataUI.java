@@ -7,7 +7,9 @@ import pt.isep.sem4pi.domain.model.flight.FlightPlan;
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataViewDTO;
 
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class AssociateWeatherDataUI extends AbstractUI {
 
@@ -32,24 +34,20 @@ public class AssociateWeatherDataUI extends AbstractUI {
                 return false;
             }
             printWeather(weather);
-            System.out.print("Weather row number: ");
-            final int row = Integer.parseInt(scanner.nextLine().trim());
-            if (row < 1 || row > weather.size()) {
-                throw new IllegalArgumentException("Invalid weather row number.");
+            System.out.print("Weather rows (comma-separated, e.g. 1,3,5): ");
+            final List<Long> selectedIds = selectedWeatherIds(scanner.nextLine(), weather);
+            final WeatherAssociationResult result = controller.associate(planId, selectedIds);
+
+            System.out.printf("%d weather record(s) associated with flight plan %s.%n",
+                    result.associatedWeatherCount(), result.flightPlan().identity().value());
+            if (result.associatedWeatherCount() == 0) {
+                System.out.println("All selected weather records were already associated.");
             }
-
-            final WeatherDataViewDTO selected = weather.get(row - 1);
-            final WeatherAssociationResult result = controller.associate(
-                    planId, selected.getAirControlAreaId(), selected.getDate(),
-                    selected.getStartTime(), selected.getEndTime());
-
-            System.out.println("Weather data associated with flight plan "
-                    + result.flightPlan().identity().value() + ".");
             if (result.previousTestInvalidated()) {
                 System.out.println("[WARNING] The previous flight plan test is no longer valid.");
             }
         } catch (NumberFormatException ex) {
-            System.out.println("[ERROR] Weather row number must be numeric.");
+            System.out.println("[ERROR] Weather rows must be comma-separated numbers.");
         } catch (Exception ex) {
             System.out.println("[ERROR] " + ex.getMessage());
         }
@@ -63,14 +61,38 @@ public class AssociateWeatherDataUI extends AbstractUI {
     }
 
     private void printWeather(List<WeatherDataViewDTO> weather) {
-        System.out.printf("%n%-4s %-10s %-10s %-8s %-8s%n",
-                "Row", "Area", "Date", "Start", "End");
+        System.out.printf("%n%-4s %-8s %-10s %-5s %-5s %8s %9s %9s %10s %9s %10s%n",
+                "Row", "Area", "Date", "From", "To", "Temp C", "Wind kt",
+                "Wind deg", "Press hPa", "Hum %", "Alt m");
         for (int i = 0; i < weather.size(); i++) {
             final WeatherDataViewDTO data = weather.get(i);
-            System.out.printf("%-4d %-10s %-10s %-8s %-8s%n", i + 1,
+            System.out.printf("%-4d %-8s %-10s %-5s %-5s %8.1f %9.1f %9.1f %10.1f %9.1f %10.1f%n",
+                    i + 1,
                     data.getAirControlAreaId(), data.getDate(),
-                    data.getStartTime(), data.getEndTime());
+                    data.getStartTime(), data.getEndTime(),
+                    data.getTemperatureCelsius(), data.getWindSpeedKnots(),
+                    data.getWindDirectionDegrees(), data.getPressureHpa(),
+                    data.getHumidityPercentage(), data.getAltitudeMeters());
         }
+    }
+
+    private List<Long> selectedWeatherIds(String input, List<WeatherDataViewDTO> weather) {
+        if (input == null || input.trim().isEmpty()) {
+            throw new IllegalArgumentException("Select at least one weather row.");
+        }
+        final Set<Long> ids = new LinkedHashSet<>();
+        for (String token : input.split(",")) {
+            final int row = Integer.parseInt(token.trim());
+            if (row < 1 || row > weather.size()) {
+                throw new IllegalArgumentException("Invalid weather row number: " + row);
+            }
+            final Long id = weather.get(row - 1).getWeatherDataId();
+            if (id == null) {
+                throw new IllegalStateException("Selected weather data has no persisted ID.");
+            }
+            ids.add(id);
+        }
+        return List.copyOf(ids);
     }
 
     @Override

@@ -50,6 +50,12 @@ public class AssociateWeatherDataController {
                 flightPlanId, areaId, date, startTime, endTime, currentUsername(), isAdmin());
     }
 
+    public WeatherAssociationResult associate(String flightPlanId, List<Long> weatherDataIds) {
+        ensureAuthorized();
+        return service.associateByIds(
+                flightPlanId, weatherDataIds, currentUsername(), isAdmin());
+    }
+
     private void ensureAuthorized() {
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.PILOT, SEM4PIRoles.ADMIN);
     }

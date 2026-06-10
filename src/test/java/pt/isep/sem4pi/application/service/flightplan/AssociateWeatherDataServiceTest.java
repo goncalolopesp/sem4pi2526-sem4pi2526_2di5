@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -92,5 +93,53 @@ public class AssociateWeatherDataServiceTest {
         final List<FlightPlan> result = service.listFlightPlansOwnedBy("pilot");
 
         assertEquals(List.of(plan), result);
+    }
+
+    @Test
+    public void ensureSeveralWeatherRecordsCanBeAssociatedInOneOperation() {
+        final WeatherData first = mock(WeatherData.class);
+        final WeatherData second = mock(WeatherData.class);
+        final List<WeatherData> associated = new java.util.ArrayList<>();
+        when(pilot.isOwnedBy("pilot")).thenReturn(true);
+        when(flightPlanRepository.ofIdentity(new FlightPlanId(PLAN_ID))).thenReturn(Optional.of(plan));
+        when(weatherRepository.findWeatherDataById(1L)).thenReturn(Optional.of(first));
+        when(weatherRepository.findWeatherDataById(2L)).thenReturn(Optional.of(second));
+        when(plan.weatherData()).thenAnswer(invocation -> List.copyOf(associated));
+        when(plan.associateWeatherData(any())).thenAnswer(invocation -> {
+            associated.add(invocation.getArgument(0));
+            return associated.size() == 1;
+        });
+        when(flightPlanRepository.save(plan)).thenReturn(plan);
+
+        final WeatherAssociationResult result =
+                service.associateByIds(PLAN_ID, List.of(1L, 2L), "pilot", false);
+
+        assertEquals(2, result.associatedWeatherCount());
+        assertTrue(result.previousTestInvalidated());
+        verify(plan).associateWeatherData(first);
+        verify(plan).associateWeatherData(second);
+        verify(flightPlanRepository, times(1)).save(plan);
+    }
+
+    @Test
+    public void ensureRepeatedWeatherIdsAreProcessedOnlyOnce() {
+        final WeatherData weatherData = mock(WeatherData.class);
+        final List<WeatherData> associated = new java.util.ArrayList<>();
+        when(pilot.isOwnedBy("pilot")).thenReturn(true);
+        when(flightPlanRepository.ofIdentity(new FlightPlanId(PLAN_ID))).thenReturn(Optional.of(plan));
+        when(weatherRepository.findWeatherDataById(1L)).thenReturn(Optional.of(weatherData));
+        when(plan.weatherData()).thenAnswer(invocation -> List.copyOf(associated));
+        when(plan.associateWeatherData(weatherData)).thenAnswer(invocation -> {
+            associated.add(weatherData);
+            return false;
+        });
+        when(flightPlanRepository.save(plan)).thenReturn(plan);
+
+        final WeatherAssociationResult result =
+                service.associateByIds(PLAN_ID, List.of(1L, 1L), "pilot", false);
+
+        assertEquals(1, result.associatedWeatherCount());
+        assertFalse(result.previousTestInvalidated());
+        verify(plan, times(1)).associateWeatherData(weatherData);
     }
 }

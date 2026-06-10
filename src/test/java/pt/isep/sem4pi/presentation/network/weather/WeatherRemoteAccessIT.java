@@ -2,9 +2,9 @@ package pt.isep.sem4pi.presentation.network.weather;
 
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
 import pt.isep.sem4pi.infrastructure.bootstrap.MasterUsersBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class WeatherRemoteAccessIT {
 
@@ -36,6 +36,7 @@ public class WeatherRemoteAccessIT {
     @BeforeClass
     public static void startServer() throws Exception {
         System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
+        PersistenceContext.resetForTesting();
 
         AuthzRegistry.configure(
                 PersistenceContext.repositories().users(),
@@ -83,7 +84,8 @@ public class WeatherRemoteAccessIT {
 
             c.send("CONSULT CW001 2099-01-01");
             final String response = c.read();
-            assertTrue(response.startsWith("OK 0"), "expected empty consult response, got: " + response);
+            assertTrue("expected empty consult response, got: " + response,
+                    response.startsWith("OK 0"));
             assertTrue(response.contains(WeatherProtocol.NO_DATA));
         }
     }
@@ -112,11 +114,11 @@ public class WeatherRemoteAccessIT {
             c.greeting();
             c.send("LOGIN backoffice Password1");
             final String login = c.read();
-            assertTrue(login.startsWith("OK"), "other roles must be allowed to log in");
+            assertTrue("other roles must be allowed to log in", login.startsWith("OK"));
 
             c.send("CONSULT CW001 " + LocalDate.now());
-            assertTrue(c.read().startsWith("ERR"),
-                    "weather operations must be denied for non-weather roles");
+            assertTrue("weather operations must be denied for non-weather roles",
+                    c.read().startsWith("ERR"));
         }
     }
 
@@ -141,7 +143,7 @@ public class WeatherRemoteAccessIT {
             }
 
             final String header = c.read();
-            assertTrue(header.startsWith("OK"), "expected import summary, got: " + header);
+            assertTrue("expected import summary, got: " + header, header.startsWith("OK"));
         }
     }
 
@@ -157,11 +159,11 @@ public class WeatherRemoteAccessIT {
 
             c.send("REGISTER CW001 2026-06-11 08:45 09:30 29 4 50 70 1013 3045");
             final String second = c.read();
-            assertTrue(second.startsWith("OK"), "second register failed: " + second);
+            assertTrue("second register failed: " + second, second.startsWith("OK"));
 
             c.send("CONSULT CW001 2026-06-11");
             final String header = c.read();
-            assertTrue(header.startsWith("OK 2"), "expected two records, got: " + header);
+            assertTrue("expected two records, got: " + header, header.startsWith("OK 2"));
             assertNotNull(c.read());
             assertNotNull(c.read());
         }
@@ -181,7 +183,7 @@ public class WeatherRemoteAccessIT {
             final String header = c.read();
             assertTrue(header.startsWith("OK"));
             final int count = Integer.parseInt(header.split("\\s+")[1]);
-            assertTrue(count >= 1, "expected at least one record");
+            assertTrue("expected at least one record", count >= 1);
             for (int i = 0; i < count; i++) {
                 assertNotNull(c.read());
             }
