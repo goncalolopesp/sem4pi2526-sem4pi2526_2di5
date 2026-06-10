@@ -1,0 +1,46 @@
+@startuml
+
+skinparam componentStyle rectangle
+
+package "Flight Simulation System" {
+
+    [Simulation Controller\nmain.c] as Main
+    [Flight Process\nflight_process.c] as FlightProcess
+    [Flight Plan Parser\nflight_plan_parser.c] as Parser
+    [Position Tracker\nposition_tracker.c] as Tracker
+    [Safety Monitor\nsafety_monitor.c] as Safety
+
+
+    [Safety Thread\nsafety_detection_thread] as SafetyThread
+    [Report Thread\nreport_generation_thread] as ReportThread
+
+
+    [Shared Memory Layer\nshared_simulation.c] as Shared
+
+    database "Flight Plan Files\nJSON" as Json
+    file "simulation_report.txt" as ReportFile
+    file "simulation_report_violations.log" as ViolationLog
+}
+
+Main --> FlightProcess : fork()
+Main --> FlightProcess : SIGUSR2 / SIGTERM
+Main --> FlightProcess : sem_post(step_start)
+FlightProcess --> Main : PositionUpdate pipe
+
+FlightProcess --> Parser : loads plan
+Parser --> Json : reads
+
+Main --> Tracker : stores position history
+FlightProcess --> Shared : updates snapshot via semaphores
+
+' Sincronização US106
+Main --> SafetyThread : signals step ready (step_cond)
+SafetyThread --> Main : acknowledges check done (step_cond)
+SafetyThread --> Safety : invokes safety_check_shared()
+SafetyThread --> ReportThread : signals new events (violation_cond)
+
+Safety --> FlightProcess : SIGUSR1 (on alert)
+Main --> ReportFile : writes final summary
+ReportThread --> ViolationLog : writes realtime log
+
+@enduml

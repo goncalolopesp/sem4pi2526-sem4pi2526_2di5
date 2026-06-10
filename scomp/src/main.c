@@ -409,15 +409,10 @@ int main(int argc, char **argv)
     sigaction(SIGINT, &interrupt_action, NULL);
     sigaction(SIGTERM, &interrupt_action, NULL);
 
-    /* O pai ignora SIGPIPE para evitar terminar caso um filho encerre
-       antes de o pipe de updates ser fechado corretamente. */
-    signal(SIGPIPE, SIG_IGN);
-
     PositionTracker tracker;
     tracker_init(&tracker);
 
-    SharedSimulationState *shared =
-        shared_create();
+    SharedSimulationState *shared = shared_create();
 
     /* US102: log de violações de segurança */
     SafetyLog safety_log;
@@ -445,6 +440,7 @@ int main(int argc, char **argv)
            config.safety_min_sep_nm,
            config.safety_min_alt_m,
            config.violation_threshold);
+    fflush(stdout);
 
     /*
      * Bloqueia SIGUSR2 antes do fork.
@@ -624,6 +620,15 @@ int main(int argc, char **argv)
             }
         }
 
+        /* US106: Acorda a safety thread e espera pela resposta */
+        pthread_mutex_lock(&thread_ctx.step_mutex);
+        thread_ctx.steps_ready++;
+        pthread_cond_signal(&thread_ctx.step_cond);
+        while (thread_ctx.steps_checked < thread_ctx.steps_ready && !stop_requested) {
+            pthread_cond_wait(&thread_ctx.step_cond, &thread_ctx.step_mutex);
+        }
+        pthread_mutex_unlock(&thread_ctx.step_mutex);
+
         /* US107: deteção de violações delegada à safety thread via shared memory */
         pthread_mutex_lock(&thread_ctx.report_mutex);
         int total_violations = safety_log.total_detected;
@@ -700,32 +705,36 @@ int main(int argc, char **argv)
         }
     }
 
-    /* Resumos no terminal */
+    /* Imprime resumos finais */
     tracker_print_summary(&tracker);
     safety_log_print(&safety_log);
-
-    /* Relatório completo em ficheiro */
     write_report(runtimes, config.flight_count, &config, &tracker, &safety_log);
 
-    tracker_destroy(&tracker);
-    free_runtimes(runtimes, config.flight_count);
-
+    /* Encerra todas as threads em background */
     stop_requested = 1;
     thread_ctx.stop = 1;
 
+    //wakes up all the threads that can be asleep
     pthread_mutex_lock(&shared->pthread_mutex);
     pthread_cond_broadcast(&shared->pthread_cond);
     pthread_mutex_unlock(&shared->pthread_mutex);
 
+    pthread_mutex_lock(&thread_ctx.step_mutex);
+    pthread_cond_broadcast(&thread_ctx.step_cond);
+    pthread_mutex_unlock(&thread_ctx.step_mutex);
+
     pthread_mutex_lock(&thread_ctx.report_mutex);
-    pthread_cond_signal(&thread_ctx.violation_cond);
+    pthread_cond_broadcast(&thread_ctx.violation_cond);
     pthread_mutex_unlock(&thread_ctx.report_mutex);
 
+    // waits that the thread of the report ends reading the data and creates txt
     pthread_join(safety_thread, NULL);
     pthread_join(report_thread, NULL);
 
+    /* Liberta as memórias finais */
     simulation_threads_destroy(&thread_ctx);
-
+    tracker_destroy(&tracker);
+    free_runtimes(runtimes, config.flight_count);
     shared_destroy(shared);
 
     printf("Simulation finished. Report saved in %s\n", config.output_file);

@@ -20,6 +20,7 @@ public class MasterUsersBootstrapper {
 
         registerAdmin(users, backofficeUsers);
         registerBackoffice(users, backofficeUsers);
+        registerWeatherPerson(users, backofficeUsers);
         registerPilot(users);
 
 //        DEBUG
@@ -80,6 +81,30 @@ public class MasterUsersBootstrapper {
                     "Backoffice User",
                     Email.valueOf("backoffice@example.org"),
                     PhoneNumber.valueOf("+351000000000"),
+                    LocalDate.now().plusYears(1),
+                    LocalDate.now()
+            ));
+        }
+    }
+
+    private void registerWeatherPerson(final UserRepository users, final BackofficeUserRepository backofficeUsers) {
+        if (users.ofIdentity(eapli.framework.infrastructure.authz.domain.model.Username.valueOf("weather")).isEmpty()) {
+            final SystemUserBuilder builder = UserBuilderHelper.builder();
+            builder.withUsername("weather")
+                    .withPassword("Password1")
+                    .withName("Weather", "Person")
+                    .withEmail("weather@example.org")
+                    .withRoles(SEM4PIRoles.WEATHER_PERSON);
+
+            users.save(builder.build());
+        }
+
+        if (!backofficeUsers.existsByUsername("weather")) {
+            backofficeUsers.save(new BackofficeUser(
+                    "weather",
+                    "Weather Person",
+                    Email.valueOf("weather@example.org"),
+                    PhoneNumber.valueOf("+351000000002"),
                     LocalDate.now().plusYears(1),
                     LocalDate.now()
             ));

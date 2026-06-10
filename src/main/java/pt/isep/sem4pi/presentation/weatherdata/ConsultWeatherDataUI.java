@@ -3,6 +3,7 @@ package pt.isep.sem4pi.presentation.weatherdata;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.weatherdata.ConsultWeatherDataController;
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataViewDTO;
+import pt.isep.sem4pi.domain.model.weatherdata.WeatherTimeFormatter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -46,8 +47,8 @@ public class ConsultWeatherDataUI extends AbstractUI {
         for (WeatherDataViewDTO dto : results) {
             String wind = String.format("%.1f/%.0f", dto.getWindSpeedKnots(), dto.getWindDirectionDegrees());
             System.out.printf("%-8s %-8s %-10.1f %-16s %-14.1f %-14.1f %-14.1f%n",
-                    dto.getStartTime(),
-                    dto.getEndTime(),
+                    WeatherTimeFormatter.format(dto.getStartTime()),
+                    WeatherTimeFormatter.format(dto.getEndTime()),
                     dto.getTemperatureCelsius(),
                     wind,
                     dto.getPressureHpa(),
