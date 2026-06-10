@@ -2,6 +2,8 @@ package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
+import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
+import eapli.framework.infrastructure.authz.repositories.impl.inmemory.InMemoryUserRepository;
 import pt.isep.sem4pi.domain.repositories.*;
 import pt.isep.sem4pi.domain.usermanagement.Email;
 import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
@@ -15,7 +17,7 @@ import java.time.LocalDate;
 
 /**
  * Fábrica de repositórios em memória.
- *
+ * <p>
  * Usada como implementação padrão para persistência nas user stories US30-32.
  * Cria repositórios e semeia alguns utilizadores por omissão.
  */
@@ -30,6 +32,12 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private static AircraftRepository aircraftRepository;
     private static FlightRepository flightRepository;
     private static WeatherBatchRepository weatherBatchRepository;
+    private static FlightRouteRepository flightRouteRepository;
+    private static AirportRepository airportRepository;
+    private static SimulationRepository simulationRepository;
+    private static SimulationReportRepository simulationReportRepository;
+    private static FlightPlanRepository flightPlanRepository;
+    private static PilotRepository pilotRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -62,14 +70,14 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     }
 
     @Override
-    public eapli.framework.infrastructure.authz.domain.repositories.UserRepository users(TransactionalContext tx) {
+    public UserRepository users(TransactionalContext tx) {
         return users();
     }
 
     @Override
-    public eapli.framework.infrastructure.authz.domain.repositories.UserRepository users() {
+    public UserRepository users() {
         if (userRepository == null) {
-            userRepository = new eapli.framework.infrastructure.authz.repositories.impl.inmemory.InMemoryUserRepository();
+            userRepository = new InMemoryUserRepository();
             seedDefaultUsers(userRepository);
         }
 
@@ -116,14 +124,14 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
 
     @Override
     public AirControlAreaRepository airControlAreas() {
-        if (airControlAreaRepository == null){
+        if (airControlAreaRepository == null) {
             return new InMemoryAirControlAreaRepository();
         }
         return airControlAreaRepository;
     }
 
     @Override
-    public AirControlAreaRepository airControlAreas(TransactionalContext tx){
+    public AirControlAreaRepository airControlAreas(TransactionalContext tx) {
         return airControlAreas();
     }
 
@@ -159,6 +167,36 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
             weatherBatchRepository = new InMemoryWeatherBatchRepository();
         }
         return weatherBatchRepository;
+    }
+
+    @Override
+    public FlightRouteRepository flightRoutes() {
+        if (flightRouteRepository == null) {
+            flightRouteRepository = new InMemoryFlightRouteRepository();
+        }
+        return flightRouteRepository;
+    }
+
+    @Override
+    public AirportRepository airports() {
+        if (airportRepository == null) {
+            airportRepository = new InMemoryAirportRepository();
+        }
+        return airportRepository;
+    }
+
+    @Override
+    public SimulationRepository simulations() {
+        if (simulationRepository == null) {
+            simulationRepository = new InMemorySimulationRepository();
+        }
+
+        return simulationRepository;
+    }
+
+    @Override
+    public SimulationRepository simulations(TransactionalContext tx) {
+        return simulations();
     }
 
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {
@@ -207,5 +245,45 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
             );
             repo.save(bo);
         }
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports() {
+        if (simulationReportRepository == null) {
+            simulationReportRepository = new InMemorySimulationReportRepository();
+        }
+
+        return simulationReportRepository;
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports(TransactionalContext tx) {
+        return simulationReports();
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans() {
+        if (flightPlanRepository == null) {
+            flightPlanRepository = new InMemoryFlightPlanRepository();
+        }
+        return flightPlanRepository;
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans(TransactionalContext tx) {
+        return flightPlans();
+    }
+
+    @Override
+    public PilotRepository pilots() {
+        if (pilotRepository == null) {
+            pilotRepository = new InMemoryPilotRepository();
+        }
+        return pilotRepository;
+    }
+
+    @Override
+    public PilotRepository pilots(TransactionalContext tx) {
+        return pilots();
     }
 }

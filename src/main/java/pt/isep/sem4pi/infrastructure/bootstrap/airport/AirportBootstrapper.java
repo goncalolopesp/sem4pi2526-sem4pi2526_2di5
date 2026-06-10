@@ -14,9 +14,11 @@ public class AirportBootstrapper {
     public void execute() {
         System.out.println("Bootstrapping Airports...");
 
-        registerSafely("Francisco Sa Carneiro", "Porto", "Portugal", "OP", "LPP", 41.24, -8.67, 69.0, "AREA_PT");
-        registerSafely("Humberto Delgado", "Lisbon", "Portugal", "LI", "LPP", 38.77, -9.13, 114.0, "AREA_PT");
-        registerSafely("John F. Kennedy Intl", "New York", "USA", "JF", "KJF", 40.64, -73.77, 4.0, "AREA_US_EAST");
+        registerSafely("Francisco Sa Carneiro", "Porto", "Portugal", "OPO", "LPPR", 41.24, -8.67, 69.0, "AREA_PT");
+        registerSafely("Humberto Delgado", "Lisbon", "Portugal", "LIS", "LPPT", 38.77, -9.13, 114.0, "AREA_PT");
+        registerSafely("John F. Kennedy Intl", "New York", "USA", "JFK", "KJFK", 40.64, -73.77, 4.0, "AREA_US_EAST");
+        registerSafely("Adolfo Suarez Madrid-Barajas", "Madrid", "Spain", "MAD", "LEMD", 40.47, -3.56, 610.0, "AREA_ES");
+        registerSafely("Heathrow", "London", "UK", "LHR", "EGLL", 51.47, -0.45, 25.0, "AREA_UK");
     }
 
     private void registerSafely(String name, String town, String country, String iata, String icao,
@@ -25,7 +27,8 @@ public class AirportBootstrapper {
             controller.addAirport(name, town, country, iata, icao, lat, lon, elev, areaId);
             System.out.println("   -> Bootstrapped: " + name);
         } catch (Exception e) {
-            System.out.println("   -> Skipped " + name + " (Already exists or invalid)");
+            /* Imprimir a mensagem da exceção ajuda a perceber que regra de negócio falhou */
+            System.out.println("   -> Skipped " + name + " (Reason: " + e.getMessage() + ")");
         }
     }
 }

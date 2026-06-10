@@ -3,17 +3,33 @@ package pt.isep.sem4pi.presentation.weatherdata;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.weatherdata.RegisterWeatherController;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class RegisterWeatherUI extends AbstractUI {
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+
     private final RegisterWeatherController controller = new RegisterWeatherController();
     private final Scanner scanner = new Scanner(System.in);
 
-    public boolean doShow() {
+    @Override
+    protected boolean doShow() {
         System.out.println("=== Register Manual Weather Data ===");
         try {
             System.out.print("Enter Air Control Area ID: ");
-            String areaId = scanner.nextLine();
+            String areaId = scanner.nextLine().trim();
+            System.out.print("Enter Weather Data Date (yyyy-MM-dd): ");
+            LocalDate date = LocalDate.parse(scanner.nextLine().trim());
+            System.out.print("Enter Start Time (HH:mm): ");
+            LocalTime startTime = LocalTime.parse(scanner.nextLine().trim(), TIME_FORMAT);
+            System.out.print("Enter End Time (HH:mm, blank to use start time): ");
+            String endTimeInput = scanner.nextLine().trim();
+            LocalTime endTime = endTimeInput.isEmpty()
+                    ? startTime
+                    : LocalTime.parse(endTimeInput, TIME_FORMAT);
             System.out.print("Enter Temperature (Celsius): ");
             double temp = Double.parseDouble(scanner.nextLine());
             System.out.print("Enter Wind Speed (Knots): ");
@@ -27,10 +43,15 @@ public class RegisterWeatherUI extends AbstractUI {
             System.out.print("Enter Altitude (meters): ");
             double altitude = Double.parseDouble(scanner.nextLine());
 
-            controller.registerWeather(areaId, temp, windSpeed, windDir, humidity, pressure, altitude);
-            System.out.println("\n[SUCCESS] Weather data registered successfully!");
+            controller.registerWeather(
+                    areaId, date, startTime, endTime, temp, windSpeed, windDir, humidity, pressure, altitude);
+            System.out.println("\n[SUCCESS] Weather data registered for " + date
+                    + " (" + startTime + " - " + endTime + ").");
 
             return true;
+        } catch (DateTimeParseException e) {
+            System.err.println("\n[ERROR] Invalid date or time format. Use yyyy-MM-dd and HH:mm.");
+            return false;
         } catch (NumberFormatException e) {
             System.err.println("\n[ERROR] All metrics must be valid numbers.");
             return false;

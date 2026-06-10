@@ -5,6 +5,9 @@ import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public class RegisterWeatherController {
     private final RegisterWeatherService service;
     private final eapli.framework.infrastructure.authz.application.AuthorizationService authz;
@@ -20,12 +23,14 @@ public class RegisterWeatherController {
         this.authz = authz;
     }
 
-    public WeatherImportBatch registerWeather(String areaId, double temp, double windSpeed, double windDir,
-                                              double humidity, double pressure, double altitude) {
+    public WeatherImportBatch registerWeather(String areaId, LocalDate date, LocalTime startTime, LocalTime endTime,
+                                              double temp, double windSpeed, double windDir, double humidity,
+                                              double pressure, double altitude) {
         authz.ensureAuthenticatedUserHasAnyOf(
                 pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles.ADMIN,
                 pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles.WEATHER_PERSON
         );
-        return service.registerManualData(areaId, temp, windSpeed, windDir, humidity, pressure, altitude);
+        return service.registerManualData(
+                areaId, date, startTime, endTime, temp, windSpeed, windDir, humidity, pressure, altitude);
     }
 }

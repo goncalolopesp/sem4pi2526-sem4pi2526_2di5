@@ -53,6 +53,37 @@ public class JpaWeatherBatchRepositoryTest {
         assertEquals(LocalTime.of(5, 0), results.get(0).getRecords().get(0).getStartTime());
         assertEquals(LocalTime.of(8, 15), results.get(0).getRecords().get(0).getEndTime());
     }
+
+    @Test
+    public void ensureTwoConsecutiveSavesForSameAreaWork() {
+        JpaWeatherBatchRepository repository = new JpaWeatherBatchRepository();
+        LocalDate date = LocalDate.of(2026, 6, 11);
+        WeatherData first = new WeatherData(
+                date,
+                LocalTime.of(8, 0),
+                LocalTime.of(8, 45),
+                new Wind(10.0, 90.0),
+                new Temperature(15.0),
+                new AtmosphericPressure(1013.0),
+                new Humidity(50.0),
+                new Altitude(1000.0)
+        );
+        WeatherData second = new WeatherData(
+                date,
+                LocalTime.of(8, 45),
+                LocalTime.of(9, 30),
+                new Wind(4.0, 50.0),
+                new Temperature(29.0),
+                new AtmosphericPressure(1013.0),
+                new Humidity(70.0),
+                new Altitude(3045.0)
+        );
+
+        repository.save(new WeatherImportBatch("121", first));
+        repository.save(new WeatherImportBatch("121", second));
+
+        assertEquals(2, repository.countWeatherDataByAreaIdAndDate("121", date));
+    }
 }
 
 

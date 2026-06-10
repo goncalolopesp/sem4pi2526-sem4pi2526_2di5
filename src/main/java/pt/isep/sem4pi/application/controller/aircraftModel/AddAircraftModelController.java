@@ -4,13 +4,10 @@ import eapli.framework.application.UseCaseController;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import pt.isep.sem4pi.application.service.aircraftModel.AddAircraftModelService;
-import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
 import pt.isep.sem4pi.application.viadto.AircraftModelDTORepresentationBuilder;
 import pt.isep.sem4pi.domain.model.aircraftModel.DTO.AircraftModelDTO;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
-import pt.isep.sem4pi.domain.model.engineModel.FuelType;
 import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
-import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.aircraftModel.*;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
@@ -20,7 +17,6 @@ import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

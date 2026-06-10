@@ -5,9 +5,12 @@ import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
 import pt.isep.sem4pi.infrastructure.bootstrap.MasterUsersBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airport.AirportBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.AirTransportCompanyBootstrapper;
+import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.FlightRouteBootstrapper;
+import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.PilotBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.weatherdata.WeatherBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirTransportCompanyRepository;
 import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirportRepository;
+import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaFlightRouteRepository;
 import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaWeatherBatchRepository;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.bootstrap.BackofficeConfigurationBootstrapper;
@@ -38,6 +41,8 @@ public final class SEM4PIBackoffice extends BaseApp {
         new AirportBootstrapper(new JpaAirportRepository()).execute();
         new WeatherBootstrapper(new JpaWeatherBatchRepository()).execute();
         new AirTransportCompanyBootstrapper(new JpaAirTransportCompanyRepository()).execute();
+        new FlightRouteBootstrapper().execute();
+        new PilotBootstrapper().execute();
 
         new SEM4PIBackoffice().run(args);
     }

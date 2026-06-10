@@ -1,5 +1,6 @@
 package pt.isep.sem4pi.domain.model.airtransportcompany;
 
+import eapli.framework.domain.model.AggregateRoot;
 import jakarta.persistence.*;
 import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 
@@ -8,28 +9,30 @@ import java.util.List;
 
 @Entity
 @Table(name = "AirTransportCompany")
-public class AirTransportCompany {
+public class AirTransportCompany implements AggregateRoot<IataCodeCompany> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long companyId;
+    @EmbeddedId
+    private IataCodeCompany iataCode;
 
     @Embedded
     private CompanyName name;
 
     @Embedded
     @Column(unique = true, nullable = false)
-    private IataCode iataCode;
+    private IcaoCodeCompany icaoCode;
 
-    @Embedded
-    @Column(unique = true, nullable = false)
-    private IcaoCode icaoCode;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "company_iata_code")
+    private List<Aircraft> fleet = new ArrayList<>();
+
+    @Version
+    private Long version;
 
     protected AirTransportCompany() {
         // For ORM
     }
 
-    public AirTransportCompany(CompanyName name, IataCode iataCode, IcaoCode icaoCode) {
+    public AirTransportCompany(CompanyName name, IataCodeCompany iataCode, IcaoCodeCompany icaoCode) {
         if (name == null || iataCode == null || icaoCode == null) {
             throw new IllegalArgumentException("Company properties cannot be null.");
         }
@@ -37,10 +40,6 @@ public class AirTransportCompany {
         this.iataCode = iataCode;
         this.icaoCode = icaoCode;
     }
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "company_id")
-    private List<Aircraft> fleet = new ArrayList<>();
 
     public void addAircraftToFleet(Aircraft aircraft) {
         boolean exists = fleet.stream().anyMatch(a -> a.registration().equals(aircraft.registration()));
@@ -50,29 +49,36 @@ public class AirTransportCompany {
         this.fleet.add(aircraft);
     }
 
-    public List<Aircraft> getFleet() { return new ArrayList<>(fleet); }
+    public List<Aircraft> getFleet() {
+        return new ArrayList<>(fleet);
+    }
 
-    public IataCode identityIata() {
+    /* Métodos obrigatórios da interface AggregateRoot da EAPLI */
+
+    @Override
+    public IataCodeCompany identity() {
         return this.iataCode;
     }
 
-    public IcaoCode identityIcao() {
-        return this.icaoCode;
+    @Override
+    public boolean sameAs(Object other) {
+        if (!(other instanceof AirTransportCompany)) {
+            return false;
+        }
+        final AirTransportCompany that = (AirTransportCompany) other;
+        if (this == that) {
+            return true;
+        }
+        return identity().equals(that.identity());
     }
 
-    public Long getCompanyId() {
-        return companyId;
-    }
+    /* Getters gerais para a UI */
 
     public CompanyName getName() {
         return name;
     }
 
-    public IataCode getIataCode() {
-        return iataCode;
-    }
-
-    public IcaoCode getIcaoCode() {
+    public IcaoCodeCompany getIcaoCode() {
         return icaoCode;
     }
 }

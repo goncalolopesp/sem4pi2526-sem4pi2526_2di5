@@ -72,19 +72,25 @@ package "Backoffice Configuration" {
   }
 
   class Airport <<AggregateRoot>> {
-    +airportId: AirportId
-    +airControlAreaId: AirControlAreaId
+    +iataCode: IataCode <<ID>>
+    +icaoCode: IcaoCode
     +name: String
     +town: String
     +country: String
-    +iataCode: String
-    +icaoCode: String
-    +elevation: Decimal
+    +elevation: Elevation
   }
 
   class Coordinates <<ValueObject>> {
     +latitude: Decimal
     +longitude: Decimal
+  }
+
+  class IataCodeAirport <<ValueObject>> {
+    +code: String
+  }
+
+  class IcaoCodeAirport <<ValueObject>> {
+    +code: String
   }
 
   enum AircraftType {
@@ -102,6 +108,8 @@ AircraftModel "1" *-- "1" AircraftModelId
 
 AirControlArea "1" *-- "1" AirControlAreaBoundary
 Airport "1" *-- "1" Coordinates
+Airport "1" *-- "1" IataCodeAirport
+Airport "1" *-- "1" IcaoCodeAirport
 
 EngineModel --> Manufacturer : made by >
 AircraftModel --> Manufacturer : made by >

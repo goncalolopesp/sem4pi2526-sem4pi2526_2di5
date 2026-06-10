@@ -19,16 +19,23 @@ import pt.isep.sem4pi.presentation.aircraftModel.AddAircraftModelAction;
 import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.*;
 import pt.isep.sem4pi.presentation.authz.ListUsersAction;
+import pt.isep.sem4pi.presentation.flightplan.CreateFlightPlanAction;
+import pt.isep.sem4pi.presentation.flightplan.ListFlightPlansAction;
+import pt.isep.sem4pi.presentation.route.CreateFlightRouteAction;
+import pt.isep.sem4pi.presentation.route.DeactivateFlightRouteAction;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
 import pt.isep.sem4pi.presentation.engineModel.RegisterEngineModelAction;
 import pt.isep.sem4pi.presentation.aircontrolarea.RegisterAirControlAreaAction;
 import pt.isep.sem4pi.presentation.weatherdata.RegisterWeatherUI;
 import pt.isep.sem4pi.presentation.weatherdata.ImportWeatherDataUI;
 import pt.isep.sem4pi.presentation.weatherdata.ConsultWeatherDataUI;
+import pt.isep.sem4pi.presentation.simulation.RunAreaSimulationAction;
+import pt.isep.sem4pi.presentation.simulation.CheckSimulationStatusUI;
+import pt.isep.sem4pi.presentation.us120.ValidateFlightPlanUI;
 
 /**
  * Menu principal da aplicacao SEM4PI.
- *
+ * <p>
  * Mostra opcoes com base nas roles do utilizador autenticado.
  */
 public class MainMenu extends AbstractUI {
@@ -54,6 +61,9 @@ public class MainMenu extends AbstractUI {
     private static final int RETIRE_AIRCRAFT_OPTION = 4;
     private static final int ADD_AIRCRAFT_OPTION = 5;
     private static final int LIST_ATCC_FLEET = 6;
+    private static final int CREATE_FLIGHT_ROUTE_OPTION = 7;
+    private static final int VALIDATE_FLIGHT_PLAN_OPTION = 8;
+    private static final int DEACTIVATE_FLIGHT_ROUTE_OPTION = 9;
 
     // Airport
     private static final int ADD_AIRPORT_OPTIONS = 1;
@@ -66,6 +76,10 @@ public class MainMenu extends AbstractUI {
     //Air Control Area
     private static final int ADD_AIR_CONTROL_AREA_OPTIONS = 1;
 
+    //Simulation
+    private static final int RUN_SIMULATION_OPTION = 1;
+    private static final int CHECK_SIMULATION_STATUS_OPTION = 2;
+
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
     private static final int ADMIN_OPTION = 2;
@@ -74,7 +88,12 @@ public class MainMenu extends AbstractUI {
     private static final int AIR_TRANSPORT_COMPANY_OPTIONS = 5;
     private static final int AIRPORT_OPTIONS = 6;
     private static final int AIR_CONTROL_AREA_OPTIONS = 7;
-    private static final int WEATHER_DATA_OPTIONS = 8;
+    private static final int SIMULATION_OPTIONS = 8;
+    private static final int WEATHER_DATA_OPTIONS = 9;
+    private static final int FLIGHT_PLANNING_OPTIONS = 10;
+
+    private static final int CREATE_FLIGHT_PLAN_OPTION = 1;
+    private static final int LIST_FLIGHT_PLANS_OPTION = 2;
 
     private static final String SEPARATOR_LABEL = "--------------";
 
@@ -144,6 +163,11 @@ public class MainMenu extends AbstractUI {
                             SEM4PIRoles.PILOT,
                             SEM4PIRoles.FLIGHT_CONTROL_OPERATOR);
 
+            final boolean isPilot =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.PILOT,
+                            SEM4PIRoles.ADMIN);
+
             if (isAdmin) {
                 final var adminMenu = buildAdminMenu();
                 mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
@@ -155,12 +179,19 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
                 mainMenu.addSubMenu(AIRPORT_OPTIONS, buildAirportMenu());
                 mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, buildAirControlAreaMenu());
+                mainMenu.addSubMenu(
+                        SIMULATION_OPTIONS,
+                        buildSimulationMenu());
             } else if (isAtcc) {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
             }
 
             if (isWeatherManager || isWeatherConsultant) {
                 mainMenu.addSubMenu(WEATHER_DATA_OPTIONS, buildWeatherDataMenu(isWeatherManager, isWeatherConsultant));
+            }
+
+            if (isPilot) {
+                mainMenu.addSubMenu(FLIGHT_PLANNING_OPTIONS, buildFlightPlanningMenu());
             }
         }
 
@@ -200,8 +231,7 @@ public class MainMenu extends AbstractUI {
         return menu;
     }
 
-    private Menu buildAirTransportCompanyMenu()
-    {
+    private Menu buildAirTransportCompanyMenu() {
         final var menu = new Menu("AirTransportCompany >");
 
         menu.addItem(REGISTER_AIR_TRANSPORT_COMPANY_OPTION, "Register Air Transport Company", new RegisterAirTransportCompanyUI()::show);
@@ -210,13 +240,15 @@ public class MainMenu extends AbstractUI {
         menu.addItem(RETIRE_AIRCRAFT_OPTION, "Retire Aircraft", new RetireAircraftAction());
         menu.addItem(ADD_AIRCRAFT_OPTION, "Add Aircraft", new AddAircraftUI()::show);
         menu.addItem(LIST_ATCC_FLEET, "List Company Fleet", new ListCompanyFleetAction());
+        menu.addItem(CREATE_FLIGHT_ROUTE_OPTION, "Create flight route", new CreateFlightRouteAction());
+        menu.addItem(VALIDATE_FLIGHT_PLAN_OPTION, "Validate flight plan", new ValidateFlightPlanUI()::show);
+        menu.addItem(DEACTIVATE_FLIGHT_ROUTE_OPTION, "Deactivate flight route", new DeactivateFlightRouteAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
         return menu;
     }
 
-    private Menu buildAirportMenu()
-    {
+    private Menu buildAirportMenu() {
         final var menu = new Menu("Airport >");
 
         menu.addItem(ADD_AIRPORT_OPTIONS, "Add Airport", new AddAirportUI()::show);
@@ -225,12 +257,20 @@ public class MainMenu extends AbstractUI {
         return menu;
     }
 
-    private Menu buildAirControlAreaMenu(){
+    private Menu buildAirControlAreaMenu() {
         final var menu = new Menu("Air Control Area >");
 
         menu.addItem(ADD_AIR_CONTROL_AREA_OPTIONS, "Register Air Control Area", new RegisterAirControlAreaAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
 
+        return menu;
+    }
+
+    private Menu buildFlightPlanningMenu() {
+        final var menu = new Menu("Flight Planning >");
+        menu.addItem(CREATE_FLIGHT_PLAN_OPTION, "Create flight plan", new CreateFlightPlanAction());
+        menu.addItem(LIST_FLIGHT_PLANS_OPTION, "List flight plans", new ListFlightPlansAction());
+        menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
     }
 
@@ -249,4 +289,25 @@ public class MainMenu extends AbstractUI {
         return menu;
     }
 
+    private Menu buildSimulationMenu() {
+
+        final var menu = new Menu("Simulation >");
+
+        menu.addItem(
+                RUN_SIMULATION_OPTION,
+                "Run Area Simulation",
+                new RunAreaSimulationAction());
+
+        menu.addItem(
+                CHECK_SIMULATION_STATUS_OPTION,
+                "Check Simulation Status",
+                new CheckSimulationStatusUI()::show);
+
+        menu.addItem(
+                EXIT_OPTION,
+                RETURN_LABEL,
+                Actions.SUCCESS);
+
+        return menu;
+    }
 }

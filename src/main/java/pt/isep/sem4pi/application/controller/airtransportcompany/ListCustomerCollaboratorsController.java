@@ -5,7 +5,7 @@ import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyCollaboratorRepository;
 import pt.isep.sem4pi.domain.repositories.AirTransportCompanyRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
@@ -27,7 +27,7 @@ public class ListCustomerCollaboratorsController {
         this.collaboratorRepo = collaboratorRepo;
     }
 
-    public List<CollaboratorView> listCompanyCollaborators(IcaoCode companyCode) {
+    public List<CollaboratorView> listCompanyCollaborators(IcaoCodeCompany companyCode) {
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.ADMIN, SEM4PIRoles.BACKOFFICE_OPERATOR);
 
         AirTransportCompany company = companyRepo.findByIcaoCode(companyCode)
