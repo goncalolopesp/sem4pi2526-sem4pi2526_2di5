@@ -1,6 +1,15 @@
 package pt.isep.sem4pi.domain.model.weatherdata;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -16,9 +25,11 @@ public class WeatherData {
     private LocalDate date;
 
     @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.TIME)
     private LocalTime startTime;
 
     @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.TIME)
     private LocalTime endTime;
 
     @Embedded private Wind wind;
@@ -35,12 +46,14 @@ public class WeatherData {
                 pressure == null || humidity == null || altitude == null) {
             throw new IllegalArgumentException("All weather metrics and timestamps must be provided.");
         }
-        if (endTime.isBefore(startTime)) {
+        final LocalTime normalizedStart = WeatherTimeFormatter.normalize(startTime);
+        final LocalTime normalizedEnd = WeatherTimeFormatter.normalize(endTime);
+        if (normalizedEnd.isBefore(normalizedStart)) {
             throw new IllegalArgumentException("End time must be after start time.");
         }
         this.date = date;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.startTime = normalizedStart;
+        this.endTime = normalizedEnd;
         this.wind = wind;
         this.temperature = temperature;
         this.pressure = pressure;
