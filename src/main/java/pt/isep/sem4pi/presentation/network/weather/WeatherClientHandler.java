@@ -10,12 +10,15 @@ import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherDataViewDTO;
 import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
 import pt.isep.sem4pi.domain.model.weatherdata.WeatherTimeFormatter;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
+import pt.isep.sem4pi.infrastructure.remoteaccess.RemoteAccessEventType;
+import pt.isep.sem4pi.infrastructure.remoteaccess.RemoteAccessLogger;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -36,6 +39,10 @@ public final class WeatherClientHandler implements Runnable {
     private static final DateTimeFormatter REGISTER_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final Socket socket;
+    private final RemoteAccessLogger remoteAccessLogger;
+    private final String serviceIdentifier;
+    private final String clientIp;
+    private final int clientPort;
 
     private String username;
     private String password;
@@ -43,7 +50,23 @@ public final class WeatherClientHandler implements Runnable {
     private WeatherImportSession pendingImport;
 
     public WeatherClientHandler(final Socket socket) {
+        this(socket, RemoteAccessLogger.defaultLogger(), "US44");
+        }
+
+        public WeatherClientHandler(
+            final Socket socket,
+            final RemoteAccessLogger remoteAccessLogger,
+            final String serviceIdentifier) {
         this.socket = socket;
+            this.remoteAccessLogger = remoteAccessLogger == null ? RemoteAccessLogger.defaultLogger() : remoteAccessLogger;
+        this.serviceIdentifier = serviceIdentifier == null || serviceIdentifier.isBlank()
+            ? "US44"
+            : serviceIdentifier.trim();
+        final InetSocketAddress remote = (InetSocketAddress) socket.getRemoteSocketAddress();
+        this.clientIp = remote == null || remote.getAddress() == null
+            ? "-"
+            : remote.getAddress().getHostAddress();
+        this.clientPort = remote == null ? -1 : remote.getPort();
     }
 
     @Override
@@ -81,6 +104,7 @@ public final class WeatherClientHandler implements Runnable {
         } catch (final IOException e) {
             WeatherServerLog.log("Connection error (" + remote + "): " + e.getMessage());
         } finally {
+            logDisconnect();
             closeQuietly();
             WeatherServerLog.log("Client disconnected: " + remote);
         }
@@ -103,6 +127,7 @@ public final class WeatherClientHandler implements Runnable {
                     handleLogin(line, out);
                     return true;
                 case WeatherProtocol.CMD_LOGOUT:
+                    logRemoteAccess(currentUsername(), RemoteAccessEventType.LOGOUT);
                     this.authenticated = false;
                     this.username = null;
                     this.password = null;
@@ -146,6 +171,7 @@ public final class WeatherClientHandler implements Runnable {
     private void handleLogin(final String line, final BufferedWriter out) throws IOException {
         final String[] parts = line.split("\\s+", 3);
         if (parts.length < 3) {
+            logRemoteAccess(parts.length > 1 ? parts[1] : "-", RemoteAccessEventType.LOGIN_FAILED);
             send(out, WeatherProtocol.ERR + " Usage: LOGIN <username> <password>");
             return;
         }
@@ -159,6 +185,7 @@ public final class WeatherClientHandler implements Runnable {
                 final AuthenticationController.LoginResult result =
                         new AuthenticationController().login(user, pass);
                 if (result != AuthenticationController.LoginResult.SUCCESS) {
+                    logRemoteAccess(user, RemoteAccessEventType.LOGIN_FAILED);
                     send(out, WeatherProtocol.ERR + " Invalid credentials or access denied.");
                     return;
                 }
@@ -171,6 +198,7 @@ public final class WeatherClientHandler implements Runnable {
         this.username = user;
         this.password = pass;
         this.authenticated = true;
+        logRemoteAccess(user, RemoteAccessEventType.LOGIN_SUCCESS);
         send(out, WeatherProtocol.OK + " " + user + " " + roles);
     }
 
@@ -498,5 +526,17 @@ public final class WeatherClientHandler implements Runnable {
         } catch (final IOException ignored) {
             // already closing
         }
+    }
+
+    private void logDisconnect() {
+        logRemoteAccess(currentUsername(), RemoteAccessEventType.DISCONNECT);
+    }
+
+    private void logRemoteAccess(final String user, final RemoteAccessEventType eventType) {
+        remoteAccessLogger.log(user, clientIp, clientPort, serviceIdentifier, eventType);
+    }
+
+    private String currentUsername() {
+        return username == null || username.isBlank() ? "-" : username;
     }
 }
