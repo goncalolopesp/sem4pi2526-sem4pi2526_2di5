@@ -9,12 +9,13 @@
 5. US102 - Detect safety violations
 6. US103 - Synchronize simulation steps
 7. US105 - Shared memory coordination
-8. US109 - Generate simulation report
-9. Estruturas Principais
-10. Decisões Técnicas
-11. Testes
-12. Build e Execução
-13. Diagrama de Componentes
+8. US106 - Function-specific threads in the parent process
+9. US109 - Generate simulation report
+10. Estruturas Principais
+11. Decisões Técnicas
+12. Testes
+13. Build e Execução
+14. Diagrama de Componentes
 
 ---
 
@@ -45,6 +46,7 @@ A solução encontra-se dividida nos seguintes componentes principais:
 | `flight_plan_parser.c` | Carregamento e parsing de planos de voo                     |
 | `position_tracker.c`   | Histórico temporal das posições                             |
 | `safety_monitor.c`     | Validação de segurança                                      |
+| `simulation_threads.c` | Implementação das threads dedicadas do processo pai         |
 | `simulation.h`         | Estruturas e contratos partilhados                          |
 | `tests/`               | Testes unitários e testes de integração                     |
 | `data/`                | Ficheiros de planos de voo usados na simulação e nos testes |
@@ -85,8 +87,8 @@ Durante o Sprint 3 foram introduzidas melhorias importantes:
 - melhor coordenação entre processos;
 - melhoria da gestão de recursos;
 - sincronização determinística passo-a-passo;
-- testes unitários;
-- testes de integração.
+- arquitetura multithreaded no processo pai;
+- testes unitários e de integração expandidos.
 
 A arquitetura principal foi mantida, sendo introduzidas melhorias incrementais na robustez da implementação.
 
@@ -278,7 +280,36 @@ Permite múltiplos voos concorrentes mantendo compatibilidade com US anteriores.
 
 ---
 
-# 8. US109 - Generate simulation report
+# 8. US106 - Function-specific threads in the parent process
+
+## Objetivo
+
+Implementar threads específicas no processo pai para que cada funcionalidade central da simulação (deteção de violações e geração de relatórios em tempo real) opere de forma concorrente e independente.
+
+## Responsabilidades do processo principal (Main Loop)
+
+- Inicializar o contexto de execução e os mecanismos de sincronização locais (`SimulationThreadContext`).
+- Criar e lançar as threads permanentes de segurança (`safety_detection_thread`) e de relatório (`report_generation_thread`).
+- Atualizar a barreira temporal (`steps_ready`) após recolher todos os updates via pipes, notificando a thread de segurança.
+- Bloquear o avanço do relógio da simulação até que a thread de segurança valide o passo atual (`steps_checked`).
+- Sinalizar a terminação às threads no final da execução e libertar os recursos.
+
+## Responsabilidades da Thread de Deteção de Segurança
+
+- Aguardar em exclusão mútua (`step_mutex`) que o ciclo principal sinalize a prontidão de um passo através da variável de condição `step_cond`.
+- Inspecionar a memória partilhada de forma isolada chamando a função `safety_check_shared`.
+- Notificar instantaneamente a thread de relatórios via `violation_cond` caso novas violações sejam registadas no log.
+- Incrementar a variável de controlo `steps_checked` para autorizar o processo principal a libertar o próximo passo aos filhos.
+
+## Responsabilidades da Thread de Geração de Relatórios
+
+- Monitorizar continuamente o histórico de eventos bloqueada na variável de condição `violation_cond`.
+- Consumir sequencialmente as violações reportadas sem interferir no processamento dos dados geográficos de voo.
+- Escrever em tempo real as ocorrências para o ficheiro físico `_violations.log` e emitir os diagnósticos para o `stderr`.
+
+---
+
+# 9. US109 - Generate simulation report
 
 ## Objetivo
 
@@ -295,7 +326,7 @@ Gerar um relatório simples da execução da simulação.
 
 ---
 
-# 9. Estruturas Principais
+# 10. Estruturas Principais
 
 ## `SimulationConfig`
 
@@ -349,9 +380,19 @@ Estrutura global de tracking das posições.
 
 Estrutura de registo das violações de segurança.
 
+## `SimulationThreadContext`
+
+Encapsula os dados e os primitivos de sincronização locais necessários para as threads do processo pai:
+- Ponteiros para as estruturas globais (`SharedSimulationState`, `SimulationConfig`, `SafetyLog`, `FlightRuntime`);
+- **`step_mutex` e `step_cond`:** Mutex e variável de condição para a sincronização passo-a-passo entre o ciclo do pai e a thread de segurança;
+- **`report_mutex` e `violation_cond`:** Mutex e variável de condição que implementam o modelo produtor-consumidor entre a deteção de segurança e a thread de relatórios;
+- Contadores de progresso (`steps_ready`, `steps_checked`, `violations_reported`);
+- **`stop`:** Flag atómica volátil para coordenar a saída limpa das threads;
+- Caminho do ficheiro de log em tempo real (`realtime_log_path`).
+
 ---
 
-# 10. Decisões Técnicas
+# 11. Decisões Técnicas
 
 ## Um processo por voo
 
@@ -394,9 +435,17 @@ Foi utilizada:
 
 para garantir compatibilidade com APIs POSIX.
 
+## Modelo Concorrente Multithreaded no Pai
+
+A delegação da análise de conflitos e da escrita em disco para threads dedicadas garante que tarefas pesadas de I/O e computação geométrica não introduzam latência nem atrasem o relógio mestre da simulação.
+
+## Sincronização por Variáveis de Condição Locais
+
+Evita cenários de *race conditions* e *busy waiting*. O uso das variáveis de controlo (`steps_ready` e `steps_checked`) cria uma barreira determinística: o pai aguarda pela validação de segurança antes de autorizar os filhos através dos semáforos, garantindo a integridade dos dados e outputs estáveis.
+
 ---
 
-# 11. Testes
+# 12. Testes
 
 A pasta `tests/` contém testes unitários e testes de integração.
 
@@ -404,11 +453,12 @@ A pasta `tests/` contém testes unitários e testes de integração.
 tests/
 ├── test_position_tracker.c
 ├── test_safety_monitor.c
+├── test_simulation_threads.c
 ├── run_tests.sh
 └── run_integration_tests.sh
 ```
 
-## 11.1 Testes unitários
+## 12.1 Testes unitários
 
 ### `test_position_tracker.c`
 
@@ -426,6 +476,13 @@ Valida que o `SafetyMonitor`:
 - deteta altitude abaixo do limite mínimo;
 - regista a violação no log;
 - devolve violações quando aplicável.
+
+### test_simulation_threads.c (Novo)
+
+Valida os mecanismos de sincronização e o ciclo de vida introduzidos pela US106:
+
+- inicializa e destrói o contexto de threads verificando se os estados arrancam a zero;
+- simula um cenário produtor-consumidor (ciclo principal vs thread de segurança) garantindo que as variáveis de condição bloqueiam e acordam os workers de forma correta e previsível.
 
 ### Execução
 
@@ -445,7 +502,7 @@ test_safety_monitor OK
 All tests passed
 ```
 
-## 11.2 Testes de integração
+## 12.2 Testes de integração
 
 O script `run_integration_tests.sh` valida o executável completo.
 
@@ -453,9 +510,10 @@ Cenários testados:
 
 1. Simulação com um voo.
 2. Simulação com dois voos diferentes.
-3. Criação do ficheiro `simulation_report.txt`.
-4. Validação de argumentos inválidos.
-5. Execução sem deixar processos pendurados.
+3. Simulação concorrente com múltiplos voos via Memória Partilhada.
+4. Criação do ficheiro `simulation_report.txt`.
+5. Validação de argumentos inválidos.
+6. Execução sem deixar processos pendurados.
 
 ### Execução
 
@@ -472,7 +530,7 @@ Running integration tests...
 All integration tests passed
 ```
 
-## 11.3 Verificações finais realizadas
+## 12.3 Verificações finais realizadas
 
 ### Processos pendurados
 
@@ -534,7 +592,7 @@ Resultado validado:
 
 ---
 
-# 12. Build e Execução
+# 13. Build e Execução
 
 ## Compilação
 
@@ -641,11 +699,13 @@ A partir da pasta raiz do projeto:
 
 ---
 
-# 13. Diagrama de Componentes
+# 14. Diagrama de Componentes
 
 O diagrama foi atualizado apenas para incluir o bloco de testes e os ficheiros de dados usados na validação.
 
 A arquitetura principal não mudou devido aos testes.
+
+![ComponentsDiagram](ComponentsDiagram.svg)
 
 ```puml
 @startuml
@@ -659,31 +719,39 @@ package "Flight Simulation System" {
     [Flight Plan Parser\nflight_plan_parser.c] as Parser
     [Position Tracker\nposition_tracker.c] as Tracker
     [Safety Monitor\nsafety_monitor.c] as Safety
-    [Report Generator] as Report
+    
+    package "Thread Infrastructure (US106)" {
+        [Safety Thread\nsafety_detection_thread] as SafetyThread
+        [Report Thread\nreport_generation_thread] as ReportThread
+    }
+    
     [Shared Memory Layer\nshared_simulation.c] as Shared
-    [Monitor Thread] as Thread
 
     database "Flight Plan Files\nJSON" as Json
     file "simulation_report.txt" as ReportFile
+    file "simulation_report_violations.log" as ViolationLog
 }
 
 Main --> FlightProcess : fork()
 Main --> FlightProcess : SIGUSR2 / SIGTERM
-Main --> FlightProcess : sync pipe
+Main --> FlightProcess : sem_post(step_start)
 FlightProcess --> Main : PositionUpdate pipe
 
 FlightProcess --> Parser : loads plan
 Parser --> Json : reads
 
 Main --> Tracker : stores position history
-Main --> Safety : checks violations
-Safety --> FlightProcess : SIGUSR1
-Main --> Report : creates summary
-Report --> ReportFile : writes
+FlightProcess --> Shared : updates snapshot via semaphores
 
-FlightProcess --> Shared : updates
-Thread --> Shared : monitors
-Main --> Thread : creates
+' Sincronização US106
+Main --> SafetyThread : signals step ready (step_cond)
+SafetyThread --> Main : acknowledges check done (step_cond)
+SafetyThread --> Safety : invokes safety_check_shared()
+SafetyThread --> ReportThread : signals new events (violation_cond)
+
+Safety --> FlightProcess : SIGUSR1 (on alert)
+Main --> ReportFile : writes final summary
+ReportThread --> ViolationLog : writes realtime log
 
 @enduml
 ```
