@@ -23,21 +23,21 @@ import java.time.LocalDate;
  */
 public class InMemoryRepositoryFactory implements RepositoryFactory {
 
-    private static eapli.framework.infrastructure.authz.domain.repositories.UserRepository userRepository;
-    private static BackofficeUserRepository backofficeUserRepository;
-    private static AircraftModelRepository aircraftModelRepository;
-    private static EngineModelRepository engineModelRepository;
-    private static ManufacturerRepository manufacturerRepository;
-    private static AirControlAreaRepository airControlAreaRepository;
-    private static AircraftRepository aircraftRepository;
-    private static FlightRepository flightRepository;
-    private static WeatherBatchRepository weatherBatchRepository;
-    private static FlightRouteRepository flightRouteRepository;
-    private static AirportRepository airportRepository;
-    private static SimulationRepository simulationRepository;
-    private static SimulationReportRepository simulationReportRepository;
-    private static FlightPlanRepository flightPlanRepository;
-    private static PilotRepository pilotRepository;
+    private eapli.framework.infrastructure.authz.domain.repositories.UserRepository userRepository;
+    private BackofficeUserRepository backofficeUserRepository;
+    private AircraftModelRepository aircraftModelRepository;
+    private EngineModelRepository engineModelRepository;
+    private ManufacturerRepository manufacturerRepository;
+    private AirControlAreaRepository airControlAreaRepository;
+    private AircraftRepository aircraftRepository;
+    private FlightRepository flightRepository;
+    private WeatherBatchRepository weatherBatchRepository;
+    private FlightRouteRepository flightRouteRepository;
+    private AirportRepository airportRepository;
+    private SimulationRepository simulationRepository;
+    private SimulationReportRepository simulationReportRepository;
+    private FlightPlanRepository flightPlanRepository;
+    private PilotRepository pilotRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -125,7 +125,7 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     @Override
     public AirControlAreaRepository airControlAreas() {
         if (airControlAreaRepository == null) {
-            return new InMemoryAirControlAreaRepository();
+            airControlAreaRepository = new InMemoryAirControlAreaRepository();
         }
         return airControlAreaRepository;
     }

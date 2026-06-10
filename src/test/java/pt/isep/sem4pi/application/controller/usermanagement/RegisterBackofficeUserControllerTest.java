@@ -25,6 +25,7 @@ public class RegisterBackofficeUserControllerTest {
     public void setUp() {
         // Força o PersistenceContext a usar InMemory para este teste
         System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
+        PersistenceContext.resetForTesting();
 
         // Configura o Authz com o mesmo repositório que o controller vai usar
         final var factory = PersistenceContext.repositories();

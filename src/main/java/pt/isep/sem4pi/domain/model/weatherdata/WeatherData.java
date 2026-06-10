@@ -65,6 +65,10 @@ public class WeatherData {
         return date;
     }
 
+    public Long getWeatherDataId() {
+        return weatherDataId;
+    }
+
     public LocalTime getStartTime() {
         return startTime;
     }

@@ -21,11 +21,15 @@ import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.pilot.Pilot;
 import pt.isep.sem4pi.domain.model.pilot.PilotId;
 import pt.isep.sem4pi.domain.model.route.*;
+import pt.isep.sem4pi.domain.model.weatherdata.WeatherData;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class FlightPlanTest {
 
@@ -59,6 +63,52 @@ public class FlightPlanTest {
         final FlightPlan plan = buildFlightPlan();
         plan.reject();
         plan.reject();
+    }
+
+    @Test
+    public void ensureAssociatingWeatherInvalidatesPreviousValidation() {
+        final FlightPlan plan = buildFlightPlan();
+        final WeatherData weatherData = mock(WeatherData.class);
+        plan.validate();
+
+        final boolean invalidated = plan.associateWeatherData(weatherData);
+
+        assertTrue(invalidated);
+        assertEquals(FlightPlanStatus.DRAFT, plan.status());
+        assertEquals(List.of(weatherData), plan.weatherData());
+    }
+
+    @Test
+    public void ensureAssociatingWeatherToDraftPlanDoesNotReportInvalidation() {
+        final FlightPlan plan = buildFlightPlan();
+        final WeatherData weatherData = mock(WeatherData.class);
+
+        final boolean invalidated = plan.associateWeatherData(weatherData);
+
+        assertFalse(invalidated);
+        assertEquals(FlightPlanStatus.DRAFT, plan.status());
+        assertEquals(List.of(weatherData), plan.weatherData());
+    }
+
+    @Test
+    public void ensureFlightPlanCanExistWithoutWeatherData() {
+        final FlightPlan plan = buildFlightPlan();
+
+        assertTrue(plan.weatherData().isEmpty());
+        plan.validate();
+        assertEquals(FlightPlanStatus.VALIDATED, plan.status());
+    }
+
+    @Test
+    public void ensureFlightPlanCanContainMultipleWeatherRecords() {
+        final FlightPlan plan = buildFlightPlan();
+        final WeatherData first = mock(WeatherData.class);
+        final WeatherData second = mock(WeatherData.class);
+
+        plan.associateWeatherData(first);
+        plan.associateWeatherData(second);
+
+        assertEquals(List.of(first, second), plan.weatherData());
     }
 
     private FlightPlan buildFlightPlan() {

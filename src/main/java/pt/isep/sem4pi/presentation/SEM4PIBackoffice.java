@@ -6,6 +6,7 @@ import pt.isep.sem4pi.infrastructure.bootstrap.MasterUsersBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airport.AirportBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.AirTransportCompanyBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.FlightRouteBootstrapper;
+import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.FlightPlanBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.PilotBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.weatherdata.WeatherBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirTransportCompanyRepository;
@@ -43,6 +44,7 @@ public final class SEM4PIBackoffice extends BaseApp {
         new AirTransportCompanyBootstrapper(new JpaAirTransportCompanyRepository()).execute();
         new FlightRouteBootstrapper().execute();
         new PilotBootstrapper().execute();
+        new FlightPlanBootstrapper().execute();
 
         new SEM4PIBackoffice().run(args);
     }
