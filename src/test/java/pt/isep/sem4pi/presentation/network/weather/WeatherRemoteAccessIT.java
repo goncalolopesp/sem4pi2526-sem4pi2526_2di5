@@ -146,6 +146,28 @@ public class WeatherRemoteAccessIT {
     }
 
     @Test
+    public void twoConsecutiveRegistersSameAreaWork() throws Exception {
+        try (Conn c = new Conn(port)) {
+            c.greeting();
+            c.send("LOGIN weather Password1");
+            assertTrue(c.read().startsWith("OK"));
+
+            c.send("REGISTER CW001 2026-06-11 08:00 08:45 15 10 90 50 1013 1000");
+            assertTrue(c.read().startsWith("OK"));
+
+            c.send("REGISTER CW001 2026-06-11 08:45 09:30 29 4 50 70 1013 3045");
+            final String second = c.read();
+            assertTrue(second.startsWith("OK"), "second register failed: " + second);
+
+            c.send("CONSULT CW001 2026-06-11");
+            final String header = c.read();
+            assertTrue(header.startsWith("OK 2"), "expected two records, got: " + header);
+            assertNotNull(c.read());
+            assertNotNull(c.read());
+        }
+    }
+
+    @Test
     public void registerAndConsultRoundTrip() throws Exception {
         try (Conn c = new Conn(port)) {
             c.greeting();

@@ -11,6 +11,7 @@ import pt.isep.sem4pi.infrastructure.persistence.JPA.*;
 public class JpaRepositoryFactory implements RepositoryFactory {
 
     private static final String PERSISTENCE_UNIT_NAME = "sem4piPU";
+    private static final WeatherBatchRepository WEATHER_BATCH_REPOSITORY = new JpaWeatherBatchRepository();
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -104,7 +105,7 @@ public class JpaRepositoryFactory implements RepositoryFactory {
 
     @Override
     public WeatherBatchRepository weatherBatches() {
-        return new JpaWeatherBatchRepository();
+        return WEATHER_BATCH_REPOSITORY;
     }
 
     @Override

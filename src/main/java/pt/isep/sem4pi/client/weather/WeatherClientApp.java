@@ -44,6 +44,7 @@ public final class WeatherClientApp {
 
     private String username;
     private Set<String> roles = new HashSet<>();
+    private boolean connected = true;
 
     private WeatherClientApp(final BufferedReader in, final BufferedWriter out) {
         this.in = in;
@@ -149,7 +150,7 @@ public final class WeatherClientApp {
                         importWeather();
                     }
                 } catch (final IOException e) {
-                    System.out.println("Communication error: " + e.getMessage());
+                    handleCommunicationError(e);
                 }
                 continue;
             }
@@ -157,20 +158,21 @@ public final class WeatherClientApp {
                 try {
                     consultWeather();
                 } catch (final IOException e) {
-                    System.out.println("Communication error: " + e.getMessage());
+                    handleCommunicationError(e);
                 }
                 continue;
             }
 
             switch (option) {
                 case "9" -> {
-                    sendLine("LOGOUT");
-                    System.out.println(readLine());
+                    logoutQuietly();
                     return false;
                 }
                 case "0" -> {
-                    sendLine("QUIT");
-                    System.out.println(readLine());
+                    if (connected) {
+                        sendLine("QUIT");
+                        System.out.println(readLine());
+                    }
                     return true;
                 }
                 default -> System.out.println("Invalid option.");
@@ -351,14 +353,49 @@ public final class WeatherClientApp {
         return console.nextLine().trim();
     }
 
+    private void handleCommunicationError(final IOException e) {
+        connected = false;
+        System.out.println("Communication error: " + e.getMessage());
+        System.out.println("Connection lost. Use option 9 (Logout) and login again.");
+    }
+
+    private void logoutQuietly() throws IOException {
+        if (connected) {
+            sendLine("LOGOUT");
+            final String response = readLine();
+            if (response != null) {
+                System.out.println(response);
+            }
+        } else {
+            System.out.println("Session ended (connection was lost).");
+        }
+        connected = false;
+    }
+
     private void sendLine(final String message) throws IOException {
-        out.write(message);
-        out.write('\n');
-        out.flush();
+        if (!connected) {
+            throw new IOException("Not connected to server.");
+        }
+        try {
+            out.write(message);
+            out.write('\n');
+            out.flush();
+        } catch (final IOException e) {
+            connected = false;
+            throw e;
+        }
     }
 
     private String readLine() throws IOException {
-        return in.readLine();
+        if (!connected) {
+            return null;
+        }
+        try {
+            return in.readLine();
+        } catch (final IOException e) {
+            connected = false;
+            throw e;
+        }
     }
 
     private String readImportResponse() throws IOException {

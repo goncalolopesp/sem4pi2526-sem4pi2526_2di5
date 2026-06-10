@@ -129,14 +129,17 @@ public final class WeatherClientHandler implements Runnable {
                     return true;
             }
         } catch (final SecurityException e) {
-            send(out, WeatherProtocol.ERR + " " + e.getMessage());
+            sendSafe(out, WeatherProtocol.ERR + " " + e.getMessage());
             return true;
         } catch (final IllegalArgumentException e) {
-            send(out, WeatherProtocol.ERR + " " + e.getMessage());
+            sendSafe(out, WeatherProtocol.ERR + " " + e.getMessage());
             return true;
         } catch (final RuntimeException e) {
-            send(out, WeatherProtocol.ERR + " Unexpected error: " + e.getMessage());
+            sendSafe(out, WeatherProtocol.ERR + " Unexpected error: " + e.getMessage());
             return true;
+        } catch (final IOException e) {
+            WeatherServerLog.log("Failed to write response: " + e.getMessage());
+            return false;
         }
     }
 
@@ -438,6 +441,14 @@ public final class WeatherClientHandler implements Runnable {
     private static String sanitizeFileName(final String name) {
         final String base = Path.of(name).getFileName().toString();
         return base.replaceAll("[^A-Za-z0-9._-]", "_");
+    }
+
+    private static void sendSafe(final BufferedWriter out, final String message) {
+        try {
+            send(out, message);
+        } catch (final IOException e) {
+            WeatherServerLog.log("Failed to send: " + e.getMessage());
+        }
     }
 
     private static void send(final BufferedWriter out, final String message) throws IOException {
