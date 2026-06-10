@@ -1,6 +1,6 @@
 package pt.isep.sem4pi.infrastructure.remoteaccess;
 
-import org.testng.annotations.Test;
+import org.junit.Test;
 import pt.isep.sem4pi.presentation.network.remoteaccess.RemoteAccessLoggingServer;
 
 import java.net.ServerSocket;
@@ -11,8 +11,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class RemoteAccessLoggingTest {
 
@@ -57,8 +57,8 @@ public class RemoteAccessLoggingTest {
         logger.log("mariana", "192.168.1.50", 51522, "US44", RemoteAccessEventType.LOGIN_SUCCESS);
 
         final String line = awaitLine(logFile);
-        assertTrue(line.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2};mariana;192\\.168\\.1\\.50;51522;US44;LOGIN_SUCCESS"),
-                "unexpected log line: " + line);
+        assertTrue("unexpected log line: " + line,
+                line.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2};mariana;192\\.168\\.1\\.50;51522;US44;LOGIN_SUCCESS"));
 
         server.stop();
         serverThread.join(2000);
