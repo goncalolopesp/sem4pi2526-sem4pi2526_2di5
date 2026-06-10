@@ -12,8 +12,13 @@ set -e
 HOST="${1:-127.0.0.1}"
 PORT="${2:-8044}"
 
+echo "Compiling project..."
 mvn -q compile
-mvn -q dependency:build-classpath -Dmdep.outputFile=cp.txt
+echo "Compilation finished."
 
-echo "Connecting to weather server at ${HOST}:${PORT}..."
+echo "Building classpath..."
+mvn -q dependency:build-classpath -Dmdep.outputFile=cp.txt
+echo "Classpath ready."
+
+echo "Starting weather client and connecting to ${HOST}:${PORT}..."
 java -cp "target/classes:$(cat cp.txt)" pt.isep.sem4pi.client.weather.WeatherClientApp "${HOST}" "${PORT}"

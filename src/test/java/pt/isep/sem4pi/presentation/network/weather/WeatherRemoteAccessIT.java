@@ -9,6 +9,8 @@ import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
 import pt.isep.sem4pi.infrastructure.bootstrap.MasterUsersBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
+import pt.isep.sem4pi.presentation.network.remoteaccess.RemoteAccessProtocol;
+import pt.isep.sem4pi.presentation.network.remoteaccess.RemoteAccessTcpServer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,12 +27,13 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 public class WeatherRemoteAccessIT {
 
-    private static WeatherTcpServer server;
+    private static RemoteAccessTcpServer server;
     private static int port;
 
     @BeforeClass
@@ -45,7 +48,7 @@ public class WeatherRemoteAccessIT {
         new MasterUsersBootstrapper().execute();
 
         port = freePort();
-        server = new WeatherTcpServer(port);
+        server = new RemoteAccessTcpServer(port);
         final Thread t = new Thread(() -> {
             try {
                 server.start();
@@ -66,6 +69,15 @@ public class WeatherRemoteAccessIT {
     }
 
     @Test
+    public void greetingIsGenericBeforeLogin() throws Exception {
+        try (Conn c = new Conn(port)) {
+            final String greeting = c.greeting();
+            assertTrue(greeting.contains("Remote Access"), "expected generic greeting, got: " + greeting);
+            assertFalse(greeting.contains("US44"), "US44 must not appear before login");
+        }
+    }
+
+    @Test
     public void helpWorksWithoutLogin() throws Exception {
         try (Conn c = new Conn(port)) {
             c.greeting();
@@ -78,9 +90,7 @@ public class WeatherRemoteAccessIT {
     public void consultWithNoResultsReturnsNoData() throws Exception {
         try (Conn c = new Conn(port)) {
             c.greeting();
-            c.send("LOGIN weather Password1");
-            assertTrue(c.read().startsWith("OK"));
-
+            c.loginAsWeather();
             c.send("CONSULT CW001 2099-01-01");
             final String response = c.read();
             assertTrue(response.startsWith("OK 0"), "expected empty consult response, got: " + response);
@@ -93,6 +103,19 @@ public class WeatherRemoteAccessIT {
         try (Conn c = new Conn(port)) {
             c.greeting();
             c.send("CONSULT CW001 2024-01-01");
+            assertTrue(c.read().startsWith("ERR"));
+        }
+    }
+
+    @Test
+    public void weatherOperationsRequireServiceSelection() throws Exception {
+        try (Conn c = new Conn(port)) {
+            c.greeting();
+            c.send("LOGIN weather Password1");
+            assertTrue(c.read().startsWith("OK"));
+            assertTrue(c.read().startsWith("OK MENU"));
+
+            c.send("CONSULT CW001 " + LocalDate.now());
             assertTrue(c.read().startsWith("ERR"));
         }
     }
@@ -113,10 +136,12 @@ public class WeatherRemoteAccessIT {
             c.send("LOGIN backoffice Password1");
             final String login = c.read();
             assertTrue(login.startsWith("OK"), "other roles must be allowed to log in");
+            final String menu = c.read();
+            assertTrue(menu.startsWith("OK MENU"), "menu expected after login, got: " + menu);
 
-            c.send("CONSULT CW001 " + LocalDate.now());
+            c.send("SELECT WEATHER");
             assertTrue(c.read().startsWith("ERR"),
-                    "weather operations must be denied for non-weather roles");
+                    "weather service must not be available for non-weather roles");
         }
     }
 
@@ -130,8 +155,7 @@ public class WeatherRemoteAccessIT {
 
         try (Conn c = new Conn(port)) {
             c.greeting();
-            c.send("LOGIN weather Password1");
-            assertTrue(c.read().startsWith("OK"));
+            c.loginAsWeather();
 
             c.send("IMPORT_BEGIN CW_WeatherData_v0.xlsx xlsx " + chunks.size());
             assertTrue(c.read().contains(WeatherProtocol.SEND_CHUNKS));
@@ -149,8 +173,7 @@ public class WeatherRemoteAccessIT {
     public void twoConsecutiveRegistersSameAreaWork() throws Exception {
         try (Conn c = new Conn(port)) {
             c.greeting();
-            c.send("LOGIN weather Password1");
-            assertTrue(c.read().startsWith("OK"));
+            c.loginAsWeather();
 
             c.send("REGISTER CW001 2026-06-11 08:00 08:45 15 10 90 50 1013 1000");
             assertTrue(c.read().startsWith("OK"));
@@ -171,8 +194,7 @@ public class WeatherRemoteAccessIT {
     public void registerAndConsultRoundTrip() throws Exception {
         try (Conn c = new Conn(port)) {
             c.greeting();
-            c.send("LOGIN weather Password1");
-            assertTrue(c.read().startsWith("OK"));
+            c.loginAsWeather();
 
             c.send("REGISTER CW001 " + LocalDate.now() + " 08:00 10:00 15 10 90 50 1013 1000");
             assertTrue(c.read().startsWith("OK"));
@@ -185,6 +207,23 @@ public class WeatherRemoteAccessIT {
             for (int i = 0; i < count; i++) {
                 assertNotNull(c.read());
             }
+        }
+    }
+
+    @Test
+    public void logoutKeepsConnectionAndAllowsRelogin() throws Exception {
+        try (Conn c = new Conn(port)) {
+            c.greeting();
+            c.loginAsWeather();
+            c.selectWeather();
+
+            c.send("LOGOUT");
+            assertTrue(c.read().startsWith("OK"));
+
+            c.loginAsWeather();
+            c.selectWeather();
+            c.send("CONSULT CW001 2099-01-01");
+            assertTrue(c.read().startsWith("OK"));
         }
     }
 
@@ -230,8 +269,20 @@ public class WeatherRemoteAccessIT {
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
         }
 
-        void greeting() throws Exception {
-            read();
+        String greeting() throws Exception {
+            return read();
+        }
+
+        void loginAsWeather() throws Exception {
+            send("LOGIN weather Password1");
+            assertTrue(read().startsWith(RemoteAccessProtocol.OK));
+            assertTrue(read().startsWith("OK MENU"));
+            selectWeather();
+        }
+
+        void selectWeather() throws Exception {
+            send("SELECT WEATHER");
+            assertTrue(read().startsWith("OK Selected"));
         }
 
         void send(final String line) throws Exception {
