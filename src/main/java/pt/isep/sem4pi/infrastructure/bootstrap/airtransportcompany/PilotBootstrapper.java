@@ -15,14 +15,17 @@ public class PilotBootstrapper {
     }
 
     public void execute() {
-        seedPilot("PILOT01", "TP");
+        seedPilot("PILOT01", "TP", "pilot");
     }
 
-    private void seedPilot(final String pilotCode, final String companyIata) {
+    private void seedPilot(final String pilotCode, final String companyIata, final String ownerUsername) {
         final PilotId pilotId = new PilotId(pilotCode);
-        if (pilotRepository.ofIdentity(pilotId).isPresent()) {
+        final var existingPilot = pilotRepository.ofIdentity(pilotId);
+        if (existingPilot.isPresent()) {
+            existingPilot.get().assignOwner(ownerUsername);
+            pilotRepository.save(existingPilot.get());
             return;
         }
-        pilotRepository.save(new Pilot(pilotId, new IataCodeCompany(companyIata)));
+        pilotRepository.save(new Pilot(pilotId, new IataCodeCompany(companyIata), ownerUsername));
     }
 }

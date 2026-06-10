@@ -249,6 +249,12 @@ typedef struct
     volatile sig_atomic_t stop;
 
     char realtime_log_path[MAX_PATH];
+
+    /* US106: Sincronização entre o pai e a safety thread */
+        pthread_mutex_t step_mutex;
+        pthread_cond_t step_cond;
+        int steps_ready;
+        int steps_checked;
 } SimulationThreadContext;
 
 void simulation_threads_init(SimulationThreadContext *ctx,

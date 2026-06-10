@@ -22,6 +22,10 @@ public final class PersistenceContext {
         return theFactory;
     }
 
+    public static void resetForTesting() {
+        theFactory = null;
+    }
+
     private static RepositoryFactory buildRepositoryFactory() {
         // 1) Allow override from JVM/system properties (useful for tests)
         final String overrideFactoryClassName = System.getProperty("persistence.repositoryFactory");

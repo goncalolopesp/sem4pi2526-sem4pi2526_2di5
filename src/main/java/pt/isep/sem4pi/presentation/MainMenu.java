@@ -22,6 +22,7 @@ import pt.isep.sem4pi.presentation.authz.ListUsersAction;
 import pt.isep.sem4pi.presentation.flightplan.CreateFlightPlanAction;
 import pt.isep.sem4pi.presentation.flightplan.ImportFlightPlanAction;
 import pt.isep.sem4pi.presentation.flightplan.ListFlightPlansAction;
+import pt.isep.sem4pi.presentation.flightplan.AssociateWeatherDataAction;
 import pt.isep.sem4pi.presentation.route.CreateFlightRouteAction;
 import pt.isep.sem4pi.presentation.route.DeactivateFlightRouteAction;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
@@ -96,6 +97,7 @@ public class MainMenu extends AbstractUI {
     private static final int CREATE_FLIGHT_PLAN_OPTION = 1;
     private static final int LIST_FLIGHT_PLANS_OPTION = 2;
     private static final int IMPORT_FLIGHT_PLAN_OPTION = 3;
+    private static final int ASSOCIATE_WEATHER_DATA_OPTION = 4;
 
     private static final String SEPARATOR_LABEL = "--------------";
 
@@ -273,6 +275,8 @@ public class MainMenu extends AbstractUI {
         menu.addItem(CREATE_FLIGHT_PLAN_OPTION, "Create flight plan", new CreateFlightPlanAction());
         menu.addItem(LIST_FLIGHT_PLANS_OPTION, "List flight plans", new ListFlightPlansAction());
         menu.addItem(IMPORT_FLIGHT_PLAN_OPTION, "Import flight plan from file", new ImportFlightPlanAction());
+        menu.addItem(ASSOCIATE_WEATHER_DATA_OPTION, "Add weather data to flight plan",
+                new AssociateWeatherDataAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
     }

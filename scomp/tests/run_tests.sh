@@ -32,6 +32,9 @@ src/shared_simulation.c \
 
 gcc -Wall -Wextra -Wpedantic -std=c11 -D_DEFAULT_SOURCE \
 tests/test_simulation_threads.c \
+src/simulation_threads.c \
+src/safety_monitor.c \
+src/position_tracker.c \
 -o tests/test_simulation_threads \
 -lm -pthread
 

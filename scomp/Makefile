@@ -20,3 +20,9 @@ run: $(BIN)
 
 clean:
 	rm -f $(BIN) simulation_report.txt
+
+test:
+	./tests/run_tests.sh
+	./tests/run_integration_tests.sh
+
+.PHONY: all run clean test

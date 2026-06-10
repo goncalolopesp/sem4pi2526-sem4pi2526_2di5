@@ -9,7 +9,9 @@ import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public class JpaWeatherBatchRepository implements WeatherBatchRepository {
 
@@ -50,6 +52,16 @@ public class JpaWeatherBatchRepository implements WeatherBatchRepository {
     }
 
     @Override
+    public List<WeatherImportBatch> findAll() {
+        EntityManager em = EMF.createEntityManager();
+        List<WeatherImportBatch> results = em.createQuery(
+                "SELECT DISTINCT b FROM WeatherImportBatch b LEFT JOIN FETCH b.records",
+                WeatherImportBatch.class).getResultList();
+        em.close();
+        return results;
+    }
+
+    @Override
     public List<WeatherData> findWeatherDataByAreaIdAndDate(final String areaId, final LocalDate date) {
         EntityManager em = EMF.createEntityManager();
         TypedQuery<WeatherData> query = em.createQuery(
@@ -74,6 +86,35 @@ public class JpaWeatherBatchRepository implements WeatherBatchRepository {
         List<WeatherImportBatch> results = query.getResultList();
         em.close();
         return results;
+    }
+
+    @Override
+    public Optional<WeatherData> findWeatherData(String areaId, LocalDate date,
+                                                 LocalTime startTime, LocalTime endTime) {
+        EntityManager em = EMF.createEntityManager();
+        TypedQuery<WeatherData> query = em.createQuery(
+                "SELECT w FROM WeatherImportBatch b JOIN b.records w "
+                        + "WHERE b.airControlAreaId = :areaId AND w.date = :date "
+                        + "AND w.startTime = :startTime AND w.endTime = :endTime",
+                WeatherData.class);
+        query.setParameter("areaId", areaId);
+        query.setParameter("date", date);
+        query.setParameter("startTime", startTime);
+        query.setParameter("endTime", endTime);
+        Optional<WeatherData> result = query.getResultStream().findFirst();
+        em.close();
+        return result;
+    }
+
+    @Override
+    public Optional<WeatherData> findWeatherDataById(Long weatherDataId) {
+        if (weatherDataId == null) {
+            return Optional.empty();
+        }
+        EntityManager em = EMF.createEntityManager();
+        Optional<WeatherData> result = Optional.ofNullable(em.find(WeatherData.class, weatherDataId));
+        em.close();
+        return result;
     }
 
     @Override

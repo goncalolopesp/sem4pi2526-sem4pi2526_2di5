@@ -35,6 +35,7 @@ public class ListCompanyFleetControllerTest {
     public void setUp() {
         // 1. Iniciar Base de Dados em Memória para o EAPLI não dar erro de Sessão
         System.setProperty("persistence.repositoryFactory", "pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory");
+        PersistenceContext.resetForTesting();
         AuthzRegistry.configure(PersistenceContext.repositories().users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());
 
         if (AuthzRegistry.authorizationService().hasSession()) {
