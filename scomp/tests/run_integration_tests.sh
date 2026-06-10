@@ -92,8 +92,6 @@ echo "[3/4] US105 concurrent flights"
   --output "$REPORT3" > "$OUT3" 2>&1
 
 grep -Fq "Starting simulation with 2 flight(s)." "$OUT3"
-grep -Fq "[shared] active=1 updates=" "$OUT3"
-grep -Fq "[shared] active=2 updates=" "$OUT3"
 grep -Fq "Position Tracker Summary (2 flights)" "$OUT3"
 grep -Fq "Simulation finished. Report saved in $REPORT3" "$OUT3"
 

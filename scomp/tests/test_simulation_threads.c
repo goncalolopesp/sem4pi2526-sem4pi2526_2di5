@@ -8,53 +8,59 @@
 
 #include "../src/simulation.h"
 
-typedef struct
-{
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-    int pending;
-    volatile sig_atomic_t stop;
-} NotifyTestContext;
-
+/* Simulates the main process loop unlocking a new simulation step */
 static void *producer_thread(void *arg)
 {
-    NotifyTestContext *ctx = arg;
+    SimulationThreadContext *ctx = arg;
 
     usleep(50000);
 
-    pthread_mutex_lock(&ctx->mutex);
-    ctx->pending = 1;
-    pthread_cond_signal(&ctx->cond);
-    pthread_mutex_unlock(&ctx->mutex);
+    pthread_mutex_lock(&ctx->step_mutex);
+    ctx->steps_ready++;
+    pthread_cond_signal(&ctx->step_cond);
+    pthread_mutex_unlock(&ctx->step_mutex);
 
     return NULL;
 }
 
+/* Simulates the safety monitor thread waiting for the step signal */
 static void *consumer_thread(void *arg)
 {
-    NotifyTestContext *ctx = arg;
+    SimulationThreadContext *ctx = arg;
 
-    pthread_mutex_lock(&ctx->mutex);
+    pthread_mutex_lock(&ctx->step_mutex);
 
-    while (ctx->pending == 0 && !ctx->stop)
+    while (ctx->steps_ready == ctx->steps_checked && !ctx->stop)
     {
-        pthread_cond_wait(&ctx->cond, &ctx->mutex);
+        pthread_cond_wait(&ctx->step_cond, &ctx->step_mutex);
     }
 
-    assert(ctx->pending == 1);
+    assert(ctx->steps_ready == 1);
+    ctx->steps_checked = ctx->steps_ready;
 
-    pthread_mutex_unlock(&ctx->mutex);
+    pthread_mutex_unlock(&ctx->step_mutex);
 
     return NULL;
 }
 
 int main(void)
 {
-    NotifyTestContext ctx;
-    memset(&ctx, 0, sizeof(ctx));
+    SimulationThreadContext ctx;
+    SharedSimulationState shared;
+    SimulationConfig config;
+    SafetyLog log;
 
-    pthread_mutex_init(&ctx.mutex, NULL);
-    pthread_cond_init(&ctx.cond, NULL);
+    /* Initialize dummy structures required to setup the thread context */
+    memset(&shared, 0, sizeof(shared));
+    memset(&config, 0, sizeof(config));
+    memset(&log, 0, sizeof(log));
+    strcpy(config.output_file, "dummy_test_report.txt");
+
+    /* Test the actual US106 initialization function */
+    simulation_threads_init(&ctx, &shared, &config, &log, NULL, 0);
+
+    assert(ctx.steps_ready == 0);
+    assert(ctx.steps_checked == 0);
 
     pthread_t producer;
     pthread_t consumer;
@@ -65,8 +71,8 @@ int main(void)
     pthread_join(producer, NULL);
     pthread_join(consumer, NULL);
 
-    pthread_mutex_destroy(&ctx.mutex);
-    pthread_cond_destroy(&ctx.cond);
+    /* Test the cleanup function */
+    simulation_threads_destroy(&ctx);
 
     printf("test_simulation_threads OK\n");
 
