@@ -30,20 +30,26 @@ weather records.
 
 - A pilot can add weather data to one of their flight plans.
 - An administrator can add weather data to any flight plan.
-- Weather data must exist in the system before it can be associated.
 - A pilot can only update their own flight plans.
+- Weather data must exist in the system before it can be associated.
 - A flight plan can have zero, one or multiple weather records.
 - Weather data is not required when creating a flight plan in US080.
+- All relevant weather measurements are displayed before selection.
+- One or multiple weather records can be selected in a single operation.
+- Exactly identical weather records are consolidated in the selection list.
+- Weather data already associated with the flight plan is not duplicated.
 - If the flight plan was previously tested, its previous result is voided.
 - The system informs the user when the previous test is no longer valid.
 
 ### 1.5. Definition of Done
 
-- Weather data association implemented.
-- Optional `FlightPlan` to `WeatherData` relationship implemented.
+- Optional weather data association implemented.
+- Multiple weather data association implemented.
 - Pilot ownership validation implemented.
 - Administrator access implemented.
 - Previous test invalidation rule implemented.
+- Complete weather data presentation implemented.
+- Duplicate prevention implemented.
 - Unit tests created.
 - Documentation updated.
 - CI passes successfully.
@@ -61,17 +67,26 @@ The `weatherData` collection is initialized as empty. Consequently, US080 does
 not need to provide weather data to construct, persist, validate or otherwise
 use a flight plan.
 
-Weather data is stored inside `WeatherImportBatch` aggregates. A record is
-identified for this use case by:
+Weather data is stored inside `WeatherImportBatch` aggregates. Each persisted
+`WeatherData` entity has its own identifier. The identifier is used when
+associating records so that different measurements with the same area, date
+and time interval are not confused.
 
-- Air Control Area identifier;
+For presentation purposes, records are considered identical when all of the
+following values match:
+
+- Air Control Area;
 - date;
-- start time;
-- end time.
+- start and end time;
+- temperature;
+- wind speed and direction;
+- atmospheric pressure;
+- humidity;
+- altitude.
 
-The application service only associates a record returned by
-`WeatherBatchRepository`. This prevents weather data that does not exist in the
-system from being added to a flight plan.
+Exactly identical records are consolidated into one row. Records with
+different measurements remain separate choices even when their area and time
+interval are equal.
 
 Ownership is determined through the username assigned to the `Pilot` entity:
 
@@ -91,17 +106,19 @@ the previous test and requires the flight plan to be tested again.
    the `PILOT` or `ADMIN` role.
 3. The system lists the flight plans accessible to the current user.
 4. The user selects a flight plan.
-5. The system lists weather records that already exist in the system.
-6. The user selects a weather record.
-7. `AssociateWeatherDataService` retrieves the flight plan and validates
-   ownership, unless the current user is an administrator.
-8. The service retrieves the selected weather record through
-   `WeatherBatchRepository`.
-9. `FlightPlan.associateWeatherData()` adds the record to the collection.
-10. If the flight plan had already been tested, its status returns to `DRAFT`.
-11. The updated flight plan is persisted.
-12. The UI confirms the association and warns the user when the previous test
-    is no longer valid.
+5. The system lists existing weather records and all their measurements.
+6. Exactly identical records are consolidated into one selection row.
+7. The user selects one or more rows using comma-separated numbers, such as
+   `1,3,5`.
+8. `AssociateWeatherDataService` retrieves the flight plan and validates
+   ownership, unless the user is an administrator.
+9. Each selected record is retrieved by its persisted identifier.
+10. `FlightPlan.associateWeatherData()` adds each new record to the collection.
+11. Repeated selections and records already associated are ignored.
+12. If the flight plan had already been tested, its status returns to `DRAFT`.
+13. The flight plan is persisted once after all records are processed.
+14. The UI reports how many records were associated and warns the user when
+    the previous test is no longer valid.
 
 ### 3.2. Authorization and Ownership
 
@@ -119,60 +136,82 @@ changed.
 
 ### 3.3. Alternative Flows
 
-- If the authenticated user has neither the `PILOT` nor the `ADMIN` role,
-  access is denied before the service is executed.
-- If the pilot has no flight plans, the UI informs the user and ends the
-  operation.
-- If no weather data exists, the UI informs the user and no association is
-  created.
-- If the selected flight plan does not exist, the service rejects the request.
-- If a pilot selects another pilot's flight plan, the service rejects the
-  request.
-- If the selected weather record does not exist, the service rejects the
-  request.
-- If the weather record is already associated, it is not added again.
-- If the flight plan is still in `DRAFT`, weather data is added without
-  reporting a previous test invalidation.
+- If the user has neither the `PILOT` nor the `ADMIN` role, access is denied.
+- If the pilot has no flight plans, the UI informs the user.
+- If no weather data exists, the UI informs the user.
+- If no weather row is selected, the request is rejected.
+- If a row number is invalid, the UI reports the invalid selection.
+- If the selected flight plan does not exist, the request is rejected.
+- If a pilot selects another pilot's flight plan, the request is rejected.
+- If selected weather data no longer exists, the request is rejected.
+- If the same row is entered more than once, it is processed only once.
+- If weather data is already associated, it is not added again.
+- If the flight plan is in `DRAFT`, no previous-test warning is displayed.
 
 ## 4. Implementation
 
 ### 4.1. Main Components
 
-- `AssociateWeatherDataUI` displays accessible flight plans and existing
-  weather records, collects the selections and reports the result.
-- `AssociateWeatherDataController` applies role-based authorization and
-  obtains the authenticated username.
-- `AssociateWeatherDataService` validates ownership, retrieves persisted
-  weather data and coordinates the update.
-- `WeatherAssociationResult` carries the updated flight plan and indicates
-  whether a previous test was invalidated.
+- `AssociateWeatherDataUI` presents flight plans and complete weather data,
+  accepts multiple row numbers and reports the result.
+- `AssociateWeatherDataController` applies authorization and obtains the
+  authenticated username.
+- `AssociateWeatherDataService` validates ownership, consolidates identical
+  records, resolves persisted identifiers and coordinates the batch update.
+- `WeatherAssociationResult` carries the updated flight plan, the invalidation
+  result and the number of records associated.
 - `FlightPlan` owns the optional collection of associated `WeatherData`.
-- `WeatherBatchRepository` supports listing and locating existing weather
-  records.
+- `WeatherBatchRepository` lists weather data and retrieves records by ID.
 - `FlightPlanRepository` retrieves and persists the updated aggregate.
 
 ### 4.2. Persistence
 
-The association is persisted through a join table:
+The association is persisted through the join table:
 
 ```text
 flight_plan_weather_data
 ```
 
 The table links `FlightPlan` and `WeatherData` without making weather data
-mandatory. Both `InMemoryWeatherBatchRepository` and
-`JpaWeatherBatchRepository` support locating a record by area, date and time
-interval.
+mandatory.
 
-### 4.3. Test Invalidation
+`InMemoryWeatherBatchRepository` and `JpaWeatherBatchRepository` support
+retrieving a weather record by its persisted identifier. Existing area, date
+and time lookups remain available for other use cases.
 
-`FlightPlan.associateWeatherData()` returns a boolean indicating whether the
-previous test became invalid:
+### 4.3. Weather Presentation and Selection
+
+The console table displays:
+
+- Air Control Area;
+- date;
+- start and end time;
+- temperature in degrees Celsius;
+- wind speed in knots;
+- wind direction in degrees;
+- atmospheric pressure in hPa;
+- humidity percentage;
+- altitude in metres.
+
+Multiple records are selected in one input:
+
+```text
+Weather rows (comma-separated, e.g. 1,3,5): 1,3,5
+```
+
+The selected rows are converted into persisted `WeatherData` identifiers.
+Repeated row numbers are removed and the flight plan is saved once after all
+new records have been associated.
+
+### 4.4. Test Invalidation
+
+`FlightPlan.associateWeatherData()` indicates whether the previous test became
+invalid:
 
 - `false` when the flight plan was already in `DRAFT`;
 - `true` when its previous status was `VALIDATED` or `REJECTED`.
 
-When the method returns `true`, the UI displays:
+When invalidation occurs, the UI displays:
 
 ```text
 [WARNING] The previous flight plan test is no longer valid.
@@ -182,35 +221,47 @@ When the method returns `true`, the UI displays:
 
 ### 5.1. Domain Tests
 
-- `FlightPlanTest` verifies that a flight plan can exist and be validated
-  without weather data.
+- `FlightPlanTest` verifies that a flight plan works without weather data.
 - It verifies that multiple weather records can be associated.
-- It verifies that adding weather data to a validated flight plan returns it
-  to `DRAFT`.
-- It verifies that adding weather data to a draft flight plan does not report
-  a previous test invalidation.
+- It verifies that duplicate associations are not created.
+- It verifies that adding weather data to a validated plan returns it to
+  `DRAFT`.
+- It verifies that adding weather data to a draft plan does not report
+  invalidation.
 - `PilotTest` verifies username-based ownership.
 
 ### 5.2. Application Service Tests
 
-- `AssociateWeatherDataServiceTest` verifies that an existing weather record
-  is associated and the flight plan is persisted.
-- It verifies that the invalidation result is returned to the presentation
-  layer.
-- It verifies that a pilot cannot update another pilot's flight plan.
-- It verifies that weather data must already exist in the repository.
-- It verifies that only flight plans owned by the pilot are listed.
+- `AssociateWeatherDataServiceTest` verifies association and persistence.
+- It verifies ownership restrictions and administrator access rules.
+- It verifies that weather data must already exist.
+- It verifies that multiple persisted weather identifiers are processed in a
+  single operation.
+- It verifies that repeated identifiers are processed only once.
+- It verifies that the flight plan is persisted once after batch association.
+- It verifies the number of newly associated records and invalidation result.
 
-### 5.3. Main Test Scenarios
+### 5.3. Bootstrap Test
+
+- `FlightPlanBootstrapperTest` verifies that `FP-DEMO-001` is created without
+  weather data and can be used to test this use case.
+- It verifies that running the bootstrap repeatedly does not duplicate the
+  flight plan.
+
+### 5.4. Main Test Scenarios
 
 | Scenario | Expected result |
 |---|---|
 | Create a flight plan without weather data | Flight plan is created normally by US080 |
-| Add existing weather data to an owned draft plan | Weather data is associated and the plan remains `DRAFT` |
-| Add several existing weather records | All distinct records are associated |
-| Add weather data to a previously tested plan | Status returns to `DRAFT` and a warning is displayed |
-| Add the same weather record again | Duplicate association is not created |
-| Select weather data that does not exist | Request is rejected |
-| Pilot selects another pilot's flight plan | Request is rejected |
+| Add one existing weather record | Weather data is associated |
+| Select `1,3,5` | All three distinct records are associated in one operation |
+| Same area and time with different measurements | Each record appears separately with complete values |
+| Several records are exactly identical | Only one selection row is displayed |
+| Select the same row more than once | The record is processed only once |
+| Select weather already associated | Duplicate association is not created |
+| Add weather to a previously tested plan | Status returns to `DRAFT` and a warning is displayed |
+| Enter an invalid row number | Selection is rejected with a clear error |
+| Select weather that no longer exists | Request is rejected |
+| Pilot selects another pilot's plan | Request is rejected |
 | Administrator selects any flight plan | Weather data can be associated |
-| Unauthorized role | Access is denied before the service is executed |
+| Unauthorized role | Access is denied before service execution |
