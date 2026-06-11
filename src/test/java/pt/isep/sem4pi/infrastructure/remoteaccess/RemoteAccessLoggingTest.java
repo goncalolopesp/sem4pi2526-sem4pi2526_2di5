@@ -31,6 +31,21 @@ public class RemoteAccessLoggingTest {
     }
 
     @Test
+    public void operationEventPreservesExistingPayloadFormat() {
+        final LocalDateTime timestamp = LocalDateTime.of(2026, 6, 11, 10, 15, 30);
+        final RemoteAccessLogEvent event = new RemoteAccessLogEvent(
+                timestamp,
+                "weather",
+                "127.0.0.1",
+                51522,
+                "US44",
+                RemoteAccessEventType.REGISTER_WEATHER_DATA);
+
+        assertEquals(event.toPayload(),
+                "2026-06-11T10:15:30;weather;127.0.0.1;51522;US44;REGISTER_WEATHER_DATA");
+    }
+
+    @Test
     public void loggerDoesNotThrowWhenUdpSendFails() {
         final RemoteAccessLogger logger = new RemoteAccessLogger("bad host", 9000, Clock.fixed(Instant.parse("2026-06-10T15:30:22Z"), ZoneOffset.UTC));
         logger.log("mariana", "192.168.1.50", 51522, "US44", RemoteAccessEventType.LOGIN_FAILED);
