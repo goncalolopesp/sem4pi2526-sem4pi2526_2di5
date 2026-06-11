@@ -51,6 +51,11 @@ The UI accesses report information only through
 `CheckSimulationStatusController`. `SimulationSummaryReportDTO` prevents
 JPA/domain objects from leaking into the presentation layer.
 
+Flight Control Operators and administrators can use
+`Simulation > View Simulation Report` to consult the complete summary by
+simulation id. If the asynchronous execution has not finished yet, the UI
+informs the operator that the report is not available.
+
 The human-readable files are stored under:
 
 ```text

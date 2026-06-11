@@ -5,6 +5,7 @@ import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import pt.isep.sem4pi.application.viadto.SimulationSummaryReportDTOMapper;
 import pt.isep.sem4pi.domain.model.simulation.DTO.SimulationStatusDTO;
+import pt.isep.sem4pi.domain.model.simulation.DTO.SimulationSummaryReportDTO;
 import pt.isep.sem4pi.domain.model.simulation.Simulation;
 import pt.isep.sem4pi.domain.model.simulation.SimulationReport;
 import pt.isep.sem4pi.domain.repositories.SimulationReportRepository;
@@ -40,9 +41,7 @@ public class CheckSimulationStatusController {
     }
 
     public SimulationStatusDTO statusOf(final String simulationId) {
-        authz.ensureAuthenticatedUserHasAnyOf(
-                SEM4PIRoles.FLIGHT_CONTROL_OPERATOR,
-                SEM4PIRoles.ADMIN);
+        ensureAuthorized();
 
         final Simulation simulation = simulations.ofIdentity(simulationId)
                 .orElseThrow(() -> new IllegalArgumentException("Simulation not found"));
@@ -54,5 +53,20 @@ public class CheckSimulationStatusController {
                 simulation.status().name(),
                 simulation.failureReason(),
                 report == null ? null : reportMapper.toDTO(report));
+    }
+
+    public SimulationSummaryReportDTO reportOf(final String simulationId) {
+        ensureAuthorized();
+
+        final SimulationReport report = reports.findBySimulationId(simulationId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Simulation report not found. The simulation may still be running."));
+        return reportMapper.toDTO(report);
+    }
+
+    private void ensureAuthorized() {
+        authz.ensureAuthenticatedUserHasAnyOf(
+                SEM4PIRoles.FLIGHT_CONTROL_OPERATOR,
+                SEM4PIRoles.ADMIN);
     }
 }
