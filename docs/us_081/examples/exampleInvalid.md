@@ -1,34 +1,15 @@
-flight FL123 INVALID {
-
+flight TP100 regular {
+    aircraft CS-TST;
+    pilot PILOT01;
+    route TP100 { (41.0|-8.0) (40.0|-3.0) };
     leg {
-
         departure {
-            P1,          # Erro Sintático: Aeroporto com formato inválido (apenas 2 caracteres)
-            32/13/2026,  # Erro Semântico: Mês 13 e Dia 32 não existem
-            25:90:00     # Erro Semântico: Hora 25 e Minuto 90 não existem
+            P1,          # Syntactic error: invalid airport format (only 2 characters)
+            32/13/2026,  # Semantic error: month 13 and day 32 do not exist
+            25:90:00     # Semantic error: hour 25 and minute 90 do not exist
         };
-
-        arrival {
-            LPPT,
-            12:00:00
-        };
-
-        route 123route;
-
-        segment {
-            (10 | 20),
-            (30 | 40),
-            5,
-            3,
-            400,         # Erro Semântico: Ângulo do vento não existe (>= 360)
-            250
-        };
-
-        fuel {
-            100,
-            l
-        };
-
+        arrival { MAD, 11:00 };
+        segment { (41.0|-8.0), (40.0|-3.0), {(8000,10000)}, 450, 400, 5 };
+        fuel { 4200, kg };
     };
-
 };

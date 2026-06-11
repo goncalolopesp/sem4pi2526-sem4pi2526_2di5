@@ -1,8 +1,10 @@
 package pt.isep.sem4pi.us081;
 
 import org.antlr.v4.runtime.tree.ParseTree;
+import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanAltitudeSlotDTO;
 import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanDTO;
 import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanLegDTO;
+import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanSegmentDTO;
 import pt.isep.sem4pi.us120.US120BaseVisitor;
 import pt.isep.sem4pi.us120.US120Parser;
 
@@ -77,6 +79,11 @@ public final class US081FlightPlanMapper extends US120BaseVisitor<Void> {
         final int[] departureTime = parseTime(departure.time().getText());
         final int[] arrivalTime = parseTime(arrival.time().getText());
 
+        final List<CreateFlightPlanSegmentDTO> segments = new ArrayList<>();
+        for (final US120Parser.SegmentContext segmentCtx : ctx.segment()) {
+            segments.add(mapSegment(segmentCtx));
+        }
+
         legs.add(new CreateFlightPlanLegDTO(
                 departure.airport().getText(),
                 departureDate[0],
@@ -90,9 +97,39 @@ public final class US081FlightPlanMapper extends US120BaseVisitor<Void> {
                 arrivalTime[1],
                 arrivalTime[2],
                 Double.parseDouble(fuel.number().getText()),
-                mapFuelUnit(fuel.unit().getText())
+                mapFuelUnit(fuel.unit().getText()),
+                List.copyOf(segments)
         ));
         return null;
+    }
+
+    private static CreateFlightPlanSegmentDTO mapSegment(final US120Parser.SegmentContext ctx) {
+        final double[] start = parseCoord(ctx.beginNode().coord());
+        final double[] end = parseCoord(ctx.endNode().coord());
+        final List<CreateFlightPlanAltitudeSlotDTO> altitudeSlots = new ArrayList<>();
+        for (final US120Parser.AltSlotContext slotCtx : ctx.altSlot()) {
+            altitudeSlots.add(new CreateFlightPlanAltitudeSlotDTO(
+                    (int) Double.parseDouble(slotCtx.number(0).getText()),
+                    (int) Double.parseDouble(slotCtx.number(1).getText())
+            ));
+        }
+        return new CreateFlightPlanSegmentDTO(
+                start[0],
+                start[1],
+                end[0],
+                end[1],
+                List.copyOf(altitudeSlots),
+                Double.parseDouble(ctx.windAngle().getText()),
+                Double.parseDouble(ctx.speed().getText())
+        );
+    }
+
+    private static double[] parseCoord(final US120Parser.CoordContext coord) {
+        final String[] parts = coord.getText().split("\\|");
+        return new double[]{
+                Double.parseDouble(parts[0]),
+                Double.parseDouble(parts[1])
+        };
     }
 
     private static int[] parseDate(final String date) {

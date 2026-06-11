@@ -15,6 +15,8 @@ import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.model.flight.DTO.FlightPlanImportResultDTO;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
+import pt.isep.sem4pi.domain.model.flight.FlightPlan;
+import pt.isep.sem4pi.domain.model.flight.FlightPlanId;
 import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.pilot.Pilot;
 import pt.isep.sem4pi.domain.model.pilot.PilotId;
@@ -112,6 +114,33 @@ public class ImportFlightPlanServiceTest {
         assertTrue(result.getFlightPlanId().matches("FP-\\d{6}"));
         assertTrue(result.getErrors().isEmpty());
         assertEquals(before + 1, countFlightPlans());
+    }
+
+    @Test
+    public void ensureImportFlightPlanPreservesAircraftAndSegments() throws Exception {
+        final Path file = writeTempFlightPlan(validFlightPlanContent());
+
+        final FlightPlanImportResultDTO result = service.importFlightPlan(file.toString());
+
+        assertTrue(result.isSuccess());
+        final FlightPlan plan = flightPlanRepository.ofIdentity(new FlightPlanId(result.getFlightPlanId()))
+                .orElseThrow();
+        assertEquals("CS-TST", plan.aircraft().identity().value());
+        assertEquals(1, plan.legs().size());
+        assertEquals(1, plan.legs().get(0).segments().size());
+    }
+
+    @Test
+    public void ensureImportFlightPlanRejectsMismatchedAircraftRegistration() throws Exception {
+        final int before = countFlightPlans();
+        final Path file = writeTempFlightPlan(validFlightPlanContent().replace("CS-TST", "CS-OTHER"));
+
+        final FlightPlanImportResultDTO result = service.importFlightPlan(file.toString());
+
+        assertFalse(result.isSuccess());
+        assertTrue(result.getErrors().stream()
+                .anyMatch(e -> e.contains("Aircraft registration in file does not match")));
+        assertEquals(before, countFlightPlans());
     }
 
     @Test

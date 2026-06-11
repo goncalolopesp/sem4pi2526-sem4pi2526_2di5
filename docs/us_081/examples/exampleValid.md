@@ -1,34 +1,11 @@
-flight FL100 REGULAR {
-
+flight TP100 regular {
+    aircraft CS-TST;
+    pilot PILOT01;
+    route TP100 { (41.0|-8.0) (40.0|-3.0) };
     leg {
-
-        departure {
-            PORT,
-            15/06/2028,
-            10:30:00
-        };
-
-        arrival {
-            LPPT,
-            12:00:00
-        };
-
-        route rt01;
-
-        segment {
-            (10 | 20),
-            (30 | 40),
-            5,
-            3,
-            45,
-            250
-        };
-
-        fuel {
-            100,
-            l
-        };
-
+        departure { OPO, 15/06/2028, 09:30:15 };
+        arrival { MAD, 11:45 };
+        segment { (41.0|-8.0), (40.0|-3.0), {(8000,10000)}, 450, 90, 5 };
+        fuel { 4200, l };
     };
-
 };

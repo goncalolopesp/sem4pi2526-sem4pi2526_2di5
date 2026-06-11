@@ -59,5 +59,17 @@ public class US081FlightPlanMapperTest {
         assertEquals(Integer.valueOf(0), leg.getArrivalSecond());
         assertEquals(Double.valueOf(4200.0), leg.getFuelQuantity());
         assertEquals("L", leg.getFuelUnit());
+
+        assertEquals(1, leg.getSegments().size());
+        final var segment = leg.getSegments().get(0);
+        assertEquals(Double.valueOf(41.0), segment.getStartLatitude());
+        assertEquals(Double.valueOf(-8.0), segment.getStartLongitude());
+        assertEquals(Double.valueOf(40.0), segment.getEndLatitude());
+        assertEquals(Double.valueOf(-3.0), segment.getEndLongitude());
+        assertEquals(1, segment.getAltitudeSlots().size());
+        assertEquals(Integer.valueOf(8000), segment.getAltitudeSlots().get(0).getMinimumAltitude());
+        assertEquals(Integer.valueOf(10000), segment.getAltitudeSlots().get(0).getMaximumAltitude());
+        assertEquals(Double.valueOf(90.0), segment.getWindAngle());
+        assertEquals(Double.valueOf(5.0), segment.getSpeed());
     }
 }
