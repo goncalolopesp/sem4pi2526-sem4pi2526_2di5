@@ -29,7 +29,7 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
     @Column(nullable = false)
     private FlightType flightType;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "flight_plan_id", nullable = false)
     private List<FlightLeg> legs = new ArrayList<>();
 

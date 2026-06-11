@@ -83,4 +83,11 @@ public class Airport implements AggregateRoot<IataCodeAirport> {
     public Elevation getElevation() { return elevation; }
 
     public AirControlAreaID getAirControlAreaId() { return airControlAreaId; }
+
+    public void updateAirControlArea(final AirControlAreaID newAreaId) {
+        if (newAreaId == null) {
+            throw new IllegalArgumentException("Air control area id is required.");
+        }
+        this.airControlAreaId = newAreaId;
+    }
 }

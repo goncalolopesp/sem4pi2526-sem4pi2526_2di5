@@ -94,7 +94,7 @@ public class RouteSegment implements DomainEntity<Long> {
 
         this.startNodeCoords = startNodeCoords;
         this.endNodeCoords = endNodeCoords;
-        this.allowedAltitudes = new ArrayList<>(allowedAltitudes);
+        this.allowedAltitudes = new ArrayList<>(altitudeLimits);
         this.maxSpeed = maxSpeed;
         this.wind = wind;
     }
@@ -105,6 +105,10 @@ public class RouteSegment implements DomainEntity<Long> {
 
     public Coordinates endNode() {
         return endNodeCoords;
+    }
+
+    public List<AltitudeRange> allowedAltitudes() {
+        return List.copyOf(allowedAltitudes);
     }
 
     /**
