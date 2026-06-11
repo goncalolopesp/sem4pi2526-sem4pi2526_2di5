@@ -21,19 +21,38 @@ public class Pilot implements AggregateRoot<PilotId> {
     @AttributeOverride(name = "code", column = @Column(name = "company_iata_code", nullable = false))
     private IataCodeCompany companyCode;
 
+    @Column(name = "owner_username")
+    private String ownerUsername;
+
     protected Pilot(){
         //for ORM
     }
 
     public Pilot(PilotId pilotId, IataCodeCompany companyCode){
+        this(pilotId, companyCode, pilotId == null ? null : pilotId.code());
+    }
+
+    public Pilot(PilotId pilotId, IataCodeCompany companyCode, String ownerUsername){
         Preconditions.nonNull(pilotId, "Pilot id is required");
         Preconditions.nonNull(companyCode, "Company is required");
+        Preconditions.nonEmpty(ownerUsername, "Owner username is required");
         this.pilotId = pilotId;
         this.companyCode = companyCode;
+        this.ownerUsername = ownerUsername.trim();
     }
 
     public IataCodeCompany companyCode() {
         return companyCode;
+    }
+
+    public boolean isOwnedBy(String username) {
+        return username != null && ownerUsername != null
+                && ownerUsername.equalsIgnoreCase(username.trim());
+    }
+
+    public void assignOwner(String username) {
+        Preconditions.nonEmpty(username, "Owner username is required");
+        this.ownerUsername = username.trim();
     }
 
     @Override

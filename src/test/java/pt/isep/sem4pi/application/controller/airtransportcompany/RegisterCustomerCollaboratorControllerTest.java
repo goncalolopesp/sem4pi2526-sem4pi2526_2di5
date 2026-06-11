@@ -2,6 +2,7 @@ package pt.isep.sem4pi.application.controller.airtransportcompany;
 
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
@@ -15,6 +16,9 @@ import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportComp
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportCompanyRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 public class RegisterCustomerCollaboratorControllerTest {
@@ -25,9 +29,20 @@ public class RegisterCustomerCollaboratorControllerTest {
 
     private static final IcaoCodeCompany TAP_ICAO = new IcaoCodeCompany("TAP");
 
+    private static void clearSharedCollaboratorRepository() {
+        final InMemoryAirTransportCompanyCollaboratorRepository repo =
+                new InMemoryAirTransportCompanyCollaboratorRepository();
+        final List<AirTransportCompanyCollaborator> toDelete = new ArrayList<>();
+        repo.findAll().forEach(toDelete::add);
+        for (final AirTransportCompanyCollaborator collaborator : toDelete) {
+            repo.delete(collaborator);
+        }
+    }
+
     @Before
     public void setUp() {
         System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
+        PersistenceContext.resetForTesting();
 
         final var factory = PersistenceContext.repositories();
         AuthzRegistry.configure(factory.users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());
@@ -35,6 +50,8 @@ public class RegisterCustomerCollaboratorControllerTest {
         if (AuthzRegistry.authorizationService().hasSession()) {
             AuthzRegistry.authorizationService().clearSession();
         }
+
+        clearSharedCollaboratorRepository();
 
         companyRepo = new InMemoryAirTransportCompanyRepository();
         collaboratorRepo = new InMemoryAirTransportCompanyCollaboratorRepository();
@@ -45,6 +62,11 @@ public class RegisterCustomerCollaboratorControllerTest {
                 new IataCodeCompany("TP"),
                 TAP_ICAO
         ));
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        clearSharedCollaboratorRepository();
     }
 
     @Test

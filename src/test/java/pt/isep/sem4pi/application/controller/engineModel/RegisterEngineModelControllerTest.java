@@ -21,6 +21,7 @@ public class RegisterEngineModelControllerTest {
     @Before
     public void setUp() {
         System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
+        PersistenceContext.resetForTesting();
 
         final var factory = PersistenceContext.repositories();
         AuthzRegistry.configure(factory.users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());

@@ -21,6 +21,7 @@ public class JpaWeatherBatchRepositoryTest {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("sem4piPU");
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
+        em.createNativeQuery("DELETE FROM flight_plan_weather_data").executeUpdate();
         em.createQuery("DELETE FROM WeatherData").executeUpdate();
         em.createQuery("DELETE FROM WeatherImportBatch").executeUpdate();
         em.getTransaction().commit();

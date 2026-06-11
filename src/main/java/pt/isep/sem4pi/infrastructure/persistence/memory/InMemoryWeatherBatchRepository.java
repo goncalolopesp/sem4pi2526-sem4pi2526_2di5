@@ -5,9 +5,11 @@ import pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch;
 import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class InMemoryWeatherBatchRepository implements WeatherBatchRepository {
@@ -21,10 +23,35 @@ public class InMemoryWeatherBatchRepository implements WeatherBatchRepository {
     }
 
     @Override
+    public List<WeatherImportBatch> findAll() {
+        return new ArrayList<>(database);
+    }
+
+    @Override
     public List<WeatherImportBatch> findAllByAreaId(String areaId) {
         return database.stream()
                 .filter(b -> b.getAirControlAreaId().equals(areaId))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<WeatherData> findWeatherData(String areaId, LocalDate date,
+                                                 LocalTime startTime, LocalTime endTime) {
+        return findAllByAreaId(areaId).stream()
+                .flatMap(batch -> batch.getRecords().stream())
+                .filter(record -> date.equals(record.getDate()))
+                .filter(record -> startTime.equals(record.getStartTime()))
+                .filter(record -> endTime.equals(record.getEndTime()))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<WeatherData> findWeatherDataById(Long weatherDataId) {
+        return database.stream()
+                .flatMap(batch -> batch.getRecords().stream())
+                .filter(record -> weatherDataId != null
+                        && weatherDataId.equals(record.getWeatherDataId()))
+                .findFirst();
     }
 
     @Override
