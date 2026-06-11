@@ -2,12 +2,21 @@ package pt.isep.sem4pi.domain.model.simulation;
 
 import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.validations.Preconditions;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.Version;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -17,20 +26,31 @@ public class SimulationReport implements AggregateRoot<String> {
     @Column(nullable = false, unique = true)
     private String reportId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String simulationId;
 
     @Column(nullable = false)
     private Integer totalFlights;
 
     @Column(nullable = false)
-    private String finalValidationResult;
+    @Enumerated(EnumType.STRING)
+    private SimulationValidationResult finalValidationResult;
 
     @Column(nullable = false)
     private LocalDateTime generatedAt;
 
-    @Column(nullable = false)
-    private String fileLocation;
+    @Embedded
+    private ReportFilePath fileLocation;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "simulation_report_flights",
+            joinColumns = @JoinColumn(name = "report_id"))
+    private List<FlightExecutionSummary> flightSummaries = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "simulation_report_violations",
+            joinColumns = @JoinColumn(name = "report_id"))
+    private List<SafetyViolationSummary> safetyViolations = new ArrayList<>();
 
     @Version
     private Long version;
@@ -41,24 +61,44 @@ public class SimulationReport implements AggregateRoot<String> {
 
     public SimulationReport(final String reportId,
                             final String simulationId,
-                            final Integer totalFlights,
-                            final String finalValidationResult,
                             final LocalDateTime generatedAt,
-                            final String fileLocation) {
-
+                            final ReportFilePath fileLocation,
+                            final List<FlightExecutionSummary> flightSummaries,
+                            final List<SafetyViolationSummary> safetyViolations,
+                            final SimulationValidationResult scompResult) {
         Preconditions.nonEmpty(reportId, "Report id is required");
         Preconditions.nonEmpty(simulationId, "Simulation id is required");
-        Preconditions.nonNull(totalFlights, "Total flights is required");
-        Preconditions.nonEmpty(finalValidationResult, "Final validation result is required");
         Preconditions.nonNull(generatedAt, "Generated at is required");
-        Preconditions.nonEmpty(fileLocation, "File location is required");
+        Preconditions.nonNull(fileLocation, "File location is required");
+        Preconditions.nonNull(flightSummaries, "Flight summaries are required");
+        Preconditions.nonNull(safetyViolations, "Safety violations are required");
+        Preconditions.nonNull(scompResult, "Validation result is required");
 
         this.reportId = reportId.trim();
         this.simulationId = simulationId.trim();
-        this.totalFlights = totalFlights;
-        this.finalValidationResult = finalValidationResult.trim();
         this.generatedAt = generatedAt;
-        this.fileLocation = fileLocation.trim();
+        this.fileLocation = fileLocation;
+        this.flightSummaries = new ArrayList<>(flightSummaries);
+        this.safetyViolations = new ArrayList<>(safetyViolations);
+        this.totalFlights = flightSummaries.size();
+        this.finalValidationResult = calculateValidationResult(scompResult);
+    }
+
+    private SimulationValidationResult calculateValidationResult(
+            final SimulationValidationResult scompResult) {
+        if (scompResult == SimulationValidationResult.FAIL) {
+            return SimulationValidationResult.FAIL;
+        }
+
+        if (!safetyViolations.isEmpty()) {
+            return SimulationValidationResult.FAIL;
+        }
+
+        final boolean hasUnsuccessfulFlight = flightSummaries.stream()
+                .anyMatch(summary -> !summary.completedSuccessfully());
+        return hasUnsuccessfulFlight
+                ? SimulationValidationResult.FAIL
+                : SimulationValidationResult.PASS;
     }
 
     public String reportId() {
@@ -73,8 +113,12 @@ public class SimulationReport implements AggregateRoot<String> {
         return totalFlights;
     }
 
-    public String finalValidationResult() {
+    public SimulationValidationResult validationResult() {
         return finalValidationResult;
+    }
+
+    public String finalValidationResult() {
+        return finalValidationResult.name();
     }
 
     public LocalDateTime generatedAt() {
@@ -82,7 +126,15 @@ public class SimulationReport implements AggregateRoot<String> {
     }
 
     public String fileLocation() {
-        return fileLocation;
+        return fileLocation.value();
+    }
+
+    public List<FlightExecutionSummary> flightSummaries() {
+        return List.copyOf(flightSummaries);
+    }
+
+    public List<SafetyViolationSummary> safetyViolations() {
+        return List.copyOf(safetyViolations);
     }
 
     public Long version() {
@@ -101,12 +153,8 @@ public class SimulationReport implements AggregateRoot<String> {
 
     @Override
     public boolean sameAs(final Object other) {
-        if (!(other instanceof SimulationReport)) {
-            return false;
-        }
-
-        final SimulationReport that = (SimulationReport) other;
-        return this.reportId.equals(that.reportId);
+        return other instanceof SimulationReport
+                && reportId.equals(((SimulationReport) other).reportId);
     }
 
     @Override
