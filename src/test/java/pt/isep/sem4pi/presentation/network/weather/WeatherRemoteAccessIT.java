@@ -218,14 +218,14 @@ public class WeatherRemoteAccessIT {
             c.send("LOGIN weather Password1");
             assertTrue(c.read().startsWith("OK"));
 
-            c.send("REGISTER CW001 2026-06-11 08:00 08:45 15 10 90 50 1013 1000");
+            c.send("REGISTER CW001 2032-06-11 08:00 08:45 15 10 90 50 1013 1000");
             assertTrue(c.read().startsWith("OK"));
 
-            c.send("REGISTER CW001 2026-06-11 08:45 09:30 29 4 50 70 1013 3045");
+            c.send("REGISTER CW001 2032-06-11 08:45 09:30 29 4 50 70 1013 3045");
             final String second = c.read();
             assertTrue("second register failed: " + second, second.startsWith("OK"));
 
-            c.send("CONSULT CW001 2026-06-11");
+            c.send("CONSULT CW001 2032-06-11");
             final String header = c.read();
             assertTrue("expected two records, got: " + header, header.startsWith("OK 2"));
             assertNotNull(c.read());
