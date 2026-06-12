@@ -33,6 +33,7 @@ import pt.isep.sem4pi.presentation.weatherdata.ConsultWeatherDataUI;
 import pt.isep.sem4pi.presentation.simulation.RunAreaSimulationAction;
 import pt.isep.sem4pi.presentation.simulation.CheckSimulationStatusUI;
 import pt.isep.sem4pi.presentation.simulation.ViewSimulationReportUI;
+import pt.isep.sem4pi.presentation.reporting.GenerateMonthlyReportUI;
 import pt.isep.sem4pi.presentation.us120.ValidateFlightPlanUI;
 
 /**
@@ -82,6 +83,7 @@ public class MainMenu extends AbstractUI {
     private static final int RUN_SIMULATION_OPTION = 1;
     private static final int CHECK_SIMULATION_STATUS_OPTION = 2;
     private static final int VIEW_SIMULATION_REPORT_OPTION = 3;
+    private static final int GENERATE_MONTHLY_REPORT_OPTION = 4;
 
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
@@ -321,6 +323,11 @@ public class MainMenu extends AbstractUI {
                 VIEW_SIMULATION_REPORT_OPTION,
                 "View Simulation Report",
                 new ViewSimulationReportUI()::show);
+
+        menu.addItem(
+                GENERATE_MONTHLY_REPORT_OPTION,
+                "Generate Monthly Statistics Report",
+                new GenerateMonthlyReportUI()::show);
 
         menu.addItem(
                 EXIT_OPTION,

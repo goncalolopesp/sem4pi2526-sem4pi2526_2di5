@@ -29,6 +29,9 @@ In this section, we will add links to all technical files.
 ## US111 - Generate a Simulation Report
 [US111](us_111/readme.md)
 
+## US112 - Monthly Report Generation
+[US112](us_112/README.md)
+
 ## Create Glossary
 [Glossary](docs/glossary/readme.md)
 

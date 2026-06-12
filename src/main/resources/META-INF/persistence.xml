@@ -40,6 +40,8 @@
         <class>pt.isep.sem4pi.domain.model.simulation.FlightExecutionSummary</class>
         <class>pt.isep.sem4pi.domain.model.simulation.SafetyViolationSummary</class>
         <class>pt.isep.sem4pi.domain.model.simulation.ReportFilePath</class>
+        <class>pt.isep.sem4pi.domain.model.simulation.SimulationReport</class>
+        <class>pt.isep.sem4pi.domain.model.reporting.ReportMetadata</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
