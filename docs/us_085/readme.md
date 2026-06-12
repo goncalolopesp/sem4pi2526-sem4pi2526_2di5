@@ -22,8 +22,8 @@ Pilot UI  →  TestFlightPlanController  →  TestFlightPlanService
 ## Flow
 
 1. Select a **DRAFT** flight plan (created via US080 or imported via US081).
-2. The system validates the stored plan (legs, fuel, route coherence).
-3. Java generates `scomp/data/generated/<plan-id>.json` for the C component.
+2. The system re-validates the associated `.dsldig5` file with `US120FlightPlanValidator` (listener + visitor).
+3. Java generates `scomp/data/generated/<plan-id>.json` from the DSL legs/segments (with liter-to-kg conversion when needed).
 4. The C test runs using the destination airport's minimum reserve fuel rule.
 5. Flight plan status becomes **VALIDATED** or **REJECTED**.
 

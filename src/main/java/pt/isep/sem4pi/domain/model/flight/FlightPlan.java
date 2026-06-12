@@ -57,6 +57,9 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
     )
     private List<WeatherData> weatherData = new ArrayList<>();
 
+    @Column(name = "dsl_source_path")
+    private String dslSourcePath;
+
     @Version
     private Long version;
 
@@ -127,6 +130,14 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
 
     public List<FlightLeg> legs() {
         return Collections.unmodifiableList(legs);
+    }
+
+    public String dslSourcePath() {
+        return dslSourcePath;
+    }
+
+    public void updateDslSourcePath(final String path) {
+        this.dslSourcePath = path;
     }
 
     public void validate(){

@@ -35,6 +35,7 @@ import pt.isep.sem4pi.domain.repositories.FlightRepository;
 import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
 import pt.isep.sem4pi.domain.repositories.PilotRepository;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -104,6 +105,15 @@ public class CreateFlightPlanService {
         );
 
         return flightPlanRepository.save(flightPlan);
+    }
+
+    public FlightPlan createFlightPlanFromDsl(final CreateFlightPlanDTO dto, final Path dslSourcePath) {
+        final FlightPlan flightPlan = createFlightPlan(dto);
+        if (dslSourcePath != null) {
+            flightPlan.updateDslSourcePath(dslSourcePath.toAbsolutePath().normalize().toString());
+            return flightPlanRepository.save(flightPlan);
+        }
+        return flightPlan;
     }
 
     public Iterable<FlightRoute> listRoutes() {

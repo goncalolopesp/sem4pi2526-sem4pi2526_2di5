@@ -5,21 +5,23 @@ import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
 import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
 import pt.isep.sem4pi.domain.model.airport.Airport;
 import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
+import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanDTO;
 import pt.isep.sem4pi.domain.model.flight.DTO.FlightTestExecutionResultDTO;
 import pt.isep.sem4pi.domain.model.flight.DTO.TestFlightPlanResultDTO;
 import pt.isep.sem4pi.domain.model.flight.FlightLeg;
 import pt.isep.sem4pi.domain.model.flight.FlightPlan;
 import pt.isep.sem4pi.domain.model.flight.FlightPlanId;
 import pt.isep.sem4pi.domain.model.flight.FlightPlanStatus;
-import pt.isep.sem4pi.domain.model.route.FlightRoute;
 import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 import pt.isep.sem4pi.domain.repositories.FlightPlanRepository;
-import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
 import pt.isep.sem4pi.infrastructure.simulation.FlightPlanJsonExporter;
+import pt.isep.sem4pi.us081.US081FlightPlanMapper;
+import pt.isep.sem4pi.us120.US120FlightPlanValidator;
 import pt.isep.sem4pi.us120.US120ValidationResult;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,20 +33,17 @@ public class TestFlightPlanService {
     private static final int DEFAULT_STEP_SECONDS = 60;
 
     private final FlightPlanRepository flightPlanRepository;
-    private final FlightRouteRepository flightRouteRepository;
     private final AirportRepository airportRepository;
     private final AirControlAreaRepository airControlAreaRepository;
     private final FlightTestRunner flightTestRunner;
     private final FlightPlanJsonExporter jsonExporter;
 
     public TestFlightPlanService(final FlightPlanRepository flightPlanRepository,
-                                 final FlightRouteRepository flightRouteRepository,
                                  final AirportRepository airportRepository,
                                  final AirControlAreaRepository airControlAreaRepository,
                                  final FlightTestRunner flightTestRunner) {
         this(
                 flightPlanRepository,
-                flightRouteRepository,
                 airportRepository,
                 airControlAreaRepository,
                 flightTestRunner,
@@ -53,30 +52,34 @@ public class TestFlightPlanService {
     }
 
     public TestFlightPlanService(final FlightPlanRepository flightPlanRepository,
-                                 final FlightRouteRepository flightRouteRepository,
                                  final AirportRepository airportRepository,
                                  final AirControlAreaRepository airControlAreaRepository,
                                  final FlightTestRunner flightTestRunner,
                                  final FlightPlanJsonExporter jsonExporter) {
         this.flightPlanRepository = flightPlanRepository;
-        this.flightRouteRepository = flightRouteRepository;
         this.airportRepository = airportRepository;
         this.airControlAreaRepository = airControlAreaRepository;
         this.flightTestRunner = flightTestRunner;
         this.jsonExporter = jsonExporter;
     }
 
-    public List<FlightPlan> listDraftFlightPlans() {
+    public List<FlightPlan> listDraftFlightPlans(final String username, final boolean canManageAll) {
+        requireUsername(username);
         final List<FlightPlan> drafts = new ArrayList<>();
         for (final FlightPlan plan : flightPlanRepository.findAll()) {
-            if (plan.status() == FlightPlanStatus.DRAFT) {
+            if (plan.status() == FlightPlanStatus.DRAFT
+                    && (canManageAll || plan.pilot().isOwnedBy(username))) {
                 drafts.add(plan);
             }
         }
         return drafts;
     }
 
-    public TestFlightPlanResultDTO testFlightPlan(final String flightPlanId) throws IOException {
+    public TestFlightPlanResultDTO testFlightPlan(final String flightPlanId,
+                                                  final String username,
+                                                  final boolean canManageAll) throws IOException {
+        requireUsername(username);
+
         if (flightPlanId == null || flightPlanId.isBlank()) {
             throw new IllegalArgumentException("Flight plan id is required.");
         }
@@ -88,38 +91,43 @@ public class TestFlightPlanService {
             throw new IllegalStateException("Only draft flight plans can be tested.");
         }
 
-        final List<String> validationErrors = new ArrayList<>();
-        FlightRoute route = null;
-        if (plan.route() == null) {
-            validationErrors.add("Flight plan must reference a route.");
-        } else {
-            route = flightRouteRepository.ofIdentity(plan.route().identity()).orElse(null);
-            if (route == null) {
-                validationErrors.add("Route not found: " + plan.route().identity().code());
-            } else {
-                validationErrors.addAll(FlightPlanDomainValidator.validate(plan, route));
-            }
+        if (!canManageAll && !plan.pilot().isOwnedBy(username)) {
+            throw new IllegalStateException("You can only test flight plans assigned to your pilot profile.");
         }
 
-        final US120ValidationResult planValidation = new US120ValidationResult(
-                List.of(),
-                validationErrors,
-                null
-        );
-
+        final US120ValidationResult planValidation = validateDslFlightPlan(plan);
         if (!planValidation.isValid()) {
             plan.reject();
             flightPlanRepository.save(plan);
             return new TestFlightPlanResultDTO(
                     flightPlanId,
                     planValidation,
-                    new FlightTestExecutionResultDTO(false, false, "", "Flight test skipped due to plan validation errors."),
+                    new FlightTestExecutionResultDTO(false, false, "", "Flight test skipped due to DSL validation errors."),
                     false,
-                    "Flight plan rejected: plan validation failed."
+                    "Flight plan rejected: DSL validation failed."
             );
         }
 
-        final Path jsonFilePath = jsonExporter.export(plan, route);
+        final CreateFlightPlanDTO dslPlan = US081FlightPlanMapper.map(planValidation.getParseTree());
+        final List<String> persistenceErrors = validatePersistedPlanMatchesDsl(plan, dslPlan);
+        if (!persistenceErrors.isEmpty()) {
+            final US120ValidationResult persistenceValidation = new US120ValidationResult(
+                    List.of(),
+                    persistenceErrors,
+                    planValidation.getParseTree()
+            );
+            plan.reject();
+            flightPlanRepository.save(plan);
+            return new TestFlightPlanResultDTO(
+                    flightPlanId,
+                    persistenceValidation,
+                    new FlightTestExecutionResultDTO(false, false, "", "Flight test skipped due to persistence mismatch."),
+                    false,
+                    "Flight plan rejected: stored plan does not match DSL."
+            );
+        }
+
+        final Path jsonFilePath = jsonExporter.export(plan, dslPlan);
         final double minReserveFuelKg = resolveMinimumReserveFuel(plan);
         final String reportPath = Path.of("scomp/reports", flightPlanId + "-test.txt").toString();
 
@@ -161,6 +169,52 @@ public class TestFlightPlanService {
         );
     }
 
+    private US120ValidationResult validateDslFlightPlan(final FlightPlan plan) throws IOException {
+        final String dslSourcePath = plan.dslSourcePath();
+        if (dslSourcePath == null || dslSourcePath.isBlank()) {
+            return new US120ValidationResult(
+                    List.of(),
+                    List.of("Flight plan has no associated DSL source file. Import the plan via US081."),
+                    null
+            );
+        }
+
+        final Path path = Path.of(dslSourcePath);
+        if (!Files.exists(path)) {
+            return new US120ValidationResult(
+                    List.of(),
+                    List.of("Associated DSL source file no longer exists: " + dslSourcePath),
+                    null
+            );
+        }
+
+        return US120FlightPlanValidator.analyze(path);
+    }
+
+    private List<String> validatePersistedPlanMatchesDsl(final FlightPlan plan, final CreateFlightPlanDTO dslPlan) {
+        final List<String> errors = new ArrayList<>();
+
+        if (plan.route() == null) {
+            errors.add("Stored flight plan must reference a route.");
+            return errors;
+        }
+
+        if (!plan.route().identity().code().equalsIgnoreCase(dslPlan.getRouteId())) {
+            errors.add("DSL route id does not match the stored flight plan route.");
+        }
+
+        if (!plan.flightId().value().equalsIgnoreCase(dslPlan.getFlightId())) {
+            errors.add("DSL flight id does not match the stored flight plan.");
+        }
+
+        if (!plan.pilot().identity().code().equalsIgnoreCase(dslPlan.getPilotId())) {
+            errors.add("DSL pilot id does not match the stored flight plan pilot.");
+        }
+
+        errors.addAll(FlightPlanDomainValidator.validate(plan, plan.route()));
+        return errors;
+    }
+
     private double resolveMinimumReserveFuel(final FlightPlan plan) {
         final List<FlightLeg> legs = plan.legs();
         if (legs.isEmpty()) {
@@ -178,5 +232,11 @@ public class TestFlightPlanService {
                         "Air control area not found: " + areaId.getCode()));
 
         return area.getMinimumReserveFuelRule();
+    }
+
+    private void requireUsername(final String username) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Authenticated username is required.");
+        }
     }
 }

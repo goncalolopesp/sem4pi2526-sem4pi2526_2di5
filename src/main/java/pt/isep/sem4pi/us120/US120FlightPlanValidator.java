@@ -3,11 +3,15 @@ package pt.isep.sem4pi.us120;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class US120FlightPlanValidator {
 
@@ -38,10 +42,14 @@ public final class US120FlightPlanValidator {
             return new US120ValidationResult(errorListener.getErrors(), List.of(), null);
         }
 
+        final US120SemanticListener listener = new US120SemanticListener();
+        ParseTreeWalker.DEFAULT.walk(listener, tree);
+
         final US120SemanticVisitor visitor = new US120SemanticVisitor();
         visitor.visit(tree);
 
-        return new US120ValidationResult(List.of(), visitor.getErrors(), tree);
+        final List<String> semanticErrors = mergeSemanticErrors(listener.getErrors(), visitor.getErrors());
+        return new US120ValidationResult(List.of(), semanticErrors, tree);
     }
 
     public static void validate(final Path path) throws IOException {
@@ -55,6 +63,14 @@ public final class US120FlightPlanValidator {
 
         System.out.println("[Syntatic/Lexic] File structurally valid. No errors.");
         printErrors("Semantic errors: ", result.getSemanticErrors());
+    }
+
+    private static List<String> mergeSemanticErrors(final List<String> listenerErrors,
+                                                    final List<String> visitorErrors) {
+        final Set<String> merged = new LinkedHashSet<>();
+        merged.addAll(listenerErrors);
+        merged.addAll(visitorErrors);
+        return new ArrayList<>(merged);
     }
 
     private static void printErrors(final String source, final List<String> errors) {

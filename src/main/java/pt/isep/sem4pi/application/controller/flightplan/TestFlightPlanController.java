@@ -24,7 +24,6 @@ public class TestFlightPlanController {
         final var repos = PersistenceContext.repositories();
         this.service = new TestFlightPlanService(
                 repos.flightPlans(),
-                repos.flightRoutes(),
                 repos.airports(),
                 repos.airControlAreas(),
                 new CFlightTestRunner()
@@ -38,12 +37,26 @@ public class TestFlightPlanController {
     }
 
     public List<FlightPlan> listDraftFlightPlans() {
-        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.PILOT, SEM4PIRoles.ADMIN);
-        return service.listDraftFlightPlans();
+        ensureAuthorized();
+        return service.listDraftFlightPlans(currentUsername(), isAdmin());
     }
 
     public TestFlightPlanResultDTO testFlightPlan(final String flightPlanId) throws IOException {
+        ensureAuthorized();
+        return service.testFlightPlan(flightPlanId, currentUsername(), isAdmin());
+    }
+
+    private void ensureAuthorized() {
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.PILOT, SEM4PIRoles.ADMIN);
-        return service.testFlightPlan(flightPlanId);
+    }
+
+    private boolean isAdmin() {
+        return authz.isAuthenticatedUserAuthorizedTo(SEM4PIRoles.ADMIN);
+    }
+
+    private String currentUsername() {
+        return authz.session()
+                .orElseThrow(() -> new IllegalStateException("An authenticated session is required."))
+                .authenticatedUser().identity().toString();
     }
 }

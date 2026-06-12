@@ -25,6 +25,8 @@ import pt.isep.sem4pi.domain.model.flight.dep_and_arr.Time;
 import pt.isep.sem4pi.domain.model.flight.fuel.Fuel;
 import pt.isep.sem4pi.domain.model.flight.fuel.FuelCapacity;
 import pt.isep.sem4pi.domain.model.flight.fuel.FuelUnit;
+import pt.isep.sem4pi.domain.model.pilot.Pilot;
+import pt.isep.sem4pi.domain.model.pilot.PilotId;
 import pt.isep.sem4pi.domain.model.route.AltitudeRange;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
 import pt.isep.sem4pi.domain.model.route.FlightRoute;
@@ -34,10 +36,11 @@ import pt.isep.sem4pi.domain.model.route.Wind;
 import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
 import pt.isep.sem4pi.domain.repositories.AirportRepository;
 import pt.isep.sem4pi.domain.repositories.FlightPlanRepository;
-import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
 import pt.isep.sem4pi.infrastructure.simulation.FlightPlanJsonExporter;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +58,6 @@ import static org.mockito.Mockito.when;
 public class TestFlightPlanServiceTest {
 
     private FlightPlanRepository flightPlanRepository;
-    private FlightRouteRepository flightRouteRepository;
     private AirportRepository airportRepository;
     private AirControlAreaRepository airControlAreaRepository;
     private FlightTestRunner flightTestRunner;
@@ -65,16 +67,13 @@ public class TestFlightPlanServiceTest {
     @Before
     public void setUp() throws Exception {
         flightPlanRepository = Mockito.mock(FlightPlanRepository.class);
-        flightRouteRepository = Mockito.mock(FlightRouteRepository.class);
         airportRepository = Mockito.mock(AirportRepository.class);
         airControlAreaRepository = Mockito.mock(AirControlAreaRepository.class);
         flightTestRunner = Mockito.mock(FlightTestRunner.class);
         jsonExporter = Mockito.mock(FlightPlanJsonExporter.class);
-        when(jsonExporter.export(any(FlightPlan.class), any(FlightRoute.class)))
-                .thenReturn(Path.of("scomp/data/generated/FP-001.json"));
+        when(jsonExporter.export(any(FlightPlan.class), any())).thenReturn(Path.of("scomp/data/generated/FP-001.json"));
         service = new TestFlightPlanService(
                 flightPlanRepository,
-                flightRouteRepository,
                 airportRepository,
                 airControlAreaRepository,
                 flightTestRunner,
@@ -84,16 +83,15 @@ public class TestFlightPlanServiceTest {
 
     @Test
     public void ensureTestFlightPlanValidatesAndUpdatesStatusWhenChecksPass() throws Exception {
-        final FlightPlan plan = validDraftPlan();
-        final FlightRoute route = validRoute();
+        final Path dslFile = writeValidDslFile();
+        final FlightPlan plan = validDraftPlan(dslFile);
         when(flightPlanRepository.ofIdentity(new FlightPlanId("FP-001"))).thenReturn(Optional.of(plan));
-        when(flightRouteRepository.ofIdentity(any(FlightRouteID.class))).thenReturn(Optional.of(route));
         stubDestinationLookup("MAD", "MAD_FIR", 1200.0);
 
         when(flightTestRunner.run(anyString(), anyDouble(), anyDouble(), anyInt(), anyString()))
                 .thenReturn(new FlightTestExecutionResult(true, "scomp/reports/FP-001-test.txt", "PASSED"));
 
-        final TestFlightPlanResultDTO result = service.testFlightPlan("FP-001");
+        final TestFlightPlanResultDTO result = service.testFlightPlan("FP-001", "pilot", false);
 
         assertTrue(result.accepted());
         assertTrue(result.dslValidation().isValid());
@@ -101,21 +99,20 @@ public class TestFlightPlanServiceTest {
         verify(plan, times(1)).validate();
         verify(plan, never()).reject();
         verify(flightPlanRepository, times(1)).save(plan);
-        verify(jsonExporter, times(1)).export(plan, route);
+        verify(jsonExporter, times(1)).export(any(FlightPlan.class), any());
     }
 
     @Test
     public void ensureTestFlightPlanRejectsWhenCFlightTestFails() throws Exception {
-        final FlightPlan plan = validDraftPlan();
-        final FlightRoute route = validRoute();
+        final Path dslFile = writeValidDslFile();
+        final FlightPlan plan = validDraftPlan(dslFile);
         when(flightPlanRepository.ofIdentity(new FlightPlanId("FP-002"))).thenReturn(Optional.of(plan));
-        when(flightRouteRepository.ofIdentity(any(FlightRouteID.class))).thenReturn(Optional.of(route));
         stubDestinationLookup("MAD", "MAD_FIR", 1200.0);
 
         when(flightTestRunner.run(anyString(), anyDouble(), anyDouble(), anyInt(), anyString()))
                 .thenReturn(new FlightTestExecutionResult(false, "scomp/reports/FP-002-test.txt", "FAILED"));
 
-        final TestFlightPlanResultDTO result = service.testFlightPlan("FP-002");
+        final TestFlightPlanResultDTO result = service.testFlightPlan("FP-002", "pilot", false);
 
         assertFalse(result.accepted());
         assertTrue(result.dslValidation().isValid());
@@ -125,16 +122,11 @@ public class TestFlightPlanServiceTest {
     }
 
     @Test
-    public void ensureTestFlightPlanRejectsWhenPlanValidationFails() throws Exception {
-        final FlightPlan plan = Mockito.mock(FlightPlan.class);
-        final FlightRoute route = validRoute();
-        when(plan.status()).thenReturn(FlightPlanStatus.DRAFT);
-        when(plan.route()).thenReturn(route);
-        when(plan.legs()).thenReturn(List.of());
+    public void ensureTestFlightPlanRejectsWhenDslSourceMissing() throws Exception {
+        final FlightPlan plan = validDraftPlan(null);
         when(flightPlanRepository.ofIdentity(new FlightPlanId("FP-003"))).thenReturn(Optional.of(plan));
-        when(flightRouteRepository.ofIdentity(any(FlightRouteID.class))).thenReturn(Optional.of(route));
 
-        final TestFlightPlanResultDTO result = service.testFlightPlan("FP-003");
+        final TestFlightPlanResultDTO result = service.testFlightPlan("FP-003", "pilot", false);
 
         assertFalse(result.accepted());
         assertFalse(result.dslValidation().isValid());
@@ -144,16 +136,51 @@ public class TestFlightPlanServiceTest {
         verify(jsonExporter, never()).export(any(), any());
     }
 
-    private FlightPlan validDraftPlan() {
+    @Test(expected = IllegalStateException.class)
+    public void ensurePilotCannotTestAnotherPilotsPlan() throws Exception {
+        final Path dslFile = writeValidDslFile();
+        final FlightPlan plan = validDraftPlan(dslFile);
+        when(flightPlanRepository.ofIdentity(new FlightPlanId("FP-004"))).thenReturn(Optional.of(plan));
+
+        service.testFlightPlan("FP-004", "other-pilot", false);
+    }
+
+    private FlightPlan validDraftPlan(final Path dslFile) throws Exception {
         final FlightRoute route = validRoute();
         final FlightPlan plan = Mockito.mock(FlightPlan.class);
+        final Pilot pilot = Mockito.mock(Pilot.class);
+
         when(plan.status()).thenReturn(FlightPlanStatus.DRAFT);
         when(plan.flightType()).thenReturn(FlightType.REGULAR);
         when(plan.identity()).thenReturn(new FlightPlanId("FP-001"));
         when(plan.flightId()).thenReturn(new FlightId("TP100"));
         when(plan.route()).thenReturn(route);
         when(plan.legs()).thenReturn(List.of(validLeg()));
+        when(plan.pilot()).thenReturn(pilot);
+        when(pilot.identity()).thenReturn(new PilotId("PILOT01"));
+        when(pilot.isOwnedBy("pilot")).thenReturn(true);
+        when(pilot.isOwnedBy("other-pilot")).thenReturn(false);
+        when(plan.dslSourcePath()).thenReturn(dslFile == null ? null : dslFile.toString());
         return plan;
+    }
+
+    private Path writeValidDslFile() throws Exception {
+        final int year = LocalDate.now().getYear();
+        final Path file = Files.createTempFile("flight-plan", ".dsldig5");
+        Files.writeString(file, """
+                flight TP100 regular {
+                aircraft CS-TST;
+                pilot PILOT01;
+                route TP1001 { (41.24|-8.67) (40.47|-3.56) };
+                leg {
+                departure { OPO, 20/06/%d, 14:30 };
+                arrival { MAD, 15:20 };
+                segment { (41.24|-8.67), (40.47|-3.56), {(30000,35000)}, 10, 45, 850 };
+                fuel { 4200, kg };
+                };
+                };
+                """.formatted(year));
+        return file;
     }
 
     private FlightRoute validRoute() {

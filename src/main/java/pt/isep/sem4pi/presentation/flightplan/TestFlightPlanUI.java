@@ -81,9 +81,9 @@ public class TestFlightPlanUI extends AbstractUI {
     }
 
     private void printPlanValidation(final US120ValidationResult validation) {
-        System.out.println("\n[Plan Validation]");
+        System.out.println("\n[DSL Validation]");
         if (validation.isValid()) {
-            System.out.println("PASSED - stored flight plan data is consistent.");
+            System.out.println("PASSED - DSL semantic validation succeeded.");
             return;
         }
 

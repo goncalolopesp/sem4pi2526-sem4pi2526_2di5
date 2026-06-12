@@ -29,4 +29,8 @@ public class Fuel implements ValueObject, Serializable {
     public FuelCapacity capacity() {
         return fuelCapacity;
     }
+
+    public FuelUnit unit() {
+        return fuelUnit;
+    }
 }

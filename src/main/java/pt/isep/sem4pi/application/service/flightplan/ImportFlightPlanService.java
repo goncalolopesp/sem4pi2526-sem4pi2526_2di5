@@ -40,7 +40,7 @@ public class ImportFlightPlanService {
 
         final CreateFlightPlanDTO dto = US081FlightPlanMapper.map(validation.getParseTree());
         try {
-            final FlightPlan flightPlan = createFlightPlanService.createFlightPlan(dto);
+            final FlightPlan flightPlan = createFlightPlanService.createFlightPlanFromDsl(dto, path);
             return FlightPlanImportResultDTO.success(flightPlan.identity().value());
         } catch (final IllegalArgumentException e) {
             return FlightPlanImportResultDTO.failure(List.of(e.getMessage()));
