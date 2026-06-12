@@ -9,11 +9,15 @@ import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
 import pt.isep.sem4pi.infrastructure.bootstrap.MasterUsersBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
+import pt.isep.sem4pi.infrastructure.remoteaccess.RemoteAccessEventType;
+import pt.isep.sem4pi.infrastructure.remoteaccess.RemoteAccessLogger;
+import pt.isep.sem4pi.presentation.network.remoteaccess.RemoteAccessLoggingServer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -31,6 +35,9 @@ import static org.junit.Assert.assertTrue;
 public class WeatherRemoteAccessIT {
 
     private static WeatherTcpServer server;
+    private static RemoteAccessLoggingServer loggingServer;
+    private static Thread loggingServerThread;
+    private static Path auditLogFile;
     private static int port;
 
     @BeforeClass
@@ -45,8 +52,25 @@ public class WeatherRemoteAccessIT {
         );
         new MasterUsersBootstrapper().execute();
 
+        auditLogFile = Files.createTempFile("weather-operation-audit-", ".log");
+        final int loggingPort = freeUdpPort();
+        loggingServer = new RemoteAccessLoggingServer(loggingPort, auditLogFile);
+        loggingServerThread = new Thread(() -> {
+            try {
+                loggingServer.start();
+            } catch (final Exception ignored) {
+                // server stopped
+            }
+        });
+        loggingServerThread.setDaemon(true);
+        loggingServerThread.start();
+        Thread.sleep(200);
+
         port = freePort();
-        server = new WeatherTcpServer(port);
+        server = new WeatherTcpServer(
+                port,
+                new RemoteAccessLogger("127.0.0.1", loggingPort),
+                "US44");
         final Thread t = new Thread(() -> {
             try {
                 server.start();
@@ -63,6 +87,16 @@ public class WeatherRemoteAccessIT {
     public static void stopServer() {
         if (server != null) {
             server.stop();
+        }
+        if (loggingServer != null) {
+            loggingServer.stop();
+        }
+        if (loggingServerThread != null) {
+            try {
+                loggingServerThread.join(2000);
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -129,6 +163,7 @@ public class WeatherRemoteAccessIT {
         final byte[] content = Files.readAllBytes(file);
         final String base64 = Base64.getEncoder().encodeToString(content);
         final List<String> chunks = splitBase64(base64, WeatherProtocol.IMPORT_BASE64_CHUNK_SIZE);
+        final long importEventsBefore = countAuditEvents(RemoteAccessEventType.IMPORT_WEATHER_DATA);
 
         try (Conn c = new Conn(port)) {
             c.greeting();
@@ -144,6 +179,35 @@ public class WeatherRemoteAccessIT {
 
             final String header = c.read();
             assertTrue("expected import summary, got: " + header, header.startsWith("OK"));
+            awaitAuditEventCount(RemoteAccessEventType.IMPORT_WEATHER_DATA, importEventsBefore + 1);
+        }
+    }
+
+    @Test
+    public void successfulOperationsAreAuditedButValidationFailuresAreNot() throws Exception {
+        final long registerEventsBefore = countAuditEvents(RemoteAccessEventType.REGISTER_WEATHER_DATA);
+        final long consultEventsBefore = countAuditEvents(RemoteAccessEventType.CONSULT_WEATHER_DATA);
+
+        try (Conn c = new Conn(port)) {
+            c.greeting();
+            c.send("LOGIN weather Password1");
+            assertTrue(c.read().startsWith("OK"));
+
+            c.send("REGISTER CW001 invalid-date 08:00 09:00 15 10 90 50 1013 1000");
+            assertTrue(c.read().startsWith("ERR"));
+            assertAuditEventCountRemains(RemoteAccessEventType.REGISTER_WEATHER_DATA, registerEventsBefore);
+
+            c.send("REGISTER CW001 2031-06-11 08:00 09:00 15 10 90 50 1013 1000");
+            assertTrue(c.read().startsWith("OK"));
+            awaitAuditEventCount(RemoteAccessEventType.REGISTER_WEATHER_DATA, registerEventsBefore + 1);
+
+            c.send("CONSULT CW001 invalid-date");
+            assertTrue(c.read().startsWith("ERR"));
+            assertAuditEventCountRemains(RemoteAccessEventType.CONSULT_WEATHER_DATA, consultEventsBefore);
+
+            c.send("CONSULT CW001 2031-06-11");
+            assertTrue(c.read().startsWith("OK"));
+            awaitAuditEventCount(RemoteAccessEventType.CONSULT_WEATHER_DATA, consultEventsBefore + 1);
         }
     }
 
@@ -154,14 +218,14 @@ public class WeatherRemoteAccessIT {
             c.send("LOGIN weather Password1");
             assertTrue(c.read().startsWith("OK"));
 
-            c.send("REGISTER CW001 2026-06-11 08:00 08:45 15 10 90 50 1013 1000");
+            c.send("REGISTER CW001 2032-06-11 08:00 08:45 15 10 90 50 1013 1000");
             assertTrue(c.read().startsWith("OK"));
 
-            c.send("REGISTER CW001 2026-06-11 08:45 09:30 29 4 50 70 1013 3045");
+            c.send("REGISTER CW001 2032-06-11 08:45 09:30 29 4 50 70 1013 3045");
             final String second = c.read();
             assertTrue("second register failed: " + second, second.startsWith("OK"));
 
-            c.send("CONSULT CW001 2026-06-11");
+            c.send("CONSULT CW001 2032-06-11");
             final String header = c.read();
             assertTrue("expected two records, got: " + header, header.startsWith("OK 2"));
             assertNotNull(c.read());
@@ -206,6 +270,42 @@ public class WeatherRemoteAccessIT {
         try (ServerSocket s = new ServerSocket(0)) {
             return s.getLocalPort();
         }
+    }
+
+    private static int freeUdpPort() throws Exception {
+        try (DatagramSocket socket = new DatagramSocket(0)) {
+            return socket.getLocalPort();
+        }
+    }
+
+    private static long countAuditEvents(final RemoteAccessEventType eventType) throws Exception {
+        final String suffix = ";weather;127.0.0.1;";
+        final String eventSuffix = ";US44;" + eventType.name();
+        return Files.readAllLines(auditLogFile).stream()
+                .filter(line -> line.contains(suffix) && line.endsWith(eventSuffix))
+                .count();
+    }
+
+    private static void awaitAuditEventCount(
+            final RemoteAccessEventType eventType,
+            final long expectedCount) throws Exception {
+        for (int i = 0; i < 50; i++) {
+            if (countAuditEvents(eventType) >= expectedCount) {
+                return;
+            }
+            Thread.sleep(50);
+        }
+        throw new AssertionError("Expected " + expectedCount + " " + eventType + " audit events");
+    }
+
+    private static void assertAuditEventCountRemains(
+            final RemoteAccessEventType eventType,
+            final long expectedCount) throws Exception {
+        Thread.sleep(200);
+        final long actualCount = countAuditEvents(eventType);
+        assertTrue("validation failure must not log " + eventType
+                + "; expected " + expectedCount + " but got " + actualCount,
+                actualCount == expectedCount);
     }
 
     private static void waitUntilListening(final int port) throws Exception {

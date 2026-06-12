@@ -30,7 +30,7 @@
         <class>pt.isep.sem4pi.domain.model.airport.Airport</class>
         <class>pt.isep.sem4pi.domain.model.pilot.Pilot</class>
         <class>pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea</class>
-        <class>pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator</class>
+        <class>pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany</class>
         <class>pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator</class>
         <class>pt.isep.sem4pi.domain.model.weatherdata.WeatherImportBatch</class>
         <class>pt.isep.sem4pi.domain.model.weatherdata.WeatherData</class>
