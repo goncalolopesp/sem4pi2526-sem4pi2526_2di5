@@ -4,6 +4,8 @@ import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import pt.isep.sem4pi.application.controller.usermanagement.AuthenticationController;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
+import pt.isep.sem4pi.infrastructure.remoteaccess.RemoteAccessEventType;
+import pt.isep.sem4pi.infrastructure.remoteaccess.RemoteAccessLogger;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,6 +24,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     private static final Object AUTHZ_LOCK = new Object();
 
     private final Socket socket;
+    private final RemoteAccessLogger remoteAccessLogger;
 
     private String username;
     private String password;
@@ -33,6 +36,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
 
     public RemoteAccessClientHandler(final Socket socket) {
         this.socket = socket;
+        this.remoteAccessLogger = RemoteAccessLogger.defaultLogger();
     }
 
     @Override
@@ -69,6 +73,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         } catch (final IOException e) {
             RemoteAccessLog.log("Connection error (" + remote + "): " + e.getMessage());
         } finally {
+            logRemoteAccess(currentUsername(), RemoteAccessEventType.DISCONNECT);
             closeQuietly();
             RemoteAccessLog.log("Client disconnected: " + remote);
         }
@@ -153,6 +158,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         final String[] parts = line.split("\\s+", 3);
         if (parts.length < 3) {
             send(out, RemoteAccessProtocol.ERR + " Usage: LOGIN <username> <password>");
+            logRemoteAccess(parts.length > 1 ? parts[1] : "-", RemoteAccessEventType.LOGIN_FAILED);
             return;
         }
         final String user = parts[1];
@@ -166,6 +172,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                         new AuthenticationController().login(user, pass);
                 if (result != AuthenticationController.LoginResult.SUCCESS) {
                     send(out, RemoteAccessProtocol.ERR + " Invalid credentials or access denied.");
+                    logRemoteAccess(user, RemoteAccessEventType.LOGIN_FAILED);
                     return;
                 }
                 roleList = collectRoles(authz);
@@ -184,11 +191,15 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
 
         send(out, RemoteAccessProtocol.OK + " " + user + " " + roleList);
         sendMenu(out);
+        logRemoteAccess(user, RemoteAccessEventType.LOGIN_SUCCESS);
         RemoteAccessLog.log("User " + user + " logged in (roles: " + roleList + ")");
     }
 
     private void handleLogout(final BufferedWriter out) throws IOException {
         final String previousUser = username;
+        if (authenticated) {
+            logRemoteAccess(currentUsername(), RemoteAccessEventType.LOGOUT);
+        }
         clearSession();
         send(out, RemoteAccessProtocol.OK + " Logged out.");
         if (previousUser != null) {
@@ -368,6 +379,19 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     private static String firstToken(final String line) {
         final int idx = line.indexOf(' ');
         return idx < 0 ? line : line.substring(0, idx);
+    }
+
+    private String currentUsername() {
+        return username == null || username.isBlank() ? "-" : username;
+    }
+
+    private void logRemoteAccess(final String user, final RemoteAccessEventType eventType) {
+        remoteAccessLogger.log(
+                user,
+                clientIp(),
+                clientPort(),
+                RemoteAccessService.WEATHER.userStory(),
+                eventType);
     }
 
     private static void sendSafe(final BufferedWriter out, final String message) {
