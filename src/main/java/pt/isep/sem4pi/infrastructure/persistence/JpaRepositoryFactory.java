@@ -135,4 +135,14 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     public PilotRepository pilots(final TransactionalContext tx) {
         return new JpaPilotRepository(PERSISTENCE_UNIT_NAME);
     }
+
+    @Override
+    public ReportMetadataRepository reportMetadata() {
+        return new JpaReportMetadataRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public ReportMetadataRepository reportMetadata(final TransactionalContext tx) {
+        return new JpaReportMetadataRepository(tx);
+    }
 }
