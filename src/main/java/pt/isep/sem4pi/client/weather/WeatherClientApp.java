@@ -32,6 +32,11 @@ public final class WeatherClientApp {
     private static final int DEFAULT_PORT = 8044;
     private static final int CONNECT_TIMEOUT_MS = 5000;
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+    private static final String SERVICE_WEATHER = "WEATHER";
+
+    private static final int ACTION_LOGOUT = -1;
+    private static final int ACTION_SELECT = 0;
+    private static final int ACTION_QUIT = 1;
 
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_WEATHER_PERSON = "WEATHER_PERSON";
@@ -44,6 +49,7 @@ public final class WeatherClientApp {
 
     private String username;
     private Set<String> roles = new HashSet<>();
+    private List<String> availableServices = new ArrayList<>();
     private boolean connected = true;
 
     private WeatherClientApp(final BufferedReader in, final BufferedWriter out) {
@@ -111,6 +117,7 @@ public final class WeatherClientApp {
             }
             if (response.startsWith("OK")) {
                 parseLogin(response, user);
+                parseMenu(readLine());
                 System.out.println("Welcome " + username + " (roles: " + String.join(", ", roles) + ")");
                 return true;
             }
@@ -137,9 +144,73 @@ public final class WeatherClientApp {
                 || roles.contains(ROLE_FLIGHT_CONTROL_OPERATOR);
     }
 
+    private void parseMenu(final String menuLine) {
+        availableServices.clear();
+        if (menuLine == null || !menuLine.startsWith("OK MENU ")) {
+            return;
+        }
+        final String services = menuLine.substring("OK MENU ".length()).trim();
+        if (!"-".equals(services) && !services.isEmpty()) {
+            availableServices.addAll(Arrays.asList(services.split(",")));
+        }
+    }
+
     private boolean sessionMenu() throws IOException {
         while (true) {
-            printMenu();
+            final int action = serviceSelectionMenu();
+            if (action == ACTION_QUIT) {
+                return true;
+            }
+            if (action == ACTION_LOGOUT) {
+                return false;
+            }
+            if (weatherOperationsMenu()) {
+                return true;
+            }
+        }
+    }
+
+    private int serviceSelectionMenu() throws IOException {
+        while (true) {
+            printServiceMenu();
+            final String option = console.nextLine().trim();
+
+            if ("1".equals(option) && availableServices.contains(SERVICE_WEATHER)) {
+                sendLine("SELECT " + SERVICE_WEATHER);
+                final String response = readLine();
+                if (response == null) {
+                    System.out.println("Connection closed by server.");
+                    connected = false;
+                    return ACTION_LOGOUT;
+                }
+                if (response.startsWith("OK")) {
+                    System.out.println(response);
+                    return ACTION_SELECT;
+                }
+                System.out.println(response);
+                continue;
+            }
+
+            switch (option) {
+                case "9" -> {
+                    logoutQuietly();
+                    return ACTION_LOGOUT;
+                }
+                case "0" -> {
+                    if (connected) {
+                        sendLine("QUIT");
+                        System.out.println(readLine());
+                    }
+                    return ACTION_QUIT;
+                }
+                default -> System.out.println("Invalid option.");
+            }
+        }
+    }
+
+    private boolean weatherOperationsMenu() throws IOException {
+        while (true) {
+            printWeatherMenu();
             final String option = console.nextLine().trim();
 
             if (isWeatherManager() && ("1".equals(option) || "2".equals(option))) {
@@ -164,6 +235,15 @@ public final class WeatherClientApp {
             }
 
             switch (option) {
+                case "8" -> {
+                    sendLine("BACK");
+                    final String response = readLine();
+                    if (response != null) {
+                        System.out.println(response);
+                    }
+                    parseMenu(readLine());
+                    return false;
+                }
                 case "9" -> {
                     logoutQuietly();
                     return false;
@@ -180,23 +260,32 @@ public final class WeatherClientApp {
         }
     }
 
-    private void printMenu() {
+    private void printServiceMenu() {
         System.out.println();
-        System.out.println("=== Remote Access [" + username + "] ===");
+        System.out.println("=== Remote Access Services [" + username + "] ===");
+        if (availableServices.contains(SERVICE_WEATHER)) {
+            System.out.println("1. Weather Data (US44)");
+        } else {
+            System.out.println("(No remote access services available for your role.)");
+        }
+        System.out.println("9. Logout");
+        System.out.println("0. Quit");
+        System.out.print("Option: ");
+    }
+
+    private void printWeatherMenu() {
+        System.out.println();
+        System.out.println("=== Weather Data (US44) [" + username + "] ===");
         final boolean manager = isWeatherManager();
         final boolean consultant = isWeatherConsultant();
-        if (manager || consultant) {
-            System.out.println("--- Weather Data ---");
-            if (manager) {
-                System.out.println("1. Register weather data (US041)");
-                System.out.println("2. Import bulk weather data (US042)");
-            }
-            if (consultant) {
-                System.out.println("3. Consult weather data (US043)");
-            }
-        } else {
-            System.out.println("(No remote operations available for your role.)");
+        if (manager) {
+            System.out.println("1. Register weather data (US041)");
+            System.out.println("2. Import bulk weather data (US042)");
         }
+        if (consultant) {
+            System.out.println("3. Consult weather data (US043)");
+        }
+        System.out.println("8. Back to services");
         System.out.println("9. Logout");
         System.out.println("0. Quit");
         System.out.print("Option: ");
@@ -369,7 +458,9 @@ public final class WeatherClientApp {
         } else {
             System.out.println("Session ended (connection was lost).");
         }
-        connected = false;
+        username = null;
+        roles = new HashSet<>();
+        availableServices.clear();
     }
 
     private void sendLine(final String message) throws IOException {

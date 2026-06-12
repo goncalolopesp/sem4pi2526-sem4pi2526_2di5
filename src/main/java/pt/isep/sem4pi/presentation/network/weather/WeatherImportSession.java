@@ -2,7 +2,7 @@ package pt.isep.sem4pi.presentation.network.weather;
 
 import java.util.Base64;
 
-final class WeatherImportSession {
+public final class WeatherImportSession {
 
     private final String fileName;
     private final String fileType;
@@ -10,38 +10,38 @@ final class WeatherImportSession {
     private final StringBuilder base64Payload = new StringBuilder();
     private int receivedChunks;
 
-    WeatherImportSession(final String fileName, final String fileType, final int expectedChunks) {
+    public WeatherImportSession(final String fileName, final String fileType, final int expectedChunks) {
         this.fileName = fileName;
         this.fileType = fileType;
         this.expectedChunks = expectedChunks;
     }
 
-    String getFileName() {
+    public String getFileName() {
         return fileName;
     }
 
-    String getFileType() {
+    public String getFileType() {
         return fileType;
     }
 
-    int getExpectedChunks() {
+    public int getExpectedChunks() {
         return expectedChunks;
     }
 
-    int getReceivedChunks() {
+    public int getReceivedChunks() {
         return receivedChunks;
     }
 
-    void addChunk(final String chunk) {
+    public void addChunk(final String chunk) {
         base64Payload.append(chunk);
         receivedChunks++;
     }
 
-    boolean isComplete() {
+    public boolean isComplete() {
         return receivedChunks >= expectedChunks;
     }
 
-    byte[] decodeContent() {
+    public byte[] decodeContent() {
         return Base64.getDecoder().decode(base64Payload.toString());
     }
 }
