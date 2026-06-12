@@ -8,7 +8,7 @@ public class FuelConverterTest {
 
     @Test
     public void ensureLitersAreConvertedToKilogramsUsingDensity() {
-        assertEquals(3360.0, FuelConverter.toKilograms(4200.0, FuelUnit.L), 0.0001);
+        assertEquals(3376.8, FuelConverter.toKilograms(4200.0, FuelUnit.L), 0.0001);
     }
 
     @Test

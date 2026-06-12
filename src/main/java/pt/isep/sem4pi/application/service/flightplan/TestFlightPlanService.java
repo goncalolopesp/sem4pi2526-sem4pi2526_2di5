@@ -109,7 +109,7 @@ public class TestFlightPlanService {
         }
 
         final CreateFlightPlanDTO dslPlan = US081FlightPlanMapper.map(planValidation.getParseTree());
-        final List<String> persistenceErrors = validatePersistedPlanMatchesDsl(plan, dslPlan);
+        final List<String> persistenceErrors = FlightPlanDslPersistenceComparator.compare(plan, dslPlan);
         if (!persistenceErrors.isEmpty()) {
             final US120ValidationResult persistenceValidation = new US120ValidationResult(
                     List.of(),
@@ -189,30 +189,6 @@ public class TestFlightPlanService {
         }
 
         return US120FlightPlanValidator.analyze(path);
-    }
-
-    private List<String> validatePersistedPlanMatchesDsl(final FlightPlan plan, final CreateFlightPlanDTO dslPlan) {
-        final List<String> errors = new ArrayList<>();
-
-        if (plan.route() == null) {
-            errors.add("Stored flight plan must reference a route.");
-            return errors;
-        }
-
-        if (!plan.route().identity().code().equalsIgnoreCase(dslPlan.getRouteId())) {
-            errors.add("DSL route id does not match the stored flight plan route.");
-        }
-
-        if (!plan.flightId().value().equalsIgnoreCase(dslPlan.getFlightId())) {
-            errors.add("DSL flight id does not match the stored flight plan.");
-        }
-
-        if (!plan.pilot().identity().code().equalsIgnoreCase(dslPlan.getPilotId())) {
-            errors.add("DSL pilot id does not match the stored flight plan pilot.");
-        }
-
-        errors.addAll(FlightPlanDomainValidator.validate(plan, plan.route()));
-        return errors;
     }
 
     private double resolveMinimumReserveFuel(final FlightPlan plan) {

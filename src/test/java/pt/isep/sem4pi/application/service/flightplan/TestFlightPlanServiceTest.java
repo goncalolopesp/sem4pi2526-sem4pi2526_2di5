@@ -11,6 +11,8 @@ import pt.isep.sem4pi.domain.model.airport.Coordinates;
 import pt.isep.sem4pi.domain.model.airport.Elevation;
 import pt.isep.sem4pi.domain.model.airport.IataCodeAirport;
 import pt.isep.sem4pi.domain.model.airport.IcaoCodeAirport;
+import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
 import pt.isep.sem4pi.domain.model.flight.DTO.TestFlightPlanResultDTO;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
 import pt.isep.sem4pi.domain.model.flight.FlightLeg;
@@ -149,6 +151,7 @@ public class TestFlightPlanServiceTest {
         final FlightRoute route = validRoute();
         final FlightPlan plan = Mockito.mock(FlightPlan.class);
         final Pilot pilot = Mockito.mock(Pilot.class);
+        final Aircraft aircraft = Mockito.mock(Aircraft.class);
 
         when(plan.status()).thenReturn(FlightPlanStatus.DRAFT);
         when(plan.flightType()).thenReturn(FlightType.REGULAR);
@@ -157,6 +160,8 @@ public class TestFlightPlanServiceTest {
         when(plan.route()).thenReturn(route);
         when(plan.legs()).thenReturn(List.of(validLeg()));
         when(plan.pilot()).thenReturn(pilot);
+        when(plan.aircraft()).thenReturn(aircraft);
+        when(aircraft.identity()).thenReturn(new AircraftRegistration("CS-TST"));
         when(pilot.identity()).thenReturn(new PilotId("PILOT01"));
         when(pilot.isOwnedBy("pilot")).thenReturn(true);
         when(pilot.isOwnedBy("other-pilot")).thenReturn(false);
@@ -202,10 +207,11 @@ public class TestFlightPlanServiceTest {
     }
 
     private FlightLeg validLeg() {
+        final int year = LocalDate.now().getYear();
         return new FlightLeg(
                 new Departure(
                         new IataCodeAirport("OPO"),
-                        new Date(20, 6, 2026),
+                        new Date(20, 6, year),
                         new Time(14, 30, 0)
                 ),
                 new Arrival(new IataCodeAirport("MAD"), new Time(15, 20, 0)),

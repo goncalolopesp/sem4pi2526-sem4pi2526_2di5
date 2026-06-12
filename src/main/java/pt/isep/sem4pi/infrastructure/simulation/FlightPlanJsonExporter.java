@@ -100,6 +100,15 @@ public class FlightPlanJsonExporter {
         }
 
         for (int segmentIndex = 0; segmentIndex < segments.size(); segmentIndex++) {
+            if (segments.size() == 1) {
+                appendSingleDslSegmentAsProfile(
+                        json,
+                        segments.get(0),
+                        departure,
+                        arrival
+                );
+                break;
+            }
             appendDslSegment(
                     json,
                     segments.get(segmentIndex),
@@ -113,6 +122,48 @@ public class FlightPlanJsonExporter {
 
         json.append("      ]\n");
         json.append("    }");
+        if (trailingComma) {
+            json.append(",");
+        }
+        json.append("\n");
+    }
+
+    private void appendSingleDslSegmentAsProfile(final StringBuilder json,
+                                                 final CreateFlightPlanSegmentDTO segment,
+                                                 final Airport departure,
+                                                 final Airport arrival) {
+        final double cruiseAltitudeM = averageAltitudeMeters(segment.getAltitudeSlots());
+        final double departureElevationM = departure.getElevation().getMeters();
+        final double arrivalElevationM = arrival.getElevation().getMeters();
+
+        appendProfileSegment(json, "climb",
+                segment.getStartLatitude(), segment.getStartLongitude(), departureElevationM,
+                segment.getStartLatitude(), segment.getStartLongitude(), cruiseAltitudeM,
+                true);
+        appendProfileSegment(json, "cruise",
+                segment.getStartLatitude(), segment.getStartLongitude(), cruiseAltitudeM,
+                segment.getEndLatitude(), segment.getEndLongitude(), cruiseAltitudeM,
+                true);
+        appendProfileSegment(json, "descend",
+                segment.getEndLatitude(), segment.getEndLongitude(), cruiseAltitudeM,
+                segment.getEndLatitude(), segment.getEndLongitude(), arrivalElevationM,
+                false);
+    }
+
+    private void appendProfileSegment(final StringBuilder json,
+                                      final String mode,
+                                      final double startLat,
+                                      final double startLon,
+                                      final double startAltM,
+                                      final double endLat,
+                                      final double endLon,
+                                      final double endAltM,
+                                      final boolean trailingComma) {
+        json.append("        {\n");
+        json.append("          \"Mode\": \"").append(mode).append("\",\n");
+        json.append("          \"Start\": ").append(position(startLat, startLon, startAltM)).append(",\n");
+        json.append("          \"End\": ").append(position(endLat, endLon, endAltM)).append("\n");
+        json.append("        }");
         if (trailingComma) {
             json.append(",");
         }

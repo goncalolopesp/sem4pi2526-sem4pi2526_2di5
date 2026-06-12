@@ -80,6 +80,29 @@ public class US120SemanticValidationTest {
     }
 
     @Test
+    public void ensureInvalidTimeReturnsSemanticErrorInsteadOfException() throws Exception {
+        final Path file = Files.createTempFile("invalid-time", ".dsldig5");
+        Files.writeString(file, """
+                flight TP100 regular {
+                aircraft CS-TST;
+                pilot PILOT01;
+                route TP1001 { (41.24|-8.67) (40.47|-3.56) };
+                leg {
+                departure { OPO, 20/06/2026, 25:90 };
+                arrival { MAD, 15:20 };
+                segment { (41.24|-8.67), (40.47|-3.56), {(30000,35000)}, 10, 45, 850 };
+                fuel { 4200, kg };
+                };
+                };
+                """);
+
+        final US120ValidationResult result = US120FlightPlanValidator.analyze(file);
+        assertFalse(result.isValid());
+        assertTrue(result.getSemanticErrors().stream()
+                .anyMatch(error -> error.contains("Time values out of bounds") || error.contains("Invalid time")));
+    }
+
+    @Test
     public void ensureFuelInLitersIsAcceptedByVisitor() throws Exception {
         final Path file = Files.createTempFile("fuel-liters", ".dsldig5");
         Files.writeString(file, """

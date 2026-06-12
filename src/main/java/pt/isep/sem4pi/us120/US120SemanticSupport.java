@@ -78,4 +78,21 @@ final class US120SemanticSupport {
             return false;
         }
     }
+
+    static boolean isValidTime(final TimeContext ctx) {
+        final String time = ctx.getText();
+        final String[] parts = time.split(":");
+        if (parts.length < 2 || parts.length > 3) {
+            return false;
+        }
+        try {
+            final int hour = Integer.parseInt(parts[0]);
+            final int minute = Integer.parseInt(parts[1]);
+            final int second = parts.length == 3 ? Integer.parseInt(parts[2]) : 0;
+            LocalTime.of(hour, minute, second);
+            return true;
+        } catch (NumberFormatException | DateTimeException ex) {
+            return false;
+        }
+    }
 }

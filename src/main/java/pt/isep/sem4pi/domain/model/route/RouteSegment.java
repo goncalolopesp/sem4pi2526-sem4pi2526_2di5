@@ -111,6 +111,14 @@ public class RouteSegment implements DomainEntity<Long> {
         return List.copyOf(allowedAltitudes);
     }
 
+    public Wind wind() {
+        return wind;
+    }
+
+    public Integer maxSpeed() {
+        return maxSpeed;
+    }
+
     /**
      * Returns the identity of this route segment.
      * 

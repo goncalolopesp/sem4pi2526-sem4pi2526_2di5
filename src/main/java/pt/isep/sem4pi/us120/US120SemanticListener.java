@@ -77,7 +77,9 @@ public class US120SemanticListener extends US120BaseListener {
         currentLeg.departureAirport = departure.airport().getText();
         currentLeg.arrivalAirport = arrival.airport().getText();
 
-        if (!US120SemanticSupport.isValidCalendarDate(departure.date())) {
+        if (!US120SemanticSupport.isValidCalendarDate(departure.date())
+                || !US120SemanticSupport.isValidTime(departure.time())
+                || !US120SemanticSupport.isValidTime(arrival.time())) {
             legs.add(currentLeg);
             currentLeg = null;
             previousSegmentEnd = null;
@@ -120,6 +122,10 @@ public class US120SemanticListener extends US120BaseListener {
                         + " departure airport must match leg " + i + " arrival airport.");
             }
 
+            if (!hasCompleteTemporalData(previous) || !hasCompleteTemporalData(current)) {
+                continue;
+            }
+
             final LocalDateTime previousArrival = LocalDateTime.of(previous.departureDate, previous.arrivalTime);
             final LocalDateTime currentDeparture = LocalDateTime.of(current.departureDate, current.departureTime);
             if (!currentDeparture.isAfter(previousArrival)) {
@@ -127,6 +133,10 @@ public class US120SemanticListener extends US120BaseListener {
                         + " departure must be temporally after leg " + i + " arrival.");
             }
         }
+    }
+
+    private static boolean hasCompleteTemporalData(final LegState leg) {
+        return leg.departureDate != null && leg.departureTime != null && leg.arrivalTime != null;
     }
 
     private void validateRepeatedAirports(final int line) {

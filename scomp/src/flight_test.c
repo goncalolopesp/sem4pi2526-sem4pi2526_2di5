@@ -54,11 +54,6 @@ static double fuel_burn_rate_kg_per_nm(const Segment *seg)
     return 3.0;
 }
 
-static int mode_requires_min_altitude(const Segment *seg)
-{
-    return strcmp(seg->mode, "cruise") == 0;
-}
-
 int run_flight_test(const char *plan_path,
                     double min_alt_m,
                     double min_reserve_fuel_kg,
@@ -139,7 +134,7 @@ int run_flight_test(const char *plan_path,
                 p.altitude_m = altitude;
             }
 
-            if (mode_requires_min_altitude(seg) && p.altitude_m < min_alt_m)
+            if (p.altitude_m < min_alt_m)
                 result->altitude_violations++;
         }
     }

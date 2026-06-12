@@ -3,7 +3,7 @@ package pt.isep.sem4pi.domain.model.flight.fuel;
 public final class FuelConverter {
 
     /** Jet A-1 density used in project specifications (kg per liter). */
-    public static final double JET_A1_DENSITY_KG_PER_LITER = 0.8;
+    public static final double JET_A1_DENSITY_KG_PER_LITER = 0.804;
 
     private FuelConverter() {
         // utility

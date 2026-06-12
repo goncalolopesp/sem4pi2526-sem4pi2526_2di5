@@ -50,4 +50,8 @@ public class Time implements ValueObject, Serializable {
     public int minute() {
         return minute;
     }
+
+    public int second() {
+        return second;
+    }
 }
