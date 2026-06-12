@@ -155,10 +155,12 @@ public class WeatherRemoteAccessIT {
 
     @Test
     public void wrongCredentialsAreRejected() throws Exception {
+        final long failedLoginsBefore = countAuditEvents(RemoteAccessEventType.LOGIN_FAILED);
         try (Conn c = new Conn(port)) {
             c.greeting();
             c.send("LOGIN weather wrongpass");
             assertTrue(c.read().startsWith("ERR"));
+            awaitAuditEventCount(RemoteAccessEventType.LOGIN_FAILED, failedLoginsBefore + 1);
         }
     }
 
@@ -277,19 +279,34 @@ public class WeatherRemoteAccessIT {
 
     @Test
     public void logoutKeepsConnectionAndAllowsRelogin() throws Exception {
+        final long successfulLoginsBefore = countAuditEvents(RemoteAccessEventType.LOGIN_SUCCESS);
+        final long logoutsBefore = countAuditEvents(RemoteAccessEventType.LOGOUT);
         try (Conn c = new Conn(port)) {
             c.greeting();
             c.loginAsWeather();
+            awaitAuditEventCount(RemoteAccessEventType.LOGIN_SUCCESS, successfulLoginsBefore + 1);
             c.selectWeather();
 
             c.send("LOGOUT");
             assertTrue(c.read().startsWith("OK"));
+            awaitAuditEventCount(RemoteAccessEventType.LOGOUT, logoutsBefore + 1);
 
             c.loginAsWeather();
+            awaitAuditEventCount(RemoteAccessEventType.LOGIN_SUCCESS, successfulLoginsBefore + 2);
             c.selectWeather();
             c.send("CONSULT CW001 2099-01-01");
             assertTrue(c.read().startsWith("OK"));
         }
+    }
+
+    @Test
+    public void disconnectIsAudited() throws Exception {
+        final long disconnectsBefore = countAuditEvents(RemoteAccessEventType.DISCONNECT);
+        try (Conn c = new Conn(port)) {
+            c.greeting();
+            c.loginAsWeather();
+        }
+        awaitAuditEventCount(RemoteAccessEventType.DISCONNECT, disconnectsBefore + 1);
     }
 
     private static List<String> splitBase64(final String base64, final int chunkSize) {

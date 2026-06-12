@@ -164,8 +164,12 @@ public final class WeatherClientApp {
             if (action == ACTION_LOGOUT) {
                 return false;
             }
-            if (weatherOperationsMenu()) {
+            final int weatherAction = weatherOperationsMenu();
+            if (weatherAction == ACTION_QUIT) {
                 return true;
+            }
+            if (weatherAction == ACTION_LOGOUT) {
+                return false;
             }
         }
     }
@@ -208,7 +212,7 @@ public final class WeatherClientApp {
         }
     }
 
-    private boolean weatherOperationsMenu() throws IOException {
+    private int weatherOperationsMenu() throws IOException {
         while (true) {
             printWeatherMenu();
             final String option = console.nextLine().trim();
@@ -242,18 +246,18 @@ public final class WeatherClientApp {
                         System.out.println(response);
                     }
                     parseMenu(readLine());
-                    return false;
+                    return ACTION_SELECT;
                 }
                 case "9" -> {
                     logoutQuietly();
-                    return false;
+                    return ACTION_LOGOUT;
                 }
                 case "0" -> {
                     if (connected) {
                         sendLine("QUIT");
                         System.out.println(readLine());
                     }
-                    return true;
+                    return ACTION_QUIT;
                 }
                 default -> System.out.println("Invalid option.");
             }
