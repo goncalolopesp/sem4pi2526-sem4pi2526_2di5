@@ -48,8 +48,9 @@ The AlSafe system focuses on air traffic control and simulation. The domain was 
 * **Weather Service:** Weather data introduced in the system that affects the simulation. 
   * Includes `WeatherImportBatch`, `WeatherSource`, and `WeatherData`.
   
-* **Flight Simulation:** The execution context. 
-  * Involves the `Simulation`, `SimulatedFlight`, `Position` tracking, and `SafetyViolation` detection.
+* **Flight Simulation:** The integration and reporting context.
+  * Involves `Simulation`, `SimulatedFlightInput` and the `SimulationReport`
+    summary received from the external SCOMP component.
 
 ## 4. Design
 
@@ -67,6 +68,7 @@ Main identified Aggregate Roots (`<<AggregateRoot>>`):
 * `EngineModel`
 * `FlightPlan`
 * `Simulation`
+* `SimulationReport`
 * `WeatherImportBatch`
 * `WeatherSource`
 

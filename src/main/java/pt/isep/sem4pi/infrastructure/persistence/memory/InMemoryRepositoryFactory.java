@@ -38,6 +38,7 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     private SimulationReportRepository simulationReportRepository;
     private FlightPlanRepository flightPlanRepository;
     private PilotRepository pilotRepository;
+    private ReportMetadataRepository reportMetadataRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -285,5 +286,18 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     @Override
     public PilotRepository pilots(TransactionalContext tx) {
         return pilots();
+    }
+
+    @Override
+    public ReportMetadataRepository reportMetadata() {
+        if (reportMetadataRepository == null) {
+            reportMetadataRepository = new InMemoryReportMetadataRepository();
+        }
+        return reportMetadataRepository;
+    }
+
+    @Override
+    public ReportMetadataRepository reportMetadata(final TransactionalContext tx) {
+        return reportMetadata();
     }
 }

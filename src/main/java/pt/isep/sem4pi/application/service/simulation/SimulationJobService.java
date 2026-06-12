@@ -1,8 +1,6 @@
 package pt.isep.sem4pi.application.service.simulation;
 
 import pt.isep.sem4pi.domain.model.simulation.Simulation;
-import pt.isep.sem4pi.domain.model.simulation.SimulationReport;
-import pt.isep.sem4pi.domain.repositories.SimulationReportRepository;
 import pt.isep.sem4pi.domain.repositories.SimulationRepository;
 
 import java.util.concurrent.ExecutorService;
@@ -14,18 +12,15 @@ public class SimulationJobService {
             Executors.newCachedThreadPool();
 
     private final SimulationRepository simulationRepository;
-    private final SimulationReportRepository simulationReportRepository;
     private final SimulationRunner simulationRunner;
-    private final SimulationReportParser simulationReportParser;
+    private final GenerateSimulationSummaryReportService reportService;
 
     public SimulationJobService(final SimulationRepository simulationRepository,
-                                final SimulationReportRepository simulationReportRepository,
                                 final SimulationRunner simulationRunner,
-                                final SimulationReportParser simulationReportParser) {
+                                final GenerateSimulationSummaryReportService reportService) {
         this.simulationRepository = simulationRepository;
-        this.simulationReportRepository = simulationReportRepository;
         this.simulationRunner = simulationRunner;
-        this.simulationReportParser = simulationReportParser;
+        this.reportService = reportService;
     }
 
     public void submit(final String simulationId) {
@@ -44,23 +39,16 @@ public class SimulationJobService {
                     simulationRunner.run(simulation);
 
             if (result.success()) {
-                final SimulationReport report =
-                        simulationReportParser.parse(
-                                simulation.simulationId(),
-                                result.reportPath());
-
-                simulationReportRepository.save(report);
-
-                if ("FAIL".equalsIgnoreCase(report.finalValidationResult())) {
-                    simulation.markAsFailed(result.consoleOutput());                } else {
-                    simulation.markAsFinished();
-                }
-
+                reportService.generate(simulation.simulationId(), result.reportPath());
+                return;
             } else {
-                simulation.markAsFailed(result.consoleOutput());            }
+                simulation.markAsFailed(result.consoleOutput());
+            }
 
         } catch (final Exception e) {
-            simulation.markAsFailed(e.getMessage());
+            if (simulation.status() != pt.isep.sem4pi.domain.model.simulation.SimulationStatus.FAILED) {
+                simulation.markAsFailed(e.getMessage());
+            }
         }
 
         simulationRepository.save(simulation);

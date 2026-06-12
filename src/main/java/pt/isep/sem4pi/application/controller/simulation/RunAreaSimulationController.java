@@ -11,10 +11,7 @@ import pt.isep.sem4pi.domain.repositories.SimulationRepository;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.simulation.CFlightSimulatorRunner;
-import pt.isep.sem4pi.domain.model.simulation.SimulationReport;
-import pt.isep.sem4pi.domain.repositories.SimulationReportRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @UseCaseController
@@ -24,8 +21,7 @@ public class RunAreaSimulationController {
     private final SimulationRepository simulationRepository;
     private final RunAreaSimulationService runAreaSimulationService;
     private final SimulationRunner simulationRunner;
-    private final SimulationReportRepository simulationReportRepository;
-    private final SimulationReportParser simulationReportParser;
+    private final GenerateSimulationSummaryReportService reportService;
     private final SimulationJobService simulationJobService;
 
     public RunAreaSimulationController() {
@@ -33,23 +29,29 @@ public class RunAreaSimulationController {
         this.simulationRepository = PersistenceContext.repositories().simulations();
         this.runAreaSimulationService = new RunAreaSimulationService(authz);
         this.simulationRunner = new CFlightSimulatorRunner();
-        this.simulationReportRepository = PersistenceContext.repositories().simulationReports();
-        this.simulationReportParser = new SimulationReportParser();
+        this.reportService = new GenerateSimulationSummaryReportService(
+                PersistenceContext.repositories(),
+                new SimulationReportParser(),
+                new SimulationSummaryReportExporter());
         this.simulationJobService =
                 new SimulationJobService(
                         this.simulationRepository,
-                        this.simulationReportRepository,
                         this.simulationRunner,
-                        this.simulationReportParser);
+                        this.reportService);
     }
 
-    public RunAreaSimulationController(final AuthorizationService authz, final SimulationRepository simulationRepository, final RunAreaSimulationService runAreaSimulationService, final SimulationRunner simulationRunner, final SimulationReportRepository simulationReportRepository, final SimulationReportParser simulationReportParser, final SimulationJobService simulationJobService) {
+    public RunAreaSimulationController(
+            final AuthorizationService authz,
+            final SimulationRepository simulationRepository,
+            final RunAreaSimulationService runAreaSimulationService,
+            final SimulationRunner simulationRunner,
+            final GenerateSimulationSummaryReportService reportService,
+            final SimulationJobService simulationJobService) {
         this.authz = authz;
         this.simulationRepository = simulationRepository;
         this.runAreaSimulationService = runAreaSimulationService;
         this.simulationRunner = simulationRunner;
-        this.simulationReportRepository = simulationReportRepository;
-        this.simulationReportParser = simulationReportParser;
+        this.reportService = reportService;
         this.simulationJobService = simulationJobService;
     }
 
@@ -103,28 +105,14 @@ public class RunAreaSimulationController {
         final SimulationExecutionResult result = simulationRunner.run(simulation);
 
         if (result.success()) {
-
             try {
-
-                final SimulationReport report =
-                        simulationReportParser.parse(
-                                simulation.simulationId(),
-                                result.reportPath());
-
-                simulationReportRepository.save(report);
-
-                if ("FAIL".equalsIgnoreCase(report.finalValidationResult())) {
-                    simulation.markAsFailed();
-                } else {
-                    simulation.markAsFinished();
-                }
-
-            } catch (Exception e) {
-                simulation.markAsFailed();
+                reportService.generate(simulation.simulationId(), result.reportPath());
+                return result;
+            } catch (final Exception e) {
+                simulation.markAsFailed(e.getMessage());
             }
-
         } else {
-            simulation.markAsFailed();
+            simulation.markAsFailed(result.consoleOutput());
         }
 
         simulationRepository.save(simulation);
