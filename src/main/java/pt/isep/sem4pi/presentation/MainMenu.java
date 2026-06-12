@@ -32,6 +32,7 @@ import pt.isep.sem4pi.presentation.weatherdata.ImportWeatherDataUI;
 import pt.isep.sem4pi.presentation.weatherdata.ConsultWeatherDataUI;
 import pt.isep.sem4pi.presentation.simulation.RunAreaSimulationAction;
 import pt.isep.sem4pi.presentation.simulation.CheckSimulationStatusUI;
+import pt.isep.sem4pi.presentation.simulation.ViewSimulationReportUI;
 import pt.isep.sem4pi.presentation.us120.ValidateFlightPlanUI;
 
 /**
@@ -80,6 +81,7 @@ public class MainMenu extends AbstractUI {
     //Simulation
     private static final int RUN_SIMULATION_OPTION = 1;
     private static final int CHECK_SIMULATION_STATUS_OPTION = 2;
+    private static final int VIEW_SIMULATION_REPORT_OPTION = 3;
 
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
@@ -170,6 +172,11 @@ public class MainMenu extends AbstractUI {
                             SEM4PIRoles.PILOT,
                             SEM4PIRoles.ADMIN);
 
+            final boolean isFlightControlOperator =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.FLIGHT_CONTROL_OPERATOR,
+                            SEM4PIRoles.ADMIN);
+
             if (isAdmin) {
                 final var adminMenu = buildAdminMenu();
                 mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
@@ -181,11 +188,14 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
                 mainMenu.addSubMenu(AIRPORT_OPTIONS, buildAirportMenu());
                 mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, buildAirControlAreaMenu());
+            } else if (isAtcc) {
+                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
+            }
+
+            if (isFlightControlOperator) {
                 mainMenu.addSubMenu(
                         SIMULATION_OPTIONS,
                         buildSimulationMenu());
-            } else if (isAtcc) {
-                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
             }
 
             if (isWeatherManager || isWeatherConsultant) {
@@ -306,6 +316,11 @@ public class MainMenu extends AbstractUI {
                 CHECK_SIMULATION_STATUS_OPTION,
                 "Check Simulation Status",
                 new CheckSimulationStatusUI()::show);
+
+        menu.addItem(
+                VIEW_SIMULATION_REPORT_OPTION,
+                "View Simulation Report",
+                new ViewSimulationReportUI()::show);
 
         menu.addItem(
                 EXIT_OPTION,

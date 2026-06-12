@@ -182,7 +182,7 @@ No novo modelo, a simulação passou a focar-se em:
 * pedido de simulação;
 * inputs;
 * report;
-* resultados/issues.
+* resumos dos resultados recebidos do SCOMP.
 
 **Porquê:**
 O cliente clarificou que a simulação detalhada pertence ao módulo em C.
@@ -199,6 +199,28 @@ No novo modelo, passou a ser um agregado próprio.
 **Porquê:**
 O report tem identidade, associação a uma simulação, data de geração e localização de ficheiro.
 Por isso, comporta-se mais como entidade persistida do que como simples VO.
+
+---
+
+### 2.13. Especialização do `SimulationReport` para a US111
+
+O agregado `SimulationReport` passou a incluir explicitamente:
+
+* `FlightExecutionSummary`, com a identificação do voo e o seu estado final;
+* `SafetyViolationSummary`, com timestamp, tipo, posição e detalhes;
+* `ReportFilePath`, que encapsula a localização do ficheiro exportado;
+* `SimulationValidationResult`, com os valores `PASS` e `FAIL`.
+
+O conceito genérico `SimulationIssue` foi removido porque não representava com
+precisão os dados exigidos pela US111. Os novos conceitos continuam a ser
+resumos no core Java; o detalhe da simulação e a deteção das violações permanecem
+no componente SCOMP.
+
+**Porquê:**
+O relatório precisa de guardar e apresentar o número e estado dos voos, bem como
+timestamps e posições das violações. Estes dados pertencem ao ciclo de vida do
+`SimulationReport`, não têm identidade própria e são, por isso, Value Objects do
+agregado.
 
 ---
 
@@ -279,7 +301,9 @@ Representa um pedido de simulação no core system.
 
 ### `SimulationReport`
 
-Representa o resultado final de uma simulação.
+Representa o resumo final persistido de uma simulação. Mantém os estados finais
+dos voos, as violações de segurança, a localização do ficheiro e o resultado
+global de validação.
 
 ---
 
@@ -296,6 +320,8 @@ Comparando com o modelo antigo, as mudanças mais relevantes foram:
 * `AircraftModel` passou a controlar explicitamente engines certificados;
 * o detalhe técnico do DSL deixou de estar no centro do DDD;
 * a parte da simulação foi simplificada no core Java;
-* `SimulationReport` deixou de ser VO.
+* `SimulationReport` deixou de ser VO;
+* a US111 especializou o report com resumos de execução, violações, caminho do
+  ficheiro e resultado de validação.
 
 ---

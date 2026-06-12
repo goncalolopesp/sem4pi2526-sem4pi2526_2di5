@@ -37,6 +37,18 @@ To run the application, you must run the run.sh script:
 
     ./run.sh
 
+For simulations and US111 reports, compile the SCOMP module first:
+
+    cd scomp
+    make
+    cd ..
+    sed -i 's/\r$//' run.sh
+    chmod +x run.sh
+    chmod +x scomp/flight_simulator
+    ./run.sh
+
+Generated US111 summary reports are stored in `reports/simulation`.
+
 ## 6. How to Install/Deploy into Another Machine (or Virtual Machine)
 
 To deploy the application, you must first run the deploy.sh script. That script will create a Java Archive File, which you can run in your other Machine. You can run the deploy script with:
@@ -80,6 +92,3 @@ To deploy the application, you must first run the deploy.bat script. That script
 And you can execute the Java Archive File in your Command Prompt/Powershell with:
 
     java -jar {name of the JAR file}
-## 7. How to Generate PlantUML Diagrams
-
-*Currently, there is no implementation for the generation of PlantUML Diagrams for Windows* 

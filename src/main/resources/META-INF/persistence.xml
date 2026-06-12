@@ -36,6 +36,10 @@
         <class>pt.isep.sem4pi.domain.model.weatherdata.WeatherData</class>
         <class>pt.isep.sem4pi.domain.model.simulation.Simulation</class>
         <class>pt.isep.sem4pi.domain.model.simulation.SimulatedFlightInput</class>
+        <class>pt.isep.sem4pi.domain.model.simulation.SimulationReport</class>
+        <class>pt.isep.sem4pi.domain.model.simulation.FlightExecutionSummary</class>
+        <class>pt.isep.sem4pi.domain.model.simulation.SafetyViolationSummary</class>
+        <class>pt.isep.sem4pi.domain.model.simulation.ReportFilePath</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
