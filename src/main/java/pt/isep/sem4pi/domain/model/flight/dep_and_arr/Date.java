@@ -91,4 +91,16 @@ public class Date implements ValueObject, Serializable {
     public static Date today(){
         return new Date(LocalDate.now().getDayOfMonth(), LocalDate.now().getMonthValue(), LocalDate.now().getYear());
     }
+
+    public int day() {
+        return day;
+    }
+
+    public int month() {
+        return month;
+    }
+
+    public int year() {
+        return year;
+    }
 }

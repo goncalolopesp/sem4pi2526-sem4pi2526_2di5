@@ -159,6 +159,47 @@ static int extract_profile_number(char *buffer,
     return extract_number_after_key(field, number_key, value);
 }
 
+static int parse_leg_block(char *leg_block, FlightPlan *plan)
+{
+    char *fuel = strstr(leg_block, "\"Fuel\"");
+    if (fuel)
+    {
+        double leg_fuel = 0.0;
+        if (extract_number_after_key(fuel, "Quantity", &leg_fuel) == 0)
+            plan->fuel_kg += leg_fuel;
+    }
+
+    char *segments = strstr(leg_block, "\"Segments\"");
+    if (!segments)
+        return 0;
+
+    char *array_open = strchr(segments, '[');
+    if (!array_open)
+        return 0;
+
+    char *cursor = array_open;
+    while ((cursor = strchr(cursor, '{')) != NULL && plan->segment_count < MAX_SEGMENTS)
+    {
+        char *end = find_matching_brace(cursor);
+        if (!end)
+            break;
+        char saved = *(end + 1);
+        *(end + 1) = '\0';
+
+        Segment *seg = &plan->segments[plan->segment_count];
+        if (extract_string_after_key(cursor, "Mode", seg->mode, sizeof(seg->mode)) == 0 &&
+            parse_position_block(cursor, "Start", &seg->start) == 0 &&
+            parse_position_block(cursor, "End", &seg->end) == 0)
+        {
+            plan->segment_count++;
+        }
+
+        *(end + 1) = saved;
+        cursor = end + 1;
+    }
+    return 0;
+}
+
 /* Analisa um bloco "Start" ou "End" e preenche a estrutura Position. */
 int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_size)
 {
@@ -206,47 +247,70 @@ int parse_flight_plan(const char *path, FlightPlan *plan, char *err, size_t err_
     extract_profile_number(buffer, "Descend", "\"Ratedescend\"", "Value",
                            &plan->descend_rate_ms);
 
-    char *fuel = strstr(buffer, "\"Fuel\"");
-    if (fuel)
+    char *legs = strstr(buffer, "\"Leg\"");
+    if (legs)
     {
-        extract_number_after_key(fuel, "Quantity", &plan->fuel_kg);
-    }
-
-    char *segments = strstr(buffer, "\"Segments\"");
-    if (!segments)
-    {
-        snprintf(err, err_size, "Flight plan '%s' has no Segments block", path);
-        free(buffer);
-        return -1;
-    }
-
-    char *array_open = strchr(segments, '[');
-    if (!array_open)
-    {
-        snprintf(err, err_size, "Flight plan '%s' has an invalid Segments block", path);
-        free(buffer);
-        return -1;
-    }
-
-    char *cursor = array_open;
-    while ((cursor = strchr(cursor, '{')) != NULL && plan->segment_count < MAX_SEGMENTS)
-    {
-        char *end = find_matching_brace(cursor);
-        if (!end)
-            break;
-        char saved = *(end + 1);
-        *(end + 1) = '\0';
-
-        Segment *seg = &plan->segments[plan->segment_count];
-        if (extract_string_after_key(cursor, "Mode", seg->mode, sizeof(seg->mode)) == 0 &&
-            parse_position_block(cursor, "Start", &seg->start) == 0 &&
-            parse_position_block(cursor, "End", &seg->end) == 0)
+        char *array_open = strchr(legs, '[');
+        if (array_open)
         {
-            plan->segment_count++;
+            char *cursor = array_open;
+            while ((cursor = strchr(cursor, '{')) != NULL)
+            {
+                char *end = find_matching_brace(cursor);
+                if (!end)
+                    break;
+                char saved = *(end + 1);
+                *(end + 1) = '\0';
+                parse_leg_block(cursor, plan);
+                *(end + 1) = saved;
+                cursor = end + 1;
+            }
+        }
+    }
+    else
+    {
+        char *fuel = strstr(buffer, "\"Fuel\"");
+        if (fuel)
+        {
+            extract_number_after_key(fuel, "Quantity", &plan->fuel_kg);
         }
 
-        *(end + 1) = saved;
-        cursor = end + 1;
+        char *segments = strstr(buffer, "\"Segments\"");
+        if (!segments)
+        {
+            snprintf(err, err_size, "Flight plan '%s' has no Segments block", path);
+            free(buffer);
+            return -1;
+        }
+
+        char *array_open = strchr(segments, '[');
+        if (!array_open)
+        {
+            snprintf(err, err_size, "Flight plan '%s' has an invalid Segments block", path);
+            free(buffer);
+            return -1;
+        }
+
+        char *cursor = array_open;
+        while ((cursor = strchr(cursor, '{')) != NULL && plan->segment_count < MAX_SEGMENTS)
+        {
+            char *end = find_matching_brace(cursor);
+            if (!end)
+                break;
+            char saved = *(end + 1);
+            *(end + 1) = '\0';
+
+            Segment *seg = &plan->segments[plan->segment_count];
+            if (extract_string_after_key(cursor, "Mode", seg->mode, sizeof(seg->mode)) == 0 &&
+                parse_position_block(cursor, "Start", &seg->start) == 0 &&
+                parse_position_block(cursor, "End", &seg->end) == 0)
+            {
+                plan->segment_count++;
+            }
+
+            *(end + 1) = saved;
+            cursor = end + 1;
+        }
     }
 
     free(buffer);

@@ -17,8 +17,13 @@ import pt.isep.sem4pi.domain.model.flight.dep_and_arr.Time;
 import pt.isep.sem4pi.domain.model.flight.fuel.Fuel;
 import pt.isep.sem4pi.domain.model.flight.fuel.FuelCapacity;
 import pt.isep.sem4pi.domain.model.flight.fuel.FuelUnit;
+import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanSegmentDTO;
 import pt.isep.sem4pi.domain.model.flight.route.Route;
 import pt.isep.sem4pi.domain.model.flight.route.RouteID;
+import pt.isep.sem4pi.domain.model.flight.segment.AltitudeSlots;
+import pt.isep.sem4pi.domain.model.flight.segment.Segment;
+import pt.isep.sem4pi.domain.model.flight.segment.Speed;
+import pt.isep.sem4pi.domain.model.flight.segment.WindAngle;
 import pt.isep.sem4pi.domain.model.pilot.Pilot;
 import pt.isep.sem4pi.domain.model.pilot.PilotId;
 import pt.isep.sem4pi.domain.model.route.FlightRoute;
@@ -30,6 +35,7 @@ import pt.isep.sem4pi.domain.repositories.FlightRepository;
 import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
 import pt.isep.sem4pi.domain.repositories.PilotRepository;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -79,7 +85,7 @@ public class CreateFlightPlanService {
 
         final Aircraft aircraft = findAircraftInCompanyFleet(
                 companyCode,
-                flight.aircraftRegistration().value()
+                resolveAircraftRegistration(dto, flight)
         );
         if (aircraft.isRetired()) {
             throw new IllegalArgumentException("Cannot assign a retired aircraft to a flight plan.");
@@ -99,6 +105,15 @@ public class CreateFlightPlanService {
         );
 
         return flightPlanRepository.save(flightPlan);
+    }
+
+    public FlightPlan createFlightPlanFromDsl(final CreateFlightPlanDTO dto, final Path dslSourcePath) {
+        final FlightPlan flightPlan = createFlightPlan(dto);
+        if (dslSourcePath != null) {
+            flightPlan.updateDslSourcePath(dslSourcePath.toAbsolutePath().normalize().toString());
+            return flightPlanRepository.save(flightPlan);
+        }
+        return flightPlan;
     }
 
     public Iterable<FlightRoute> listRoutes() {
@@ -191,11 +206,47 @@ public class CreateFlightPlanService {
                     parseFuelUnit(legDto.getFuelUnit())
             );
             final Route planRoute = new Route(new RouteID(routeLegIndex), routeWaypoints);
+            final List<Segment> segments = buildSegments(legDto.getSegments());
 
-            legs.add(new FlightLeg(departure, arrival, List.of(), fuel));
+            legs.add(new FlightLeg(departure, arrival, segments, fuel));
             routeLegIndex++;
         }
         return legs;
+    }
+
+    private List<Segment> buildSegments(final List<CreateFlightPlanSegmentDTO> segmentDtos) {
+        if (segmentDtos == null || segmentDtos.isEmpty()) {
+            return List.of();
+        }
+
+        final List<Segment> segments = new ArrayList<>();
+        for (final CreateFlightPlanSegmentDTO segmentDto : segmentDtos) {
+            final List<AltitudeSlots> altitudeSlots = segmentDto.getAltitudeSlots().stream()
+                    .map(slot -> new AltitudeSlots(slot.getMinimumAltitude(), slot.getMaximumAltitude()))
+                    .toList();
+            segments.add(new Segment(
+                    new Coordinates(segmentDto.getStartLatitude(), segmentDto.getStartLongitude()),
+                    new Coordinates(segmentDto.getEndLatitude(), segmentDto.getEndLongitude()),
+                    altitudeSlots,
+                    new WindAngle(segmentDto.getWindAngle()),
+                    new Speed(segmentDto.getSpeed())
+            ));
+        }
+        return segments;
+    }
+
+    private String resolveAircraftRegistration(final CreateFlightPlanDTO dto, final Flight flight) {
+        final String fromDto = dto.getAircraftRegistration();
+        if (fromDto != null && !fromDto.trim().isEmpty()) {
+            final String registration = fromDto.trim();
+            if (!registration.equalsIgnoreCase(flight.aircraftRegistration().value())) {
+                throw new IllegalArgumentException(
+                        "Aircraft registration in file does not match the flight's assigned aircraft."
+                );
+            }
+            return registration;
+        }
+        return flight.aircraftRegistration().value();
     }
 
     private List<Coordinates> routeWaypoints(final FlightRoute route) {

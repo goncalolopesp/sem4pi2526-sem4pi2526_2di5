@@ -30,4 +30,12 @@ public class AltitudeSlots implements ValueObject, Serializable {
         this.maximumHeight = maximumHeight;
     }
 
+    public int minimumHeight() {
+        return minimumHeight;
+    }
+
+    public int maximumHeight() {
+        return maximumHeight;
+    }
+
 }

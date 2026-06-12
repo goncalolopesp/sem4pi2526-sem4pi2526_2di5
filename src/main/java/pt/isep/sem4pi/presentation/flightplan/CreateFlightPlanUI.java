@@ -123,7 +123,8 @@ public class CreateFlightPlanUI extends AbstractUI {
                 selectedRoute.destinationAirport().code(),
                 arrHour, arrMinute, arrSecond,
                 fuelQty,
-                fuelUnit
+                fuelUnit,
+                null
         );
 
         final CreateFlightPlanDTO dto = new CreateFlightPlanDTO(

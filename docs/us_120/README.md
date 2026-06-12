@@ -30,9 +30,10 @@ Validation is split into two strict phases. If the first phase fails, the second
     - Catches unrecognized characters.
     - Detects structural failures (e.g., missing braces, misspelled keywords).
 
-2. **Semantic Validation (`US120SemanticVisitor`)**
-    - Traverses the successfully built Parse Tree.
-    - Validates domain-specific business rules.
+2. **Semantic Validation (`US120SemanticListener` + `US120SemanticVisitor`)**
+    - Both traverse the successfully built parse tree.
+    - The listener validates leg/segment/route coherence (consecutive legs, temporal order, repeated airports, coordinate continuity, route coverage).
+    - The visitor validates field-level business rules (dates, times, fuel, altitudes, speeds, coordinates).
 
 ## Implemented Semantic Rules
 

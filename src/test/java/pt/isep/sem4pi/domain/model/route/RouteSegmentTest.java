@@ -73,6 +73,17 @@ public class RouteSegmentTest {
     }
 
     @Test
+    public void ensureAllowedAltitudesAreStoredFromConstructor() {
+        final List<AltitudeRange> altitudes = validAltitudes();
+        final RouteSegment segment = new RouteSegment(
+                validStartCoords(), validEndCoords(), altitudes, 500, validWind());
+
+        assertEquals(1, segment.allowedAltitudes().size());
+        assertEquals(Integer.valueOf(1000), segment.allowedAltitudes().get(0).minAltitude());
+        assertEquals(Integer.valueOf(5000), segment.allowedAltitudes().get(0).maxAltitude());
+    }
+
+    @Test
     public void ensureRouteSegmentWithMultipleAltitudesIsCreated() {
         List<AltitudeRange> altitudes = Arrays.asList(
                 new AltitudeRange(1000, 3000, 50.0),

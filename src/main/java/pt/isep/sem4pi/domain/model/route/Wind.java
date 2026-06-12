@@ -55,4 +55,8 @@ public class Wind implements ValueObject {
         this.directionAngle = directionAngle;
         this.speed = speed;
     }
+
+    public int directionAngle() {
+        return directionAngle;
+    }
 }

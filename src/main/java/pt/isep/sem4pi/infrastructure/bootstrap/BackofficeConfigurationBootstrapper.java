@@ -88,6 +88,8 @@ public class BackofficeConfigurationBootstrapper {
 
         registerAirControlArea("LIS_FIR", 36.0, 42.0, -10.0, -6.0, "Lisbon FIR", 1000.0);
         registerAirControlArea("MAD_FIR", 35.0, 43.0, -5.0, 0.0, "Madrid FIR", 1200.0);
+        registerAirControlArea("JFK_FIR", 35.0, 45.0, -80.0, -70.0, "New York FIR", 1500.0);
+        registerAirControlArea("UK_FIR", 49.0, 53.0, -6.0, 2.0, "UK FIR", 1100.0);
 
         CustomerCollaboratorBootstrapper ccb = new CustomerCollaboratorBootstrapper();
         ccb.execute();
