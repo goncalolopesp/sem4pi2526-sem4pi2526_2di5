@@ -5,10 +5,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightStatus;
+import pt.isep.sem4pi.domain.model.simulation.FlightExecutionSummary;
+import pt.isep.sem4pi.domain.model.simulation.ReportFilePath;
 import pt.isep.sem4pi.domain.model.simulation.SimulatedFlightInput;
 import pt.isep.sem4pi.domain.model.simulation.Simulation;
 import pt.isep.sem4pi.domain.model.simulation.SimulationReport;
 import pt.isep.sem4pi.domain.model.simulation.SimulationStatus;
+import pt.isep.sem4pi.domain.model.simulation.SimulationValidationResult;
 import pt.isep.sem4pi.domain.repositories.FlightRepository;
 import pt.isep.sem4pi.domain.repositories.SimulationReportRepository;
 import pt.isep.sem4pi.domain.repositories.SimulationRepository;
@@ -50,13 +53,24 @@ public class MonthlyStatisticsDataCollectorTest {
         Files.writeString(reportFile,
                 "=== US102 Safety Violations (10 shown / 14 total) ===");
         final SimulationReport juneReport = new SimulationReport(
-                "REP-1", "SIM-1", 2, "PASS",
+                "REP-1", "SIM-1",
                 LocalDateTime.of(2026, 6, 3, 11, 0),
-                reportFile.toString());
+                new ReportFilePath(reportFile.toString()),
+                List.of(
+                        new FlightExecutionSummary("FLIGHT-1", "FINISHED"),
+                        new FlightExecutionSummary("FLIGHT-2", "FINISHED")),
+                List.of(),
+                SimulationValidationResult.PASS);
         final SimulationReport mayReport = new SimulationReport(
-                "REP-2", "SIM-2", 3, "PASS",
+                "REP-2", "SIM-2",
                 LocalDateTime.of(2026, 5, 30, 11, 0),
-                reportFile.toString());
+                new ReportFilePath(reportFile.toString()),
+                List.of(
+                        new FlightExecutionSummary("FLIGHT-3", "FINISHED"),
+                        new FlightExecutionSummary("FLIGHT-4", "FINISHED"),
+                        new FlightExecutionSummary("FLIGHT-5", "FINISHED")),
+                List.of(),
+                SimulationValidationResult.PASS);
         final var reportRepository = mock(SimulationReportRepository.class);
         when(reportRepository.findAll()).thenReturn(List.of(juneReport, mayReport));
 

@@ -252,30 +252,54 @@ Weather data is imported in batches, and consistency must be ensured within each
 
 **Aggregate Root:** Simulation
 
-**Entities:**
+**Value Objects:**
 
-* SimulatedFlight
-* SafetyViolation
+* SimulatedFlightInput
+
+**Justification:**
+Simulation represents the request and lifecycle of a simulation executed by
+the external SCOMP component. It keeps the selected flight-plan identifiers,
+area, time interval, safety parameters and execution status.
+
+The detailed flight evolution, position tracking and safety detection remain
+inside SCOMP. The Java aggregate therefore stays small and does not duplicate
+the simulation engine state.
+
+**Invariant Examples:**
+
+* A simulation must contain valid execution parameters.
+* Only a created simulation may start.
+* Only a running simulation may finish.
+
+---
+
+### 3.14 SimulationReport Aggregate
+
+**Aggregate Root:** SimulationReport
 
 **Value Objects:**
 
-* Position
-* SimulationReport
+* FlightExecutionSummary
+* SafetyViolationSummary
+* ReportFilePath
+* SimulationValidationResult
 
 **Justification:**
-Simulation is a highly cohesive process involving:
+SimulationReport has its own identity, generation timestamp, file location and
+repository lifecycle. It summarizes the final SCOMP/US109 result for EAPLI and
+supports US111 without reproducing the simulation algorithm.
 
-* Multiple flights
-* Real-time state updates
-* Safety validation
+Flight and violation summaries have no independent identity or lifecycle. They
+are immutable descriptive values owned by the report.
 
-Given the requirement for **parallel and distributed simulation**, this aggregate encapsulates execution state while referencing external data (FlightPlan, Weather, etc.).
+**Invariant Examples:**
 
-**Invariant Example:**
-
-* Simulation must track all flights consistently per time step.
-* Safety violations must be recorded when detected (US102).
-* Report must reflect final simulation outcome (US109).
+* The total number of flights equals the number of flight summaries.
+* A SCOMP failure produces `FAIL`.
+* Any unfinished flight produces `FAIL`.
+* Any safety violation produces `FAIL`.
+* `PASS` requires a successful SCOMP result, all flights finished and no safety
+  violations.
 
 ---
 

@@ -57,7 +57,7 @@ package "Simulation Integration" {
     +status: SimulationStatus
   }
 
-  class SimulatedFlightInput <<Entity>> {
+  class SimulatedFlightInput <<ValueObject>> {
     +flightPlanId: FlightPlanId
   }
 
@@ -65,16 +65,30 @@ package "Simulation Integration" {
     +reportId: ReportId
     +simulationId: SimulationId
     +totalFlights: Integer
-    +finalValidationResult: String
+    +finalValidationResult: SimulationValidationResult
     +generatedAt: DateTime
-    +fileLocation: String
+    +fileLocation: ReportFilePath
   }
 
-  class SimulationIssue <<Entity>> {
-    +issueId: IssueId
-    +timestamp: DateTime
-    +severity: String
-    +description: String
+  class FlightExecutionSummary <<ValueObject>> {
+    +flightId: String
+    +executionStatus: String
+  }
+
+  class SafetyViolationSummary <<ValueObject>> {
+    +timestamp: Integer
+    +type: String
+    +position: String
+    +details: String
+  }
+
+  class ReportFilePath <<ValueObject>> {
+    +value: String
+  }
+
+  enum SimulationValidationResult {
+    PASS
+    FAIL
   }
 
   enum SimulationStatus {
@@ -93,10 +107,13 @@ WeatherImportBatch --> User : imported by >
 WeatherData --> AirControlArea : area >
 
 Simulation "1" *-- "1..*" SimulatedFlightInput
-SimulationReport "1" *-- "0..*" SimulationIssue
+SimulationReport "1" *-- "0..*" FlightExecutionSummary
+SimulationReport "1" *-- "0..*" SafetyViolationSummary
+SimulationReport "1" *-- "1" ReportFilePath
 
 Simulation --> AirControlArea : simulated area >
 SimulatedFlightInput --> FlightPlan : input >
 SimulationReport --> Simulation : result of >
+SimulationReport --> SimulationValidationResult : validation result >
 
 @enduml
