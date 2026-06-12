@@ -258,6 +258,7 @@ public final class WeatherClientHandler implements Runnable {
 
         send(out, WeatherProtocol.OK + " Weather data registered for area " + areaId + " on " + date
                 + " (" + startTime + " - " + endTime + ").");
+        logRemoteAccess(currentUsername(), RemoteAccessEventType.REGISTER_WEATHER_DATA);
     }
 
     private void handleImport(final String line, final BufferedWriter out) throws IOException {
@@ -349,6 +350,7 @@ public final class WeatherClientHandler implements Runnable {
             for (final String error : errors) {
                 send(out, error);
             }
+            logRemoteAccess(currentUsername(), RemoteAccessEventType.IMPORT_WEATHER_DATA);
         } finally {
             deleteQuietly(tempFile);
             deleteQuietly(tempDir);
@@ -376,6 +378,7 @@ public final class WeatherClientHandler implements Runnable {
 
         if (results.isEmpty()) {
             send(out, WeatherProtocol.OK + " 0 " + WeatherProtocol.NO_DATA);
+            logRemoteAccess(currentUsername(), RemoteAccessEventType.CONSULT_WEATHER_DATA);
             return;
         }
 
@@ -392,6 +395,7 @@ public final class WeatherClientHandler implements Runnable {
                     String.valueOf(dto.getHumidityPercentage()),
                     String.valueOf(dto.getAltitudeMeters())));
         }
+        logRemoteAccess(currentUsername(), RemoteAccessEventType.CONSULT_WEATHER_DATA);
     }
 
     private WeatherImportResultDTO runImportWithKeepalive(
