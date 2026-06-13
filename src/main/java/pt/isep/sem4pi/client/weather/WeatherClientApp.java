@@ -207,7 +207,10 @@ public final class WeatherClientApp {
         final boolean consultant = isWeatherConsultant();
         final boolean collaborator = isAirTransportCollaborator();
 
+        boolean hasOperations = false;
+
         if (manager || consultant) {
+            hasOperations = true;
             System.out.println("--- Weather Data ---");
             if (manager) {
                 System.out.println("1. Register weather data (US041)");
@@ -216,12 +219,14 @@ public final class WeatherClientApp {
             if (consultant) {
                 System.out.println("3. Consult weather data (US043)");
             }
+        }
             if (collaborator) {
+                hasOperations = true;
                 System.out.println("--- Air Transport Company ---");
                 System.out.println("4. Collaborator operations");
                 System.out.println("5. Pilot operations (Not implemented)");
             }
-        } else {
+            if (hasOperations) {
             System.out.println("(No remote operations available for your role.)");
         }
         System.out.println("9. Logout");
