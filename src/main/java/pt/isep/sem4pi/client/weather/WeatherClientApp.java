@@ -37,6 +37,7 @@ public final class WeatherClientApp {
     private static final String ROLE_WEATHER_PERSON = "WEATHER_PERSON";
     private static final String ROLE_PILOT = "PILOT";
     private static final String ROLE_FLIGHT_CONTROL_OPERATOR = "FLIGHT_CONTROL_OPERATOR";
+    private static final String ROLE_AIR_TRANSPORT_COMPANY_COLLABORATOR = "AIR_TRANSPORT_COMPANY_COLLABORATOR";
 
     private final BufferedReader in;
     private final BufferedWriter out;
@@ -137,6 +138,10 @@ public final class WeatherClientApp {
                 || roles.contains(ROLE_FLIGHT_CONTROL_OPERATOR);
     }
 
+    private boolean isAirTransportCollaborator() {
+        return roles.contains(ROLE_AIR_TRANSPORT_COMPANY_COLLABORATOR);
+    }
+
     private boolean sessionMenu() throws IOException {
         while (true) {
             printMenu();
@@ -162,6 +167,21 @@ public final class WeatherClientApp {
                 }
                 continue;
             }
+            if (isAirTransportCollaborator()) {
+
+                switch (option) {
+
+                    case "4" -> {
+                        collaboratorMenu();
+                        continue;
+                    }
+
+                    case "5" -> {
+                        System.out.println("Pilot remote operations are not implemented.");
+                        continue;
+                    }
+                }
+            }
 
             switch (option) {
                 case "9" -> {
@@ -185,6 +205,8 @@ public final class WeatherClientApp {
         System.out.println("=== Remote Access [" + username + "] ===");
         final boolean manager = isWeatherManager();
         final boolean consultant = isWeatherConsultant();
+        final boolean collaborator = isAirTransportCollaborator();
+
         if (manager || consultant) {
             System.out.println("--- Weather Data ---");
             if (manager) {
@@ -193,6 +215,11 @@ public final class WeatherClientApp {
             }
             if (consultant) {
                 System.out.println("3. Consult weather data (US043)");
+            }
+            if (collaborator) {
+                System.out.println("--- Air Transport Company ---");
+                System.out.println("4. Collaborator operations");
+                System.out.println("5. Pilot operations (Not implemented)");
             }
         } else {
             System.out.println("(No remote operations available for your role.)");
@@ -417,5 +444,32 @@ public final class WeatherClientApp {
             chunks.add(base64.substring(i, Math.min(i + chunkSize, base64.length())));
         }
         return chunks;
+    }
+    private void collaboratorMenu() {
+
+        while (true) {
+            System.out.println();
+            System.out.println("=== Collaborator Operations ===");
+            System.out.println("1. Remote collaborator access");
+            System.out.println("0. Back");
+            System.out.print("Option: ");
+
+            final String option = console.nextLine().trim();
+            switch (option) {
+                case "1" -> {
+                    try {
+                        sendLine("COLLABORATOR");
+                        final String response = readLine();
+                        System.out.println(response);
+                    } catch (final IOException e) {
+                        handleCommunicationError(e);
+                    }
+                }
+                case "0" -> {
+                    return;
+                }
+                default -> System.out.println("Invalid option.");
+            }
+        }
     }
 }

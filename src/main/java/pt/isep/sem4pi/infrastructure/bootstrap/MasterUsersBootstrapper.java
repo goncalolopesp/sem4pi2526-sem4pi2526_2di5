@@ -22,6 +22,7 @@ public class MasterUsersBootstrapper {
         registerBackoffice(users, backofficeUsers);
         registerWeatherPerson(users, backofficeUsers);
         registerPilot(users);
+        registerAirTransportCollaborator(users);
 
 //        DEBUG
 //        System.out.println("BOOTSTRAP USERS:");
@@ -119,6 +120,22 @@ public class MasterUsersBootstrapper {
                     .withName("Pilot", "User")
                     .withEmail("pilot@example.org")
                     .withRoles(SEM4PIRoles.PILOT);
+
+            users.save(builder.build());
+        }
+    }
+
+    private void registerAirTransportCollaborator(final UserRepository users) {
+
+        if (users.ofIdentity(
+                eapli.framework.infrastructure.authz.domain.model.Username
+                        .valueOf("atccollaborator")).isEmpty()) {
+            final SystemUserBuilder builder = UserBuilderHelper.builder();
+            builder.withUsername("atccollaborator")
+                    .withPassword("Password1")
+                    .withName("ATC", "Collaborator")
+                    .withEmail("atccollaborator@example.org")
+                    .withRoles(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR);
 
             users.save(builder.build());
         }

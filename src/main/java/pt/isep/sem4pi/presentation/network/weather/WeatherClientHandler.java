@@ -90,7 +90,7 @@ public final class WeatherClientHandler implements Runnable {
                 final String trimmed = line.trim();
                 if (pendingImport != null) {
                     WeatherServerLog.log("<< " + remote + " IMPORT_CHUNK "
-                            + pendingImport.getReceivedChunks() + 1 + "/"
+                            + (pendingImport.getReceivedChunks() + 1) + "/"
                             + pendingImport.getExpectedChunks());
                     receiveImportChunk(trimmed, out);
                     continue;
@@ -145,6 +145,9 @@ public final class WeatherClientHandler implements Runnable {
                     return true;
                 case WeatherProtocol.CMD_CONSULT:
                     handleConsult(line, out);
+                    return true;
+                case "COLLABORATOR":
+                    handleCollaborator(out);
                     return true;
                 case WeatherProtocol.CMD_QUIT:
                     send(out, WeatherProtocol.OK + " Bye.");
@@ -355,6 +358,21 @@ public final class WeatherClientHandler implements Runnable {
         }
     }
 
+    private void handleCollaborator(final BufferedWriter out) throws IOException {
+        ensureAuthenticated();
+        final boolean authorized = runAuthenticated(() -> {
+            final AuthorizationService authz = AuthzRegistry.authorizationService();
+            return authz.isAuthenticatedUserAuthorizedTo(
+                    SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR);
+        });
+        if (!authorized) {
+            send(out, WeatherProtocol.ERR + " Access denied.");
+            return;
+        }
+        send(out, WeatherProtocol.OK
+                + " Air Transport Company Collaborator access granted.");
+    }
+
     private void handleConsult(final String line, final BufferedWriter out) throws IOException {
         ensureAuthenticated();
         final String[] p = line.split("\\s+");
@@ -458,6 +476,7 @@ public final class WeatherClientHandler implements Runnable {
         send(out, "  IMPORT_BEGIN <fileName> <fileType|-> <chunkCount>  (+ base64 chunk lines)");
         send(out, "  IMPORT <fileName> <fileType|-> <base64Content>  (legacy, small files)");
         send(out, "  CONSULT <areaId> <yyyy-MM-dd>");
+        send(out, "  COLLABORATOR");
         send(out, "  LOGOUT | QUIT | HELP");
     }
 
