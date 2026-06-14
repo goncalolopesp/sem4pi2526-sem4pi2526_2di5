@@ -34,32 +34,27 @@ seguinte.
 
 | US | Abordagem seguida | Estado |
 |---|---|---|
-| US100 | Um processo por voo com `fork()`. Cada filho carrega o plano, simula o movimento e comunica com o pai. O arranque usa `SIGUSR2`. | Implementada |
-| US101 | Cada filho envia `PositionUpdate` por pipe. O pai usa `poll()` e guarda a posicao atual e o historico no `PositionTracker`. | Implementada |
-| US102 | Sao verificadas altitude minima e separacao horizontal/vertical. As ocorrencias ficam no `SafetyLog` e os voos envolvidos recebem `SIGUSR1`. | Implementada |
-| US103 | O pai funciona como relogio global e apenas processa um novo timestep depois dos updates esperados no passo atual. | Implementada |
+| US100 | Um processo por voo com `fork()`. Cada filho carrega o plano, simula o movimento e comunica com o pai. O arranque usa `SIGUSR2`. | Herdada do sprint anterior |
+| US101 | Cada filho envia `PositionUpdate` por pipe. O pai usa `poll()` e guarda a posicao atual e o historico no `PositionTracker`. | Herdada do sprint anterior |
+| US102 | Sao verificadas altitude minima e separacao horizontal/vertical. As ocorrencias ficam no `SafetyLog` e os voos envolvidos recebem `SIGUSR1`. | Herdada do sprint anterior |
+| US103 | O pai funciona como relogio global e apenas processa um novo timestep depois dos updates esperados no passo atual. | Herdada do sprint anterior |
 | US104 | Nao existe uma US104 atribuida ao modulo SCOMP neste incremento. | Nao aplicavel |
 | US105 | O estado atual dos voos e publicado em memoria partilhada POSIX, protegido por mecanismos process-shared. | Implementada |
 | US106 | O pai cria uma thread de seguranca e uma thread de relatorio, coordenadas por mutexes e condition variables locais. | Implementada |
 | US107 | A thread de seguranca sinaliza `violation_cond`; a thread de relatorio consome os novos eventos e escreve-os em tempo real. | Implementada |
 | US108 | Cada filho bloqueia em `sem_wait(step_start[i])` e o pai liberta o passo seguinte com `sem_post()`. | Implementada |
-| US109 | No fim e gerado um relatorio com configuracao, voos, historico, violacoes e resultado global `PASS`/`FAIL`. | Implementada |
+| US109 | A implementacao e a documentacao existentes foram desenvolvidas no sprint anterior. Nao houve implementacao desta US no Sprint 3. | Nao realizada no Sprint 3 |
+| US110 | Nao foi implementada neste sprint. | Nao implementada |
 
-## Implementado e limitacoes
+## Estado da implementacao
 
 Foi implementada com sucesso a execucao concorrente de varios voos, comunicacao
 por pipes, sinais POSIX, memoria partilhada, semaforos, threads especializadas,
-sincronizacao passo a passo, detecao de violacoes, termino por threshold e
-relatorios final e em tempo real.
+sincronizacao passo a passo e detecao de violacoes correspondentes as
+US105-US108.
 
-Limitacoes conhecidas:
-
-- o modelo de movimento e uma aproximacao, nao uma simulacao aerodinamica;
-- o parser suporta a estrutura dos planos fornecidos, nao JSON arbitrario;
-- a meteorologia e aplicada de forma simplificada;
-- os limites `MAX_FLIGHTS`, `MAX_TRACKED_FLIGHTS` e `MAX_VIOLATIONS` sao fixos;
-- a comparacao de separacao entre voos tem complexidade quadratica;
-- a execucao requer um ambiente POSIX, tendo sido preparada para Linux/AntiX.
+A US109 presente no repositorio pertence ao sprint anterior e nao foi
+desenvolvida no Sprint 3. A US110, nao foi implementada.
 
 ## Compilacao, execucao e testes
 
@@ -78,10 +73,6 @@ make
 
 make test
 ```
-
-O relatorio final e escrito no caminho de `--output`. Quando esse caminho
-termina em `.txt`, o log em tempo real usa o mesmo nome com
-`_violations.log`; caso contrario, usa `simulation_violations.log`.
 
 Os testes cobrem tracking, seguranca, memoria partilhada, sincronizacao por
 semaforos, coordenacao das threads e cenarios completos com um ou varios voos,
