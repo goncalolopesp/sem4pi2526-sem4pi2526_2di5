@@ -26,6 +26,18 @@ import java.util.Set;
 import pt.isep.sem4pi.presentation.network.weather.WeatherDataFileResolver;
 import pt.isep.sem4pi.presentation.network.weather.WeatherProtocol;
 
+import pt.isep.sem4pi.application.controller.aircraft.AddAircraftController;
+import pt.isep.sem4pi.application.controller.aircraft.RetireAircraftController;
+import pt.isep.sem4pi.application.controller.airtransportcompany.ListCompanyFleetController;
+import pt.isep.sem4pi.application.controller.route.CreateFlightRouteController;
+import pt.isep.sem4pi.application.controller.route.DeactivateFlightRouteController;
+
+import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
+import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.route.DTO.FlightRouteDTO;
+
+import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
+
 public final class WeatherClientApp {
 
     private static final String DEFAULT_HOST = "127.0.0.1";
@@ -139,7 +151,8 @@ public final class WeatherClientApp {
     }
 
     private boolean isAirTransportCollaborator() {
-        return roles.contains(ROLE_AIR_TRANSPORT_COMPANY_COLLABORATOR);
+        return roles.contains(ROLE_AIR_TRANSPORT_COMPANY_COLLABORATOR)
+                || roles.contains(ROLE_ADMIN);
     }
 
     private boolean sessionMenu() throws IOException {
@@ -172,12 +185,42 @@ public final class WeatherClientApp {
                 switch (option) {
 
                     case "4" -> {
-                        collaboratorMenu();
+                        addAircraft();
                         continue;
                     }
 
                     case "5" -> {
-                        System.out.println("Pilot remote operations are not implemented.");
+                        retireAircraft();
+                        continue;
+                    }
+
+                    case "6" -> {
+                        listFleet();
+                        continue;
+                    }
+
+                    case "7" -> {
+                        createFlightRoute();
+                        continue;
+                    }
+
+                    case "8" -> {
+                        deactivateFlightRoute();
+                        continue;
+                    }
+
+                    case "11" -> {
+                        System.out.println("US075 not implemented.");
+                        continue;
+                    }
+
+                    case "12" -> {
+                        System.out.println("US076 not implemented.");
+                        continue;
+                    }
+
+                    case "13" -> {
+                        System.out.println("US077 not implemented.");
                         continue;
                     }
                 }
@@ -220,13 +263,23 @@ public final class WeatherClientApp {
                 System.out.println("3. Consult weather data (US043)");
             }
         }
-            if (collaborator) {
-                hasOperations = true;
-                System.out.println("--- Air Transport Company ---");
-                System.out.println("4. Collaborator operations");
-                System.out.println("5. Pilot operations (Not implemented)");
-            }
-            if (hasOperations) {
+        if (collaborator) {
+
+            hasOperations = true;
+
+            System.out.println("--- Air Transport Company ---");
+            System.out.println("4. Add aircraft (US070)");
+            System.out.println("5. Retire aircraft (US071)");
+            System.out.println("6. List fleet (US072)");
+            System.out.println("7. Create flight route (US073)");
+            System.out.println("8. Deactivate flight route (US074)");
+
+            System.out.println("11. Add pilot (US075) (Not implemented)");
+            System.out.println("12. List pilot roster (US076) (Not implemented)");
+            System.out.println("13. Remove pilot (US077) (Not implemented)");
+        }
+
+        if (!hasOperations) {
             System.out.println("(No remote operations available for your role.)");
         }
         System.out.println("9. Logout");
@@ -450,31 +503,145 @@ public final class WeatherClientApp {
         }
         return chunks;
     }
-    private void collaboratorMenu() {
 
-        while (true) {
-            System.out.println();
-            System.out.println("=== Collaborator Operations ===");
-            System.out.println("1. Remote collaborator access");
-            System.out.println("0. Back");
-            System.out.print("Option: ");
+    private void addAircraft() {
+        try {
 
-            final String option = console.nextLine().trim();
-            switch (option) {
-                case "1" -> {
-                    try {
-                        sendLine("COLLABORATOR");
-                        final String response = readLine();
-                        System.out.println(response);
-                    } catch (final IOException e) {
-                        handleCommunicationError(e);
-                    }
-                }
-                case "0" -> {
-                    return;
-                }
-                default -> System.out.println("Invalid option.");
+            System.out.print("Company IATA: ");
+            String company = console.nextLine();
+
+            System.out.print("Registration: ");
+            String reg = console.nextLine();
+
+            System.out.print("Manufacturer: ");
+            String manufacturer = console.nextLine();
+
+            System.out.print("Model: ");
+            String model = console.nextLine();
+
+            System.out.print("Country: ");
+            String country = console.nextLine();
+
+            System.out.print("Economy seats: ");
+            int e = Integer.parseInt(console.nextLine());
+
+            System.out.print("Business seats: ");
+            int b = Integer.parseInt(console.nextLine());
+
+            System.out.print("First seats: ");
+            int f = Integer.parseInt(console.nextLine());
+
+            AddAircraftController controller =
+                    new AddAircraftController(
+                            PersistenceContext.repositories().airTransportCompanies(),
+                            PersistenceContext.repositories().aircraftModels()
+                    );
+
+            controller.addAircraft(company, reg, manufacturer, model, country, e, b, f);
+
+            System.out.println("Aircraft added successfully.");
+
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
+        }
+    }
+
+    private void retireAircraft() {
+        try {
+            System.out.print("Aircraft registration: ");
+            String reg = console.nextLine();
+
+            RetireAircraftController controller =
+                    new RetireAircraftController();
+
+            controller.retireAircraft(
+                    new AircraftRegistration(reg)
+            );
+
+            System.out.println("Aircraft retired successfully.");
+
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
+        }
+    }
+
+    private void listFleet() {
+
+        try {
+            ListCompanyFleetController controller =
+                    new ListCompanyFleetController();
+
+            Iterable<Aircraft> fleet =
+                    controller.listMyCompanyFleet(
+                            ListCompanyFleetController.FleetSortOption.REGISTRATION
+                    );
+
+            System.out.println("=== Fleet ===");
+
+            for (Aircraft a : fleet) {
+                System.out.println(a);
             }
+
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
+        }
+    }
+
+    private void createFlightRoute() {
+
+        try {
+            System.out.print("Route ID: ");
+            String routeId = console.nextLine();
+
+            System.out.print("Company IATA: ");
+            String company = console.nextLine();
+
+            System.out.print("Origin airport: ");
+            String origin = console.nextLine();
+
+            System.out.print("Destination airport: ");
+            String destination = console.nextLine();
+
+            FlightRouteDTO dto = new FlightRouteDTO();
+
+            dto.setRouteID(routeId);
+            dto.setCompanyCode(company);
+            dto.setOriginAirport(origin);
+            dto.setDestinationAirport(destination);
+
+            CreateFlightRouteController controller =
+                    new CreateFlightRouteController();
+
+            controller.createFlightRoute(dto);
+
+            System.out.println("Flight route created successfully.");
+
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
+        }
+    }
+
+    private void deactivateFlightRoute() {
+
+        try {
+            System.out.print("Route ID: ");
+            String routeId = console.nextLine();
+
+            System.out.print("Deactivation date (yyyy-mm-dd): ");
+            String date = console.nextLine();
+
+            DeactivateFlightRouteController controller =
+                    new DeactivateFlightRouteController();
+
+            controller.deactivateRoute(
+                    routeId,
+                    LocalDate.parse(date)
+            );
+
+            System.out.println("Route deactivated successfully.");
+
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
         }
     }
 }
