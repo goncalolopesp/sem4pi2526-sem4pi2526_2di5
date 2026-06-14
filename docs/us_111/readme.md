@@ -38,6 +38,10 @@ qualquer outro caso, o resultado é `FAIL`.
 
 ## 3. Desenho
 
+### 3.1 Diagramas
+
+- [SSD](ssd.puml)
+
 O `SimulationJobService` preserva o fluxo assíncrono existente:
 
 1. carrega a simulação e marca-a como em execução;

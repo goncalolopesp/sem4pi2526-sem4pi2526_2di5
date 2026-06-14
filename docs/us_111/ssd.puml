@@ -1,0 +1,16 @@
+@startuml
+title US111 - SSD - Consultar relatório de simulação
+
+actor "Operador de Controlo de Voo" as FCO
+participant "Sistema AIControl" as System
+
+FCO -> System : consultarRelatorio(simulationId)
+System -> System : autenticar e autorizar
+System -> System : obter relatório da simulação
+
+alt relatório disponível
+    System --> FCO : total, estados, violações e PASS/FAIL
+else simulação em execução ou relatório inexistente
+    System --> FCO : informação de indisponibilidade
+end
+@enduml

@@ -16,7 +16,6 @@ import pt.isep.sem4pi.domain.repositories.FlightRepository;
 import pt.isep.sem4pi.domain.repositories.SimulationReportRepository;
 import pt.isep.sem4pi.domain.repositories.SimulationRepository;
 
-import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -49,13 +48,10 @@ public class MonthlyStatisticsDataCollectorTest {
         when(simulationRepository.findAll()).thenReturn(
                 List.of(juneSimulation, maySimulation));
 
-        final var reportFile = temporaryFolder.newFile("simulation-report.txt").toPath();
-        Files.writeString(reportFile,
-                "=== US102 Safety Violations (10 shown / 14 total) ===");
         final SimulationReport juneReport = new SimulationReport(
                 "REP-1", "SIM-1",
                 LocalDateTime.of(2026, 6, 3, 11, 0),
-                new ReportFilePath(reportFile.toString()),
+                new ReportFilePath("june-report.txt"),
                 List.of(
                         new FlightExecutionSummary("FLIGHT-1", "FINISHED"),
                         new FlightExecutionSummary("FLIGHT-2", "FINISHED")),
@@ -64,7 +60,7 @@ public class MonthlyStatisticsDataCollectorTest {
         final SimulationReport mayReport = new SimulationReport(
                 "REP-2", "SIM-2",
                 LocalDateTime.of(2026, 5, 30, 11, 0),
-                new ReportFilePath(reportFile.toString()),
+                new ReportFilePath("may-report.txt"),
                 List.of(
                         new FlightExecutionSummary("FLIGHT-3", "FINISHED"),
                         new FlightExecutionSummary("FLIGHT-4", "FINISHED"),
@@ -84,7 +80,8 @@ public class MonthlyStatisticsDataCollectorTest {
         when(flightRepository.findAll()).thenReturn(List.of(juneFlight, julyFlight));
 
         final MonthlyStatisticsData data = new MonthlyStatisticsDataCollector(
-                simulationRepository, reportRepository, flightRepository)
+                simulationRepository, reportRepository, flightRepository,
+                report -> 14)
                 .collect(YearMonth.of(2026, 6));
 
         assertEquals(1, data.simulations());
@@ -107,7 +104,8 @@ public class MonthlyStatisticsDataCollectorTest {
         when(flightRepository.findAll()).thenReturn(List.of());
 
         final MonthlyStatisticsData data = new MonthlyStatisticsDataCollector(
-                simulationRepository, reportRepository, flightRepository)
+                simulationRepository, reportRepository, flightRepository,
+                report -> 0)
                 .collect(YearMonth.of(2026, 6));
 
         assertEquals(0, data.simulations());

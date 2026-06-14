@@ -31,6 +31,13 @@ public class MonthlyStatisticsReportBuilder {
                     data.flightsByStatus().getOrDefault(status, 0L)));
         }
 
+        final List<ReportSection.Entry> chartEntries = new ArrayList<>();
+        chartEntries.add(of("Simulations", bar(data.simulations())));
+        chartEntries.add(of("Simulation reports", bar(data.simulationReports())));
+        chartEntries.add(of("Reported flights", bar(data.reportedFlights())));
+        chartEntries.add(of("Safety violations", bar(data.safetyViolations())));
+        chartEntries.add(of("Scheduled flights", bar(data.scheduledFlights())));
+
         return new MonthlyStatisticsReport(period, generatedAt, List.of(
                 new ReportSection("Simulation Statistics", simulationEntries),
                 ReportSection.of("Simulation Report Statistics",
@@ -39,8 +46,12 @@ public class MonthlyStatisticsReportBuilder {
                 ReportSection.of("Safety Statistics",
                         of("Safety violations reported", data.safetyViolations())),
                 new ReportSection("Flight Data Statistics", flightEntries),
-                ReportSection.of("Rendering Notice",
-                        of("Graphics", "Not available in the console; textual summaries are used."))
+                new ReportSection("Monthly Overview Chart", chartEntries)
         ));
+    }
+
+    private String bar(final int value) {
+        final int visibleUnits = Math.min(Math.max(value, 0), 40);
+        return "#".repeat(visibleUnits) + " (" + value + ")";
     }
 }

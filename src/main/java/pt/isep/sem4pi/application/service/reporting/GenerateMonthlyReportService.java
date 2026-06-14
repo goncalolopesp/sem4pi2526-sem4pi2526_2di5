@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.application.service.reporting;
 
 import eapli.framework.domain.repositories.TransactionalContext;
+import pt.isep.sem4pi.application.viadto.GeneratedReportDTO;
 import pt.isep.sem4pi.domain.model.reporting.ReportMetadata;
 import pt.isep.sem4pi.domain.repositories.ReportMetadataRepository;
 import pt.isep.sem4pi.infrastructure.persistence.RepositoryFactory;

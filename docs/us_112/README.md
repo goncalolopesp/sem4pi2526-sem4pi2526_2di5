@@ -27,6 +27,11 @@ A implementação segue as camadas EAPLI:
    estrutura do relatório e o agregado de metadados persistidos.
 5. **Repositórios** - `ReportMetadataRepository` possui implementações JPA e em
    memória, obtidas através de `RepositoryFactory`.
+6. **Infraestrutura** - `MonthlyReportServiceFactory` compõe as dependências
+   concretas e `SimulationReportFileViolationReader` lê os ficheiros SCOMP.
+
+O controlador autoriza exclusivamente o papel
+`FLIGHT_CONTROL_OPERATOR`, conforme definido no enunciado.
 
 Os metadados são guardados dentro de um `TransactionalContext` explícito. Se a
 persistência falhar, o ficheiro gerado é eliminado, evitando que o sistema de
@@ -49,6 +54,10 @@ Não são estimados nem inventados valores. Se um relatório antigo ou
 indisponível não contiver um total de violações legível, contribui com zero
 violações.
 
+A leitura física do ficheiro não pertence ao coletor. É delegada através de
+`SafetyViolationTotalReader` à implementação de infraestrutura
+`SimulationReportFileViolationReader`.
+
 ### Estrutura do Relatório
 
 `MonthlyStatisticsReportBuilder` converte `MonthlyStatisticsData` num
@@ -61,7 +70,15 @@ separados. Não acede a repositórios nem escreve ficheiros.
 formato atual, compatível com a consola, incluindo cabeçalho AIControl, título,
 período, instante de geração e organização consistente das secções.
 
-## 4. Extensão da Estrutura
+O relatório inclui ainda a secção `Monthly Overview Chart`, com barras
+textuais. Esta representação concretiza os gráficos pedidos sem acoplar a
+aplicação de consola a uma biblioteca gráfica.
+
+## 4. Diagramas
+
+- [SSD](ssd.puml)
+
+## 5. Extensão da Estrutura
 
 Para adicionar outro tipo de relatório, por exemplo de conformidade ou de
 incidentes:
@@ -75,7 +92,7 @@ Para adicionar um formato, basta implementar `ReportRenderer` e injetá-lo no
 serviço de aplicação. A recolha mensal e a construção das secções permanecem
 inalteradas.
 
-## 5. Saída e Compatibilidade
+## 6. Saída e Compatibilidade
 
 Os ficheiros são colocados em `reports/` e usam nomes com marca temporal. O
 interpretador dos relatórios de simulação e os ficheiros da US111 não são
@@ -83,7 +100,7 @@ alterados. A US112 apenas lê `Total flights`, os metadados de geração, o
 resultado da validação e o total de violações da US102 já disponibilizado pela
 US111.
 
-## 6. Testes
+## 7. Testes
 
 Os testes automatizados cobrem:
 
