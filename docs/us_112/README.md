@@ -1,90 +1,95 @@
-# US112 - Monthly Report Generation
+# US112 - Gerar Relatório Mensal
 
-## 1. Purpose
+## 1. Objetivo
 
-US112 generates a monthly statistics report from data already stored by
-AIControl. The report is exported as a text file and its metadata is persisted
-for later consultation.
+A US112 gera um relatório estatístico mensal a partir dos dados já armazenados
+pelo AIControl. O relatório é exportado para um ficheiro de texto e os seus
+metadados são persistidos para consulta posterior.
 
-The console application has no graphical reporting library. Therefore, the
-current renderer uses branded text sections and aligned summaries. The
-rendering contract allows a future graphical, HTML, PDF, or chart renderer to
-be added without changing monthly data collection.
+A aplicação de consola não possui uma biblioteca gráfica de relatórios. O
+renderizador atual utiliza secções de texto identificadas com a marca do
+projeto e resumos alinhados. O contrato de renderização permite adicionar
+futuramente formatos gráficos, HTML, PDF ou com gráficos, sem alterar a recolha
+dos dados mensais.
 
-## 2. Architecture
+## 2. Arquitetura
 
-The implementation follows the EAPLI layers:
+A implementação segue as camadas EAPLI:
 
-1. **Presentation** - `GenerateMonthlyReportUI` reads the month and displays a
+1. **Apresentação** - `GenerateMonthlyReportUI` lê o mês e apresenta um
    `GeneratedReportDTO`.
-2. **Controller** - `GenerateMonthlyReportController` checks authorization and
-   invokes the application service.
-3. **Application** - `GenerateMonthlyReportService` coordinates collection,
-   report construction, rendering, file storage, and metadata persistence.
-4. **Domain** - `Report`, `ReportSection`, and `ReportMetadata` define the
-   report structure and persisted metadata aggregate.
-5. **Repositories** - `ReportMetadataRepository` has JPA and in-memory
-   implementations obtained through `RepositoryFactory`.
+2. **Controlador** - `GenerateMonthlyReportController` verifica a autorização
+   e invoca o serviço de aplicação.
+3. **Aplicação** - `GenerateMonthlyReportService` coordena a recolha, construção
+   e renderização do relatório, o armazenamento do ficheiro e a persistência
+   dos metadados.
+4. **Domínio** - `Report`, `ReportSection` e `ReportMetadata` definem a
+   estrutura do relatório e o agregado de metadados persistidos.
+5. **Repositórios** - `ReportMetadataRepository` possui implementações JPA e em
+   memória, obtidas através de `RepositoryFactory`.
 
-Metadata is saved inside an explicit `TransactionalContext`. If metadata
-persistence fails, the generated file is deleted so that the file system and
-database do not present a successful report inconsistently.
+Os metadados são guardados dentro de um `TransactionalContext` explícito. Se a
+persistência falhar, o ficheiro gerado é eliminado, evitando que o sistema de
+ficheiros e a base de dados apresentem resultados contraditórios.
 
-## 3. Separation of Responsibilities
+## 3. Separação de Responsabilidades
 
-### Data Collection
+### Recolha de Dados
 
-`ReportDataCollector<T>` is independent from presentation and export.
-`MonthlyStatisticsDataCollector` reads:
+`ReportDataCollector<T>` é independente da apresentação e da exportação.
+`MonthlyStatisticsDataCollector` lê:
 
-- simulations whose `startTime` belongs to the selected month;
-- simulation reports whose `generatedAt` belongs to the selected month;
-- safety violation totals already present in those US111-compatible report
-  files;
-- flights whose `departureDate` belongs to the selected month.
+- simulações cujo `startTime` pertence ao mês selecionado;
+- relatórios de simulação cujo `generatedAt` pertence ao mês selecionado;
+- totais de violações de segurança presentes nos ficheiros compatíveis com a
+  US111;
+- voos cuja `departureDate` pertence ao mês selecionado.
 
-No values are estimated or invented. If an old or unavailable simulation
-report file has no readable violation total, it contributes zero violations.
+Não são estimados nem inventados valores. Se um relatório antigo ou
+indisponível não contiver um total de violações legível, contribui com zero
+violações.
 
-### Report Structure
+### Estrutura do Relatório
 
-`MonthlyStatisticsReportBuilder` converts `MonthlyStatisticsData` into a
-`MonthlyStatisticsReport` containing clearly separated `ReportSection`
-objects. It does not access repositories or write files.
+`MonthlyStatisticsReportBuilder` converte `MonthlyStatisticsData` num
+`MonthlyStatisticsReport` composto por objetos `ReportSection` claramente
+separados. Não acede a repositórios nem escreve ficheiros.
 
-### Rendering
+### Renderização
 
-`ReportRenderer` exports any `Report`. `TextReportRenderer` provides the
-current console-compatible format and consistent AIControl heading,
-title, period, generation timestamp, and section layout.
+`ReportRenderer` exporta qualquer `Report`. `TextReportRenderer` fornece o
+formato atual, compatível com a consola, incluindo cabeçalho AIControl, título,
+período, instante de geração e organização consistente das secções.
 
-## 4. Extending the Framework
+## 4. Extensão da Estrutura
 
-To add another report type, such as compliance or incident reporting:
+Para adicionar outro tipo de relatório, por exemplo de conformidade ou de
+incidentes:
 
-1. Create its data object and a `ReportDataCollector` implementation.
-2. Create a `Report` subtype or builder that defines its sections.
-3. Reuse an existing renderer.
-4. Add only its controller/application composition.
+1. criar o objeto de dados e uma implementação de `ReportDataCollector`;
+2. criar um subtipo ou construtor de `Report` que defina as secções;
+3. reutilizar um renderizador existente;
+4. adicionar apenas a composição do respetivo controlador e serviço.
 
-To add a new format, implement `ReportRenderer` and inject it into the
-application service. Monthly collection and section-building code remain
-unchanged.
+Para adicionar um formato, basta implementar `ReportRenderer` e injetá-lo no
+serviço de aplicação. A recolha mensal e a construção das secções permanecem
+inalteradas.
 
-## 5. Output and Compatibility
+## 5. Saída e Compatibilidade
 
-Generated files are placed in `reports/` and use a timestamped name. The
-simulation report parser and US111 report files are not modified. US112 only
-reads the existing `Total flights`, generation metadata, validation result,
-and US102 safety violation total already made available through US111.
+Os ficheiros são colocados em `reports/` e usam nomes com marca temporal. O
+interpretador dos relatórios de simulação e os ficheiros da US111 não são
+alterados. A US112 apenas lê `Total flights`, os metadados de geração, o
+resultado da validação e o total de violações da US102 já disponibilizado pela
+US111.
 
-## 6. Tests
+## 6. Testes
 
-The automated tests cover:
+Os testes automatizados cobrem:
 
-- report generation with data;
-- report generation without data;
-- text file creation and content;
-- transactional metadata persistence;
-- safety violation extraction from existing simulation report files;
-- extensibility through a second renderer implementation.
+- geração de relatório com dados;
+- geração de relatório sem dados;
+- criação e conteúdo do ficheiro de texto;
+- persistência transacional dos metadados;
+- extração das violações dos relatórios de simulação existentes;
+- extensibilidade através de uma segunda implementação de renderizador.
