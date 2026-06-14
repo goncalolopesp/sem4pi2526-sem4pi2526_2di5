@@ -99,6 +99,33 @@ package "Simulation Integration" {
   }
 }
 
+package "Reporting" {
+
+  abstract class Report {
+    +type: String
+    +title: String
+    +period: YearMonth
+    +generatedAt: DateTime
+  }
+
+  class MonthlyStatisticsReport {
+  }
+
+  class ReportSection <<ValueObject>> {
+    +title: String
+  }
+
+  class ReportMetadata <<AggregateRoot>> {
+    +reportId: String
+    +reportType: String
+    +title: String
+    +period: YearMonth
+    +generatedAt: DateTime
+    +format: String
+    +fileLocation: String
+  }
+}
+
 WeatherImportBatch "1" *-- "0..*" ImportedWeatherRecord
 ImportedWeatherRecord --> WeatherData : imported data >
 
@@ -115,5 +142,9 @@ Simulation --> AirControlArea : simulated area >
 SimulatedFlightInput --> FlightPlan : input >
 SimulationReport --> Simulation : result of >
 SimulationReport --> SimulationValidationResult : validation result >
+
+MonthlyStatisticsReport --|> Report
+Report "1" *-- "1..*" ReportSection
+ReportMetadata ..> Report : describes generated report >
 
 @enduml

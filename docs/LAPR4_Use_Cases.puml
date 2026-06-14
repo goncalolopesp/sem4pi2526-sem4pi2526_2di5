@@ -22,13 +22,17 @@ actor "Weather Person" as WP
   package "Air Companies Configuration" as acConfig {
     usecase "Create aircraft" as UC21
     usecase "Create flight route" as UC22
-    usecase "Manage pilots" as UC23
+    usecase "Manage pilots\n(US075-US077 not implemented)" as UC23
+    usecase "Remote company access" as UC78
   }
 
   package "Flight Management" as flightMng {
     usecase "Register flight plan" as UC41
     usecase "Test flight plan" as UC42
     usecase "Simulate air control" as UC43
+    usecase "Generate simulation report" as UC111
+    usecase "Generate monthly report" as UC112
+    usecase "Remote pilot access" as UC86
   }
 
   package "Weather Service" as wService {
@@ -48,11 +52,15 @@ BO --> UC07
 ATCC --> UC21
 ATCC --> UC22
 ATCC --> UC23
+ATCC --> UC78
 Pilot --> UC41
 Pilot --> UC42
 Pilot --> UC32
+Pilot --> UC86
 FCO --> UC42
 FCO --> UC43
+FCO --> UC111
+FCO --> UC112
 WP --> UC30
 WP --> UC31
 FCO --> UC32

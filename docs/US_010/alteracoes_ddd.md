@@ -224,6 +224,23 @@ agregado.
 
 ---
 
+### 2.14. Estrutura comum de relatórios para a US112
+
+Foi criado um contexto de reporting com:
+
+* `Report`, que define tipo, título, período, data de geração e secções;
+* `ReportSection`, que agrupa os valores apresentados;
+* `MonthlyStatisticsReport`, que representa o relatório mensal;
+* `ReportMetadata`, agregado persistido com o identificador, formato e
+  localização do ficheiro.
+
+**Porquê:**
+A US112 prevê outros tipos de relatório no futuro. A estrutura comum permite
+reutilizar a recolha, organização e renderização sem acoplar o domínio a um
+formato específico.
+
+---
+
 ## 3. Papel de cada agregado
 
 ### `User`
@@ -305,6 +322,11 @@ Representa o resumo final persistido de uma simulação. Mantém os estados fina
 dos voos, as violações de segurança, a localização do ficheiro e o resultado
 global de validação.
 
+### `ReportMetadata`
+
+Representa os metadados persistidos de um relatório gerado, incluindo o tipo,
+período, formato, instante de geração e localização do ficheiro.
+
 ---
 
 ## 4. Principais diferenças face ao DDD antigo
@@ -322,6 +344,8 @@ Comparando com o modelo antigo, as mudanças mais relevantes foram:
 * a parte da simulação foi simplificada no core Java;
 * `SimulationReport` deixou de ser VO;
 * a US111 especializou o report com resumos de execução, violações, caminho do
-  ficheiro e resultado de validação.
+  ficheiro e resultado de validação;
+* a US112 introduziu uma estrutura comum de relatórios e o agregado
+  `ReportMetadata`.
 
 ---
