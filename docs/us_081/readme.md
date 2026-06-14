@@ -6,7 +6,7 @@
 
 This User Story validates and imports flight plans from files using ANTLR4.
 
-The solution reuses the Core Flight DSL defined in US083.
+The solution reuses the Core Flight DSL defined in US120 (`src/main/antlr4/US120.g4`).
 
 ---
 
@@ -16,6 +16,7 @@ The solution reuses the Core Flight DSL defined in US083.
 - Syntactic validation
 - Semantic validation
 - Error reporting
+- Mapping of aircraft, pilot, route, legs and segments into the domain model
 
 ---
 
@@ -30,6 +31,6 @@ To run this User Story, you need:
 
 ## Files
 
-- US081.g4
-- exampleValid.md
-- exampleInvalid.md
+- `US81.g4` (documentation reference aligned with `US120.g4`)
+- `exampleValid.md`
+- `exampleInvalid.md`

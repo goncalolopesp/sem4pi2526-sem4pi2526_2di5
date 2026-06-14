@@ -25,4 +25,12 @@ public class Fuel implements ValueObject, Serializable {
         this.fuelCapacity = fuelCapacity;
         this.fuelUnit = fuelUnit;
     }
+
+    public FuelCapacity capacity() {
+        return fuelCapacity;
+    }
+
+    public FuelUnit unit() {
+        return fuelUnit;
+    }
 }

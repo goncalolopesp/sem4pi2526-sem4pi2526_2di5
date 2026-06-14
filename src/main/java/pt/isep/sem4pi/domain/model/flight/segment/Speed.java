@@ -23,4 +23,8 @@ public class Speed implements ValueObject, Serializable {
 
     }
 
+    public double value() {
+        return mps;
+    }
+
 }

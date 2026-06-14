@@ -42,4 +42,16 @@ public class Time implements ValueObject, Serializable {
         this.minute = minute;
         this.second = second;
     }
+
+    public int hour() {
+        return hour;
+    }
+
+    public int minute() {
+        return minute;
+    }
+
+    public int second() {
+        return second;
+    }
 }

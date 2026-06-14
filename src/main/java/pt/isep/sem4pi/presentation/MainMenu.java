@@ -20,8 +20,10 @@ import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.*;
 import pt.isep.sem4pi.presentation.authz.ListUsersAction;
 import pt.isep.sem4pi.presentation.flightplan.CreateFlightPlanAction;
+import pt.isep.sem4pi.presentation.flightplan.ImportFlightPlanAction;
 import pt.isep.sem4pi.presentation.flightplan.ListFlightPlansAction;
 import pt.isep.sem4pi.presentation.flightplan.AssociateWeatherDataAction;
+import pt.isep.sem4pi.presentation.flightplan.TestFlightPlanAction;
 import pt.isep.sem4pi.presentation.route.CreateFlightRouteAction;
 import pt.isep.sem4pi.presentation.route.DeactivateFlightRouteAction;
 import pt.isep.sem4pi.presentation.usermanagement.ManageBackofficeUserStatusUI;
@@ -32,6 +34,8 @@ import pt.isep.sem4pi.presentation.weatherdata.ImportWeatherDataUI;
 import pt.isep.sem4pi.presentation.weatherdata.ConsultWeatherDataUI;
 import pt.isep.sem4pi.presentation.simulation.RunAreaSimulationAction;
 import pt.isep.sem4pi.presentation.simulation.CheckSimulationStatusUI;
+import pt.isep.sem4pi.presentation.simulation.ViewSimulationReportUI;
+import pt.isep.sem4pi.presentation.reporting.GenerateMonthlyReportUI;
 import pt.isep.sem4pi.presentation.us120.ValidateFlightPlanUI;
 
 /**
@@ -80,6 +84,8 @@ public class MainMenu extends AbstractUI {
     //Simulation
     private static final int RUN_SIMULATION_OPTION = 1;
     private static final int CHECK_SIMULATION_STATUS_OPTION = 2;
+    private static final int VIEW_SIMULATION_REPORT_OPTION = 3;
+    private static final int GENERATE_MONTHLY_REPORT_OPTION = 4;
 
     // MAIN MENU
     private static final int MY_USER_OPTION = 1;
@@ -95,7 +101,9 @@ public class MainMenu extends AbstractUI {
 
     private static final int CREATE_FLIGHT_PLAN_OPTION = 1;
     private static final int LIST_FLIGHT_PLANS_OPTION = 2;
-    private static final int ASSOCIATE_WEATHER_DATA_OPTION = 3;
+    private static final int IMPORT_FLIGHT_PLAN_OPTION = 3;
+    private static final int ASSOCIATE_WEATHER_DATA_OPTION = 4;
+    private static final int TEST_FLIGHT_PLAN_OPTION = 5;
 
     private static final String SEPARATOR_LABEL = "--------------";
 
@@ -170,6 +178,11 @@ public class MainMenu extends AbstractUI {
                             SEM4PIRoles.PILOT,
                             SEM4PIRoles.ADMIN);
 
+            final boolean isFlightControlOperator =
+                    authz.isAuthenticatedUserAuthorizedTo(
+                            SEM4PIRoles.FLIGHT_CONTROL_OPERATOR,
+                            SEM4PIRoles.ADMIN);
+
             if (isAdmin) {
                 final var adminMenu = buildAdminMenu();
                 mainMenu.addSubMenu(ADMIN_OPTION, adminMenu);
@@ -181,11 +194,14 @@ public class MainMenu extends AbstractUI {
                 mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
                 mainMenu.addSubMenu(AIRPORT_OPTIONS, buildAirportMenu());
                 mainMenu.addSubMenu(AIR_CONTROL_AREA_OPTIONS, buildAirControlAreaMenu());
+            } else if (isAtcc) {
+                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
+            }
+
+            if (isFlightControlOperator) {
                 mainMenu.addSubMenu(
                         SIMULATION_OPTIONS,
                         buildSimulationMenu());
-            } else if (isAtcc) {
-                mainMenu.addSubMenu(AIR_TRANSPORT_COMPANY_OPTIONS, buildAirTransportCompanyMenu());
             }
 
             if (isWeatherManager || isWeatherConsultant) {
@@ -272,8 +288,10 @@ public class MainMenu extends AbstractUI {
         final var menu = new Menu("Flight Planning >");
         menu.addItem(CREATE_FLIGHT_PLAN_OPTION, "Create flight plan", new CreateFlightPlanAction());
         menu.addItem(LIST_FLIGHT_PLANS_OPTION, "List flight plans", new ListFlightPlansAction());
+        menu.addItem(IMPORT_FLIGHT_PLAN_OPTION, "Import flight plan from file", new ImportFlightPlanAction());
         menu.addItem(ASSOCIATE_WEATHER_DATA_OPTION, "Add weather data to flight plan",
                 new AssociateWeatherDataAction());
+        menu.addItem(TEST_FLIGHT_PLAN_OPTION, "Test / validate flight plan", new TestFlightPlanAction());
         menu.addItem(EXIT_OPTION, RETURN_LABEL, Actions.SUCCESS);
         return menu;
     }
@@ -306,6 +324,16 @@ public class MainMenu extends AbstractUI {
                 CHECK_SIMULATION_STATUS_OPTION,
                 "Check Simulation Status",
                 new CheckSimulationStatusUI()::show);
+
+        menu.addItem(
+                VIEW_SIMULATION_REPORT_OPTION,
+                "View Simulation Report",
+                new ViewSimulationReportUI()::show);
+
+        menu.addItem(
+                GENERATE_MONTHLY_REPORT_OPTION,
+                "Generate Monthly Statistics Report",
+                new GenerateMonthlyReportUI()::show);
 
         menu.addItem(
                 EXIT_OPTION,

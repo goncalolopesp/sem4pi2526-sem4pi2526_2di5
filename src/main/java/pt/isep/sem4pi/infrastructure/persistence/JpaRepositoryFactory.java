@@ -90,7 +90,7 @@ public class JpaRepositoryFactory implements RepositoryFactory {
 
     @Override
     public SimulationRepository simulations(final TransactionalContext tx) {
-        return new JpaSimulationRepository(PERSISTENCE_UNIT_NAME);
+        return new JpaSimulationRepository(tx);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class JpaRepositoryFactory implements RepositoryFactory {
 
     @Override
     public SimulationReportRepository simulationReports(final TransactionalContext tx) {
-        return new JpaSimulationReportRepository(PERSISTENCE_UNIT_NAME);
+        return new JpaSimulationReportRepository(tx);
     }
 
     @Override
@@ -134,5 +134,15 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     @Override
     public PilotRepository pilots(final TransactionalContext tx) {
         return new JpaPilotRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public ReportMetadataRepository reportMetadata() {
+        return new JpaReportMetadataRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public ReportMetadataRepository reportMetadata(final TransactionalContext tx) {
+        return new JpaReportMetadataRepository(tx);
     }
 }

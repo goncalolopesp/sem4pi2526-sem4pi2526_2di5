@@ -47,7 +47,7 @@ public class FlightRoute implements AggregateRoot<FlightRouteID> {
     private IataCodeAirport destinationAirport;
 
     /** The list of segments that compose this flight route */
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "route_id", nullable = false)
     private List<RouteSegment> segments = new ArrayList<>();
 
@@ -181,6 +181,13 @@ public class FlightRoute implements AggregateRoot<FlightRouteID> {
 
     public List<RouteSegment> segments() {
         return List.copyOf(segments);
+    }
+
+    public void replaceSegments(final List<RouteSegment> newSegments) {
+        Preconditions.nonNull(newSegments, "Segments cannot be null.");
+        Preconditions.nonEmpty(newSegments, "Segments cannot be empty.");
+        this.segments.clear();
+        this.segments.addAll(newSegments);
     }
 
     /**

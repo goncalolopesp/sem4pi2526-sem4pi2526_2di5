@@ -38,4 +38,24 @@ public class Segment implements ValueObject, Serializable {
         this.speed = speed;
     }
 
+    public Coordinates startCoordinates() {
+        return startCoordinates;
+    }
+
+    public Coordinates endCoordinates() {
+        return endCoordinates;
+    }
+
+    public List<AltitudeSlots> altitudeSlots() {
+        return altitudeSlots == null ? List.of() : List.copyOf(altitudeSlots);
+    }
+
+    public WindAngle windAngle() {
+        return windAngle;
+    }
+
+    public Speed speed() {
+        return speed;
+    }
+
 }

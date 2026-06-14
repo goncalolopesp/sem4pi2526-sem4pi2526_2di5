@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @DTO
 @Data
 @NoArgsConstructor
@@ -23,4 +25,5 @@ public class CreateFlightPlanLegDTO {
     private Integer arrivalSecond;
     private Double fuelQuantity;
     private String fuelUnit;
+    private List<CreateFlightPlanSegmentDTO> segments;
 }

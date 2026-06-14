@@ -12,8 +12,10 @@ import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
+import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanAltitudeSlotDTO;
 import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanDTO;
 import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanLegDTO;
+import pt.isep.sem4pi.domain.model.flight.DTO.CreateFlightPlanSegmentDTO;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
 import pt.isep.sem4pi.domain.model.flight.FlightPlan;
@@ -121,6 +123,40 @@ public class CreateFlightPlanServiceTest {
         final FlightPlan plan = service.createFlightPlan(validDto());
 
         assertEquals("CS-TST", plan.aircraft().identity().value());
+    }
+
+    @Test
+    public void ensureCreateFlightPlanUsesAircraftFromDtoWhenProvided() {
+        final CreateFlightPlanDTO dto = validDto();
+        dto.setAircraftRegistration("CS-TST");
+
+        final FlightPlan plan = service.createFlightPlan(dto);
+
+        assertEquals("CS-TST", plan.aircraft().identity().value());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureCreateFlightPlanRejectsMismatchedAircraftRegistration() {
+        final CreateFlightPlanDTO dto = validDto();
+        dto.setAircraftRegistration("CS-OTHER");
+
+        service.createFlightPlan(dto);
+    }
+
+    @Test
+    public void ensureCreateFlightPlanPreservesImportedSegments() {
+        final CreateFlightPlanDTO dto = validDto();
+        dto.getLegs().get(0).setSegments(List.of(
+                new CreateFlightPlanSegmentDTO(
+                        41.0, -8.0, 40.0, -3.0,
+                        List.of(new CreateFlightPlanAltitudeSlotDTO(8000, 10000)),
+                        90.0, 5.0
+                )
+        ));
+
+        final FlightPlan plan = service.createFlightPlan(dto);
+
+        assertEquals(1, plan.legs().get(0).segments().size());
     }
 
     @Test
@@ -250,7 +286,8 @@ public class CreateFlightPlanServiceTest {
                 "MAD",
                 11, 0, 0,
                 4200.0,
-                "KG"
+                "KG",
+                null
         );
         return new CreateFlightPlanDTO(
                 null,

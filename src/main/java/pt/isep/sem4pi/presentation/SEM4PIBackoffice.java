@@ -3,6 +3,7 @@ package pt.isep.sem4pi.presentation;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
 import pt.isep.sem4pi.infrastructure.bootstrap.MasterUsersBootstrapper;
+import pt.isep.sem4pi.infrastructure.bootstrap.ScompBuildBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airport.AirportBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.AirTransportCompanyBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.FlightRouteBootstrapper;
@@ -45,6 +46,7 @@ public final class SEM4PIBackoffice extends BaseApp {
         new FlightRouteBootstrapper().execute();
         new PilotBootstrapper().execute();
         new FlightPlanBootstrapper().execute();
+        new ScompBuildBootstrapper().execute();
 
         new SEM4PIBackoffice().run(args);
     }

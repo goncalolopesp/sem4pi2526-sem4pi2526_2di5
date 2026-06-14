@@ -27,4 +27,8 @@ public class WindAngle implements ValueObject, Serializable {
 
     }
 
+    public double angle() {
+        return angle;
+    }
+
 }

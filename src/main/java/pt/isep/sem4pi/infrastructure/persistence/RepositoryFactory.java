@@ -61,4 +61,12 @@ public interface RepositoryFactory {
     PilotRepository pilots();
 
     PilotRepository pilots(TransactionalContext tx);
+
+    default ReportMetadataRepository reportMetadata() {
+        throw new UnsupportedOperationException("Report metadata repository is not configured");
+    }
+
+    default ReportMetadataRepository reportMetadata(final TransactionalContext tx) {
+        return reportMetadata();
+    }
 }

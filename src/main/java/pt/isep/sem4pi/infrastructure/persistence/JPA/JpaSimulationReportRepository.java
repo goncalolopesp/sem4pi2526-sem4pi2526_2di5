@@ -1,5 +1,6 @@
 package pt.isep.sem4pi.infrastructure.persistence.JPA;
 
+import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
 import pt.isep.sem4pi.domain.model.simulation.SimulationReport;
 import pt.isep.sem4pi.domain.repositories.SimulationReportRepository;
@@ -14,6 +15,10 @@ public class JpaSimulationReportRepository
 
     public JpaSimulationReportRepository(final String persistenceUnitName) {
         super(persistenceUnitName, "reportId");
+    }
+
+    public JpaSimulationReportRepository(final TransactionalContext autoTx) {
+        super(autoTx, "reportId");
     }
 
     @Override

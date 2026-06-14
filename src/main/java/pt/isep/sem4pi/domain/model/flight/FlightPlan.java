@@ -29,7 +29,7 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
     @Column(nullable = false)
     private FlightType flightType;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "flight_plan_id", nullable = false)
     private List<FlightLeg> legs = new ArrayList<>();
 
@@ -56,6 +56,9 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
             inverseJoinColumns = @JoinColumn(name = "weather_data_id")
     )
     private List<WeatherData> weatherData = new ArrayList<>();
+
+    @Column(name = "dsl_source_path")
+    private String dslSourcePath;
 
     @Version
     private Long version;
@@ -127,6 +130,14 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
 
     public List<FlightLeg> legs() {
         return Collections.unmodifiableList(legs);
+    }
+
+    public String dslSourcePath() {
+        return dslSourcePath;
+    }
+
+    public void updateDslSourcePath(final String path) {
+        this.dslSourcePath = path;
     }
 
     public void validate(){

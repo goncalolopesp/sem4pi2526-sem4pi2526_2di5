@@ -69,4 +69,12 @@ public class AltitudeRange implements ValueObject {
         this.maxAltitude = maxAltitude;
         this.width = width;
     }
+
+    public Integer minAltitude() {
+        return minAltitude;
+    }
+
+    public Integer maxAltitude() {
+        return maxAltitude;
+    }
 }
