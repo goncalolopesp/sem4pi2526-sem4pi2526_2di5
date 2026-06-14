@@ -33,6 +33,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     private List<RemoteAccessService> availableServices = List.of();
     private RemoteAccessService selectedService;
     private WeatherRemoteHandler weatherHandler;
+    private PilotRemoteHandler pilotHandler;
 
     public RemoteAccessClientHandler(final Socket socket) {
         this.socket = socket;
@@ -64,6 +65,11 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                     weatherHandler.receiveImportChunk(trimmed, out);
                     continue;
                 }
+                if (pilotHandler != null && pilotHandler.hasPendingImport()) {
+                    RemoteAccessLog.log("<< " + remote + " PLAN_LINE");
+                    pilotHandler.receiveImportLine(trimmed, out);
+                    continue;
+                }
                 RemoteAccessLog.log("<< " + remote + " " + RemoteAccessLog.summarizeIncoming(trimmed));
                 final boolean keepGoing = dispatch(trimmed, out);
                 if (!keepGoing) {
@@ -93,6 +99,15 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                     return dispatchGlobal(line, command, out);
                 }
                 return weatherHandler.dispatch(line, out);
+            }
+            if (selectedService == RemoteAccessService.PILOT) {
+                if (RemoteAccessProtocol.CMD_BACK.equals(command)) {
+                    return handleBack(out);
+                }
+                if (isGlobalCommand(command)) {
+                    return dispatchGlobal(line, command, out);
+                }
+                return pilotHandler.dispatch(line, out);
             }
 
             return dispatchGlobal(line, command, out);
@@ -188,6 +203,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         this.availableServices = RemoteAccessServiceRegistry.availableServices(this.roles);
         this.selectedService = null;
         this.weatherHandler = null;
+        this.pilotHandler = null;
 
         send(out, RemoteAccessProtocol.OK + " " + user + " " + roleList);
         sendMenu(out);
@@ -212,7 +228,14 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
             RemoteAccessLog.log("User " + username + " left service " + selectedService.id());
         }
         selectedService = null;
+        if (weatherHandler != null) {
+            weatherHandler.clearPendingImport();
+        }
+        if (pilotHandler != null) {
+            pilotHandler.clearPendingImport();
+        }
         weatherHandler = null;
+        pilotHandler = null;
         send(out, RemoteAccessProtocol.OK + " Returned to service menu.");
         sendMenu(out);
         return true;
@@ -243,6 +266,10 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         selectedService = service;
         if (service == RemoteAccessService.WEATHER) {
             weatherHandler = new WeatherRemoteHandler(this);
+            pilotHandler = null;
+        } else if (service == RemoteAccessService.PILOT) {
+            pilotHandler = new PilotRemoteHandler(this);
+            weatherHandler = null;
         }
         send(out, RemoteAccessProtocol.OK + " Selected " + service.label()
                 + " (" + service.userStory() + "). Type HELP for commands.");
@@ -258,6 +285,10 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     private void sendHelp(final BufferedWriter out) throws IOException {
         if (selectedService == RemoteAccessService.WEATHER) {
             weatherHandler.sendHelp(out);
+            return;
+        }
+        if (selectedService == RemoteAccessService.PILOT) {
+            pilotHandler.sendHelp(out);
             return;
         }
         send(out, RemoteAccessProtocol.OK + " Available commands:");
@@ -287,6 +318,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         availableServices = List.of();
         selectedService = null;
         weatherHandler = null;
+        pilotHandler = null;
     }
 
     @Override
@@ -332,6 +364,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                 this.authenticated = false;
                 this.selectedService = null;
                 this.weatherHandler = null;
+                this.pilotHandler = null;
                 throw new SecurityException("Session expired or access revoked. Please LOGIN again.");
             }
             try {
@@ -390,8 +423,18 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                 user,
                 clientIp(),
                 clientPort(),
-                RemoteAccessService.WEATHER.userStory(),
+                resolveLoggingService(),
                 eventType);
+    }
+
+    private String resolveLoggingService() {
+        if (selectedService != null) {
+            return selectedService.userStory();
+        }
+        if (availableServices.size() == 1) {
+            return availableServices.get(0).userStory();
+        }
+        return RemoteAccessService.WEATHER.userStory();
     }
 
     private static void sendSafe(final BufferedWriter out, final String message) {

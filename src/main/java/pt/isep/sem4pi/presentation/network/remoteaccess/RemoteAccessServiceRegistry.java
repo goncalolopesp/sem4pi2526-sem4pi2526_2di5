@@ -20,6 +20,9 @@ public final class RemoteAccessServiceRegistry {
         if (hasAnyRole(roles, "ADMIN", "WEATHER_PERSON", "PILOT", "FLIGHT_CONTROL_OPERATOR")) {
             services.add(RemoteAccessService.WEATHER);
         }
+        if (hasAnyRole(roles, "ADMIN", "PILOT")) {
+            services.add(RemoteAccessService.PILOT);
+        }
         final List<RemoteAccessService> ordered = new ArrayList<>(services);
         return Collections.unmodifiableList(ordered);
     }
