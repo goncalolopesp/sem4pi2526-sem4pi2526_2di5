@@ -31,7 +31,8 @@ public class GenerateMonthlyReportController {
     public GeneratedReportDTO generate(final int year, final int month)
             throws IOException {
         authz.ensureAuthenticatedUserHasAnyOf(
-                SEM4PIRoles.FLIGHT_CONTROL_OPERATOR);
+                SEM4PIRoles.FLIGHT_CONTROL_OPERATOR,
+                SEM4PIRoles.ADMIN);
         return service.generate(YearMonth.of(year, month));
     }
 }
