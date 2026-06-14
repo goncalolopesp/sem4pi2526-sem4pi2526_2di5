@@ -34,6 +34,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     private RemoteAccessService selectedService;
     private WeatherRemoteHandler weatherHandler;
     private PilotRemoteHandler pilotHandler;
+    private AirTransportCompanyRemoteHandler airTransportHandler;
 
     public RemoteAccessClientHandler(final Socket socket) {
         this.socket = socket;
@@ -108,6 +109,15 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                     return dispatchGlobal(line, command, out);
                 }
                 return pilotHandler.dispatch(line, out);
+            }
+            if (selectedService == RemoteAccessService.ATCC) {
+                if (RemoteAccessProtocol.CMD_BACK.equals(command)) {
+                    return handleBack(out);
+                }
+                if (isGlobalCommand(command)) {
+                    return dispatchGlobal(line, command, out);
+                }
+                return airTransportHandler.dispatch(line, out);
             }
 
             return dispatchGlobal(line, command, out);
@@ -204,6 +214,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         this.selectedService = null;
         this.weatherHandler = null;
         this.pilotHandler = null;
+        this.airTransportHandler = null;
 
         send(out, RemoteAccessProtocol.OK + " " + user + " " + roleList);
         sendMenu(out);
@@ -236,6 +247,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         }
         weatherHandler = null;
         pilotHandler = null;
+        airTransportHandler = null;
         send(out, RemoteAccessProtocol.OK + " Returned to service menu.");
         sendMenu(out);
         return true;
@@ -270,6 +282,10 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         } else if (service == RemoteAccessService.PILOT) {
             pilotHandler = new PilotRemoteHandler(this);
             weatherHandler = null;
+            airTransportHandler = null;
+        } else if (service == RemoteAccessService.ATCC) {
+            airTransportHandler = new AirTransportCompanyRemoteHandler(this);
+            weatherHandler = null;
         }
         send(out, RemoteAccessProtocol.OK + " Selected " + service.label()
                 + " (" + service.userStory() + "). Type HELP for commands.");
@@ -289,6 +305,10 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         }
         if (selectedService == RemoteAccessService.PILOT) {
             pilotHandler.sendHelp(out);
+            return;
+        }
+        if (selectedService == RemoteAccessService.ATCC) {
+            airTransportHandler.sendHelp(out);
             return;
         }
         send(out, RemoteAccessProtocol.OK + " Available commands:");
@@ -319,6 +339,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         selectedService = null;
         weatherHandler = null;
         pilotHandler = null;
+        airTransportHandler = null;
     }
 
     @Override
@@ -365,6 +386,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                 this.selectedService = null;
                 this.weatherHandler = null;
                 this.pilotHandler = null;
+                this.airTransportHandler = null;
                 throw new SecurityException("Session expired or access revoked. Please LOGIN again.");
             }
             try {

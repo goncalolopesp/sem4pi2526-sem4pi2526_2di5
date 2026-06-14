@@ -25,7 +25,7 @@ public class InMemoryAirTransportCompanyCollaboratorRepository
 
     @Override
     public Optional<AirTransportCompanyCollaborator> findBySystemUser(SystemUser systemUser) {
-        return matchOne(e -> e.systemUser().equals(systemUser));
+        return matchOne(e -> e.systemUser().identity().equals(systemUser.identity()));
     }
 
     @Override

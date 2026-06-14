@@ -1,9 +1,12 @@
 package pt.isep.sem4pi.application.controller.route;
 
 import eapli.framework.application.UseCaseController;
+import eapli.framework.infrastructure.authz.application.AuthorizationService;
+import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import pt.isep.sem4pi.application.service.route.DeactivateFlightRouteService;
 import pt.isep.sem4pi.domain.model.route.FlightRoute;
 import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
+import pt.isep.sem4pi.domain.usermanagement.SEM4PIRoles;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 import java.time.LocalDate;
@@ -20,6 +23,9 @@ import java.time.LocalDate;
 @UseCaseController
 public class DeactivateFlightRouteController {
 
+    /** Authorization service for checking user permissions */
+    private final AuthorizationService authz;
+
     /** Service for deactivating flight routes */
     private final DeactivateFlightRouteService service;
 
@@ -31,6 +37,7 @@ public class DeactivateFlightRouteController {
      * from the persistence layer.
      */
     public DeactivateFlightRouteController() {
+        this.authz = AuthzRegistry.authorizationService();
         this.routeRepository = PersistenceContext.repositories().flightRoutes();
         this.service = new DeactivateFlightRouteService(
                 routeRepository,
@@ -46,6 +53,13 @@ public class DeactivateFlightRouteController {
      */
     public DeactivateFlightRouteController(DeactivateFlightRouteService service,
                                             FlightRouteRepository routeRepository) {
+        this(AuthzRegistry.authorizationService(), service, routeRepository);
+    }
+
+    public DeactivateFlightRouteController(AuthorizationService authz,
+                                           DeactivateFlightRouteService service,
+                                           FlightRouteRepository routeRepository) {
+        this.authz = authz;
         this.service = service;
         this.routeRepository = routeRepository;
     }
@@ -61,6 +75,10 @@ public class DeactivateFlightRouteController {
      * @throws IllegalStateException if there are planned flights after the deactivation date
      */
     public FlightRoute deactivateRoute(String routeId, LocalDate deactivationDate) {
+        authz.ensureAuthenticatedUserHasAnyOf(
+                SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR,
+                SEM4PIRoles.ADMIN
+        );
         return service.deactivateRoute(routeId, deactivationDate);
     }
 

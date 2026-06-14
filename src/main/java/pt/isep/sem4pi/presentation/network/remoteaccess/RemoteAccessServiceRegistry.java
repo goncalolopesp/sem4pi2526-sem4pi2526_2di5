@@ -23,6 +23,9 @@ public final class RemoteAccessServiceRegistry {
         if (hasAnyRole(roles, "ADMIN", "PILOT")) {
             services.add(RemoteAccessService.PILOT);
         }
+        if (hasAnyRole(roles, "ADMIN", "AIR_TRANSPORT_COMPANY_COLLABORATOR")) {
+            services.add(RemoteAccessService.ATCC);
+        }
         final List<RemoteAccessService> ordered = new ArrayList<>(services);
         return Collections.unmodifiableList(ordered);
     }

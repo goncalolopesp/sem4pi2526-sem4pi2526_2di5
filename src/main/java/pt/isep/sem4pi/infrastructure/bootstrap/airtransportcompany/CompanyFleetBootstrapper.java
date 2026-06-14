@@ -84,6 +84,8 @@ public class CompanyFleetBootstrapper implements Action {
                     }
                 }
 
+                linkCollaboratorIfPresent(collabRepo, tap, "atccollaborator");
+
                 System.out.println("Fleet and Collaborator successfully bootstrapped.");
                 return true;
             }
@@ -91,6 +93,20 @@ public class CompanyFleetBootstrapper implements Action {
         } catch (Exception e) {
             System.out.println("Failed to bootstrap fleet/collaborator: " + e.getMessage());
             return false;
+        }
+    }
+
+    private static void linkCollaboratorIfPresent(
+            final AirTransportCompanyCollaboratorRepository collabRepo,
+            final AirTransportCompany company,
+            final String usernameValue) {
+        final Username username = Username.valueOf(usernameValue);
+        if (AuthzRegistry.userService().userOfIdentity(username).isEmpty()) {
+            return;
+        }
+        final SystemUser user = AuthzRegistry.userService().userOfIdentity(username).get();
+        if (collabRepo.findBySystemUser(user).isEmpty()) {
+            collabRepo.save(new AirTransportCompanyCollaborator(user, company));
         }
     }
 }
