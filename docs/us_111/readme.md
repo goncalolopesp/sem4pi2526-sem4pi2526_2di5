@@ -1,108 +1,112 @@
-# US111 - Generate a Simulation Report
+# US111 - Gerar um Relatório de Simulação
 
-## 1. Requirements
+## 1. Requisitos
 
-As a Flight Control Operator, I want to receive a summary of the
-simulation results so that I can determine if the programmed flights are
-safe to run.
+Enquanto Operador de Controlo de Voo, pretendo receber um resumo dos resultados
+da simulação, para determinar se os voos programados podem ser realizados em
+segurança.
 
-Acceptance criteria:
+Critérios de aceitação:
 
-- generate the summary report and store it in a file;
-- include the total number of flights;
-- include each flight execution status;
-- list the timestamp and position of each safety violation;
-- indicate whether the scheduled flights plan passed or failed validation.
+- gerar o relatório de resumo e guardá-lo num ficheiro;
+- incluir o número total de voos;
+- incluir o estado de execução de cada voo;
+- listar o instante e a posição de cada violação de segurança;
+- indicar se o plano de voos programado passou ou falhou a validação.
 
-US111 depends on the simulation execution and data produced by US100,
-US102, US109 and US110. The Java application does not reproduce the SCOMP
-simulation or reporting algorithms. It reads the final US109 report after
-the asynchronous SCOMP execution completes.
+A US111 depende da execução da simulação e dos dados produzidos pelas US100,
+US102, US109 e US110. A aplicação Java não repete os algoritmos de simulação ou
+de geração de relatórios do SCOMP. Após a conclusão assíncrona da execução,
+limita-se a ler o relatório final da US109.
 
-## 2. Analysis
+## 2. Análise
 
-The SCOMP report is the source of the simulation facts. It already contains
-the total flights, final execution statuses, position history, safety
-violations and final validation result.
+O relatório do SCOMP é a fonte dos factos da simulação. Contém o total de voos,
+os estados finais de execução, o histórico de posições, as violações de
+segurança e o resultado final da validação.
 
-The EAPLI side parses those facts into:
+No lado EAPLI, estes dados são convertidos em:
 
 - `FlightExecutionSummary`;
 - `SafetyViolationSummary`;
 - `SimulationValidationResult`.
 
-`SimulationReport` is the aggregate root for the persisted US111 metadata.
-It owns the validation rule: the result is `PASS` only when SCOMP completed
-successfully, all flight executions finished, and no safety violations were
-reported. Otherwise, it is `FAIL`.
+`SimulationReport` é a raiz do agregado responsável pelos metadados persistidos
+da US111. O resultado só é `PASS` quando o SCOMP termina com sucesso, todos os
+voos terminam a execução e não são comunicadas violações de segurança. Em
+qualquer outro caso, o resultado é `FAIL`.
 
-## 3. Design
+## 3. Desenho
 
-`SimulationJobService` preserves the existing asynchronous flow:
+### 3.1 Diagramas
 
-1. load and mark the simulation as running;
-2. execute `scomp/flight_simulator`;
-3. parse the US109 report;
-4. build and export the US111 summary;
-5. persist the report and update the simulation status.
+- [SSD](ssd.puml)
 
-`GenerateSimulationSummaryReportService` coordinates the report use case.
-The UI accesses report information only through
-`CheckSimulationStatusController`. `SimulationSummaryReportDTO` prevents
-JPA/domain objects from leaking into the presentation layer.
+O `SimulationJobService` preserva o fluxo assíncrono existente:
 
-Flight Control Operators and administrators can use
-`Simulation > View Simulation Report` to consult the complete summary by
-simulation id. If the asynchronous execution has not finished yet, the UI
-informs the operator that the report is not available.
+1. carrega a simulação e marca-a como em execução;
+2. executa `scomp/flight_simulator`;
+3. interpreta o relatório da US109;
+4. constrói e exporta o resumo da US111;
+5. persiste o relatório e atualiza o estado da simulação.
 
-The human-readable files are stored under:
+O `GenerateSimulationSummaryReportService` coordena o caso de uso. A interface
+acede aos dados apenas através de `CheckSimulationStatusController`.
+`SimulationSummaryReportDTO` impede a exposição de objetos JPA ou de domínio à
+camada de apresentação.
+
+Os Operadores de Controlo de Voo e administradores podem usar
+`Simulation > View Simulation Report` para consultar o resumo completo através
+do identificador da simulação. Se a execução assíncrona ainda não tiver
+terminado, a interface informa que o relatório ainda não está disponível.
+
+Os ficheiros legíveis são guardados em:
 
 ```text
 reports/simulation/<simulation-id>-<yyyyMMdd-HHmmss-SSS>.txt
 ```
 
-The simulation id and generation timestamp prevent different executions
-from overwriting one another.
+O identificador e o instante de geração impedem que execuções diferentes
+substituam os ficheiros umas das outras.
 
-### Transaction
+### Transação
 
-The file is first written atomically through a temporary file. A
-`TransactionalContext` is then started and transaction-bound repository
-instances save both the `SimulationReport` and final `Simulation` status.
-The transaction commits only after both saves succeed.
+O ficheiro é primeiro escrito atomicamente através de um ficheiro temporário.
+Em seguida, é iniciado um `TransactionalContext`. Os repositórios associados à
+transação guardam o `SimulationReport` e o estado final de `Simulation`. A
+transação só é confirmada quando ambas as operações terminam com sucesso.
 
-On persistence failure, the transaction is rolled back and the exported
-file is deleted as a compensating action. An export failure occurs before
-the transaction and therefore leaves no report metadata in the database.
+Se a persistência falhar, a transação é revertida e o ficheiro exportado é
+eliminado como ação de compensação. Uma falha de exportação acontece antes da
+transação e, por isso, não deixa metadados de relatório na base de dados.
 
-## 4. Tests
+## 4. Testes
 
-Automated tests cover:
+Os testes automatizados verificam:
 
-- no violations produces `PASS`;
-- violations produce `FAIL`;
-- timestamps and positions are exported;
-- total flights and execution statuses are exported;
-- the summary file is created;
-- metadata is available through the report repository;
-- a persistence failure rolls back and removes the exported file;
-- a failure in the second aggregate save rolls back the report save;
-- an export failure does not start a database transaction;
-- the real JPA mapping persists and reloads report metadata and collections;
-- the parser accepts SCOMP separation violations and rejects incomplete
-  violation listings;
-- aborted or otherwise unfinished flights force `FAIL`.
+- ausência de violações produz `PASS`;
+- existência de violações produz `FAIL`;
+- exportação dos instantes e posições;
+- exportação do total de voos e dos estados de execução;
+- criação do ficheiro de resumo;
+- consulta dos metadados através do repositório;
+- reversão e remoção do ficheiro quando a persistência falha;
+- reversão da gravação do relatório quando falha o segundo agregado;
+- ausência de transação quando a exportação falha;
+- persistência e recarregamento dos metadados e coleções através de JPA;
+- aceitação das violações de separação do SCOMP e rejeição de listagens
+  incompletas;
+- resultado `FAIL` para voos abortados ou não concluídos.
 
-Run the focused tests with:
+Execução dos testes específicos:
 
 ```sh
 mvn "-Dtest=GenerateSimulationSummaryReportServiceTest,SimulationReportParserTest,SimulationReportTest,JpaSimulationReportMappingTest" test
 ```
 
-## 5. AntiX Execution
+## 5. Execução em AntiX
 
-Compile SCOMP before starting the Java application:
+O componente SCOMP deve ser compilado antes do arranque da aplicação Java:
 
 ```sh
 cd scomp
@@ -114,6 +118,6 @@ chmod +x scomp/flight_simulator
 ./run.sh
 ```
 
-The `sed` command is only needed when `run.sh` has Windows line endings.
-This flow keeps the existing EAPLI -> SCOMP -> EAPLI file integration and
-does not introduce an RCOMP dependency.
+O comando `sed` só é necessário quando `run.sh` contém terminações de linha do
+Windows. Este fluxo mantém a integração por ficheiros
+EAPLI -> SCOMP -> EAPLI e não introduz uma dependência de RCOMP.

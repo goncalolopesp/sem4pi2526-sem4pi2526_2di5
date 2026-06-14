@@ -33,6 +33,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     private List<RemoteAccessService> availableServices = List.of();
     private RemoteAccessService selectedService;
     private WeatherRemoteHandler weatherHandler;
+    private PilotRemoteHandler pilotHandler;
     private AirTransportCompanyRemoteHandler airTransportHandler;
 
     public RemoteAccessClientHandler(final Socket socket) {
@@ -65,6 +66,11 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                     weatherHandler.receiveImportChunk(trimmed, out);
                     continue;
                 }
+                if (pilotHandler != null && pilotHandler.hasPendingImport()) {
+                    RemoteAccessLog.log("<< " + remote + " PLAN_LINE");
+                    pilotHandler.receiveImportLine(trimmed, out);
+                    continue;
+                }
                 RemoteAccessLog.log("<< " + remote + " " + RemoteAccessLog.summarizeIncoming(trimmed));
                 final boolean keepGoing = dispatch(trimmed, out);
                 if (!keepGoing) {
@@ -94,6 +100,15 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                     return dispatchGlobal(line, command, out);
                 }
                 return weatherHandler.dispatch(line, out);
+            }
+            if (selectedService == RemoteAccessService.PILOT) {
+                if (RemoteAccessProtocol.CMD_BACK.equals(command)) {
+                    return handleBack(out);
+                }
+                if (isGlobalCommand(command)) {
+                    return dispatchGlobal(line, command, out);
+                }
+                return pilotHandler.dispatch(line, out);
             }
             if (selectedService == RemoteAccessService.ATCC) {
                 if (RemoteAccessProtocol.CMD_BACK.equals(command)) {
@@ -198,6 +213,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         this.availableServices = RemoteAccessServiceRegistry.availableServices(this.roles);
         this.selectedService = null;
         this.weatherHandler = null;
+        this.pilotHandler = null;
         this.airTransportHandler = null;
 
         send(out, RemoteAccessProtocol.OK + " " + user + " " + roleList);
@@ -223,7 +239,14 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
             RemoteAccessLog.log("User " + username + " left service " + selectedService.id());
         }
         selectedService = null;
+        if (weatherHandler != null) {
+            weatherHandler.clearPendingImport();
+        }
+        if (pilotHandler != null) {
+            pilotHandler.clearPendingImport();
+        }
         weatherHandler = null;
+        pilotHandler = null;
         airTransportHandler = null;
         send(out, RemoteAccessProtocol.OK + " Returned to service menu.");
         sendMenu(out);
@@ -255,6 +278,10 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         selectedService = service;
         if (service == RemoteAccessService.WEATHER) {
             weatherHandler = new WeatherRemoteHandler(this);
+            pilotHandler = null;
+        } else if (service == RemoteAccessService.PILOT) {
+            pilotHandler = new PilotRemoteHandler(this);
+            weatherHandler = null;
             airTransportHandler = null;
         } else if (service == RemoteAccessService.ATCC) {
             airTransportHandler = new AirTransportCompanyRemoteHandler(this);
@@ -274,6 +301,10 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     private void sendHelp(final BufferedWriter out) throws IOException {
         if (selectedService == RemoteAccessService.WEATHER) {
             weatherHandler.sendHelp(out);
+            return;
+        }
+        if (selectedService == RemoteAccessService.PILOT) {
+            pilotHandler.sendHelp(out);
             return;
         }
         if (selectedService == RemoteAccessService.ATCC) {
@@ -307,6 +338,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         availableServices = List.of();
         selectedService = null;
         weatherHandler = null;
+        pilotHandler = null;
         airTransportHandler = null;
     }
 
@@ -353,6 +385,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                 this.authenticated = false;
                 this.selectedService = null;
                 this.weatherHandler = null;
+                this.pilotHandler = null;
                 this.airTransportHandler = null;
                 throw new SecurityException("Session expired or access revoked. Please LOGIN again.");
             }

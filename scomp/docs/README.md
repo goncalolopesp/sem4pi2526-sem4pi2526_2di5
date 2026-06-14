@@ -1,757 +1,90 @@
-# Flight Simulation System
-
-## Índice
-
-1. Introdução
-2. Arquitetura Geral
-3. Evolução da Arquitetura entre Sprints
-4. US100 - Simulate flights in a given area
-5. US102 - Detect safety violations
-6. US103 - Synchronize simulation steps
-7. US105 - Shared memory coordination
-8. US106 - Function-specific threads in the parent process
-9. US109 - Generate simulation report
-10. Estruturas Principais
-11. Decisões Técnicas
-12. Testes
-13. Build e Execução
-14. Diagrama de Componentes
-
----
-
-# 1. Introdução
-
-Este projeto implementa um sistema concorrente de simulação de voos utilizando processos POSIX, pipes, sinais e mecanismos de sincronização.
-
-A solução foi desenvolvida em C e organizada de forma modular para suportar:
-
-- simulação concorrente;
-- monitorização de posições;
-- sincronização temporal;
-- deteção de violações de segurança;
-- geração de relatórios.
-
-A arquitetura foi evoluindo incrementalmente ao longo dos sprints, mantendo separação clara entre responsabilidades.
-
----
-
-# 2. Arquitetura Geral
-
-A solução encontra-se dividida nos seguintes componentes principais:
-
-| Componente             | Responsabilidade                                            |
-| ---------------------- | ----------------------------------------------------------- |
-| `main.c`               | Coordenação global da simulação                             |
-| `flight_process.c`     | Execução individual de cada voo                             |
-| `flight_plan_parser.c` | Carregamento e parsing de planos de voo                     |
-| `position_tracker.c`   | Histórico temporal das posições                             |
-| `safety_monitor.c`     | Validação de segurança                                      |
-| `simulation_threads.c` | Implementação das threads dedicadas do processo pai         |
-| `simulation.h`         | Estruturas e contratos partilhados                          |
-| `tests/`               | Testes unitários e testes de integração                     |
-| `data/`                | Ficheiros de planos de voo usados na simulação e nos testes |
-
-Cada voo executa num processo independente criado através de `fork()`.
-
-A comunicação e sincronização utiliza:
-
-- pipes POSIX;
-- sinais POSIX;
-- shared memory POSIX;
-- semáforos;
-- pthread mutexes;
-- pthread condition variables;
-- sincronização passo-a-passo.
-
----
-
-# 3. Evolução da Arquitetura entre Sprints
-
-## Sprint 2
-
-O objetivo inicial consistia em criar a base concorrente da simulação:
-
-- criação de processos;
-- comunicação por pipes;
-- sinais POSIX;
-- envio de posições;
-- histórico temporal.
-
-## Sprint 3
-
-Durante o Sprint 3 foram introduzidas melhorias importantes:
-
-- sincronização mais segura;
-- suporte a múltiplos voos simultâneos;
-- suporte a diferentes `DepartureTime`;
-- melhor coordenação entre processos;
-- melhoria da gestão de recursos;
-- sincronização determinística passo-a-passo;
-- arquitetura multithreaded no processo pai;
-- testes unitários e de integração expandidos.
-
-A arquitetura principal foi mantida, sendo introduzidas melhorias incrementais na robustez da implementação.
-
----
-
-# 4. US100 - Simulate flights in a given area
-
-## Objetivo
-
-Simular voos concorrentes numa determinada área geográfica utilizando processos independentes.
-
-## Responsabilidades do processo principal
-
-- validar parâmetros;
-- criar pipes;
-- criar processos filho;
-- coordenar os voos;
-- iniciar os processos através de `SIGUSR2`;
-- monitorizar múltiplos pipes com `poll()`;
-- receber `PositionUpdate`;
-- atualizar o histórico de posições;
-- terminar processos corretamente;
-- aguardar processos filho com `waitpid()`;
-- gerar o relatório final.
-
-## Responsabilidades dos processos filho
-
-- carregar o plano de voo;
-- instalar signal handlers;
-- aguardar sincronização com `sigsuspend()`;
-- executar segmentos do voo;
-- interpolar posições;
-- enviar atualizações;
-- terminar corretamente;
-- reagir a notificações de segurança através de `SIGUSR1`.
-
-## Melhorias introduzidas no Sprint 3
-
-### Substituição de `pause()` por `sigsuspend()`
-
-A sincronização passou a utilizar:
-
-- `sigprocmask()`;
-- `sigsuspend()`.
-
-Isto evita race conditions durante o arranque concorrente.
-
-### Bloqueio explícito de sinais antes do `fork()`
-
-O processo pai bloqueia `SIGUSR2` antes da criação dos filhos.
-
-Os filhos herdam essa máscara, instalam os handlers necessários e apenas depois desbloqueiam temporariamente o sinal através de `sigsuspend()`.
-
-### Alteração do sinal de arranque
-
-O arranque da simulação passou a utilizar:
-
-- `SIGUSR2` para arranque;
-- `SIGUSR1` para violações de segurança.
-
-### Gestão segura de runtime
-
-Foi criada uma função dedicada para:
-
-- fechar pipes;
-- limpar `pollfd`;
-- desativar voos;
-- evitar fechos duplicados.
-
-### Suporte a `DepartureTime`
-
-Cada voo possui agora o seu próprio `DepartureTime`.
-
-Quando `--start` não é fornecido, o processo principal usa o `DepartureTime` do plano de voo.
-
-Quando `--start` é fornecido, a simulação usa o valor indicado pelo utilizador como início explícito.
-
----
-
-# 5. US102 - Detect safety violations
-
-## Objetivo
-
-Detetar violações básicas de segurança durante a simulação.
-
-## Responsabilidades
-
-- analisar posições recebidas;
-- verificar separação mínima;
-- validar altitude mínima;
-- registar eventos de segurança;
-- notificar processos de voo envolvidos através de sinais;
-- permitir terminação antecipada se o número de violações exceder o threshold configurado.
-
-## Integração
-
-O `SafetyMonitor` é executado pelo processo principal após receção dos updates de cada timestep.
-
-Quando é detetada uma violação, o processo de voo envolvido pode ser notificado através de `SIGUSR1`.
-
----
-
-# 6. US103 - Synchronize simulation steps
-
-## Objetivo
-
-Garantir sincronização temporal entre todos os voos da simulação.
-
-## Modelo de sincronização
-
-A implementação utiliza um modelo híbrido:
-
-| Mecanismo    | Responsabilidade                               |
-| ------------ | ---------------------------------------------- |
-| sinais POSIX | controlo do ciclo de vida                      |
-| pipes        | sincronização passo-a-passo e envio de updates |
-| `poll()`     | multiplexagem eficiente                        |
-
-## Funcionamento
-
-### Processo principal
-
-O processo principal:
-
-1. cria os processos;
-2. envia o sinal inicial;
-3. controla o timestep global;
-4. autoriza os filhos a avançar;
-5. recolhe updates sincronizados;
-6. processa todos os updates esperados antes de avançar.
-
-### Processos filho
-
-Os processos filho:
-
-1. aguardam sincronização;
-2. executam apenas o timestep autorizado;
-3. enviam posições;
-4. aguardam nova autorização.
-
-## Melhorias introduzidas
-
-### Suporte a múltiplos voos concorrentes
-
-A sincronização foi reorganizada para suportar:
-
-- múltiplos pipes;
-- múltiplos processos ativos;
-- diferentes tempos de partida.
-
-### Integração de `poll()`
-
-O processo principal utiliza `poll()` para monitorizar múltiplos descritores sem busy waiting.
-
-### Separação entre controlo e dados
-
-- sinais para controlo;
-- pipes para transmissão de dados e sincronização.
-
-Esta separação melhora clareza e robustez.
-
----
-
-# 7. US105 - Shared Memory Coordination
-
-## Objetivo
-
-Adicionar coordenação concorrente baseada em memória partilhada.
-
-## Componentes introduzidos
-
-- shared_simulation.c
-- SharedSimulationState
-- thread de monitorização
-- pthread mutexes
-- condition variables
-
-## Fluxo
-
-Filhos -> Shared Memory -> Thread do Parent
-
-Os filhos atualizam a memória partilhada.
-
-A thread do parent recebe notificações e monitoriza o estado global.
-
-## Resultado
-
-Permite múltiplos voos concorrentes mantendo compatibilidade com US anteriores.
-
----
-
-# 8. US106 - Function-specific threads in the parent process
-
-## Objetivo
-
-Implementar threads específicas no processo pai para que cada funcionalidade central da simulação (deteção de violações e geração de relatórios em tempo real) opere de forma concorrente e independente.
-
-## Responsabilidades do processo principal (Main Loop)
-
-- Inicializar o contexto de execução e os mecanismos de sincronização locais (`SimulationThreadContext`).
-- Criar e lançar as threads permanentes de segurança (`safety_detection_thread`) e de relatório (`report_generation_thread`).
-- Atualizar a barreira temporal (`steps_ready`) após recolher todos os updates via pipes, notificando a thread de segurança.
-- Bloquear o avanço do relógio da simulação até que a thread de segurança valide o passo atual (`steps_checked`).
-- Sinalizar a terminação às threads no final da execução e libertar os recursos.
-
-## Responsabilidades da Thread de Deteção de Segurança
-
-- Aguardar em exclusão mútua (`step_mutex`) que o ciclo principal sinalize a prontidão de um passo através da variável de condição `step_cond`.
-- Inspecionar a memória partilhada de forma isolada chamando a função `safety_check_shared`.
-- Notificar instantaneamente a thread de relatórios via `violation_cond` caso novas violações sejam registadas no log.
-- Incrementar a variável de controlo `steps_checked` para autorizar o processo principal a libertar o próximo passo aos filhos.
-
-## Responsabilidades da Thread de Geração de Relatórios
-
-- Monitorizar continuamente o histórico de eventos bloqueada na variável de condição `violation_cond`.
-- Consumir sequencialmente as violações reportadas sem interferir no processamento dos dados geográficos de voo.
-- Escrever em tempo real as ocorrências para o ficheiro físico `_violations.log` e emitir os diagnósticos para o `stderr`.
-
----
-
-# 9. US109 - Generate simulation report
-
-## Objetivo
-
-Gerar um relatório simples da execução da simulação.
-
-## Informação apresentada
-
-- voos processados;
-- posições recebidas;
-- eventos de segurança;
-- estados finais dos voos;
-- resumo da execução;
-- resultado final da simulação.
-
----
-
-# 10. Estruturas Principais
-
-## `SimulationConfig`
-
-Parâmetros globais da simulação:
-
-- área;
-- intervalo temporal;
-- ficheiros de voo;
-- weather;
-- thresholds de segurança;
-- performance settings;
-- indicação se `--start` foi fornecido.
-
-## `FlightPlan`
-
-Representação interna do plano de voo.
-
-## `Segment`
-
-Representa um segmento entre dois pontos.
-
-## `PositionUpdate`
-
-Mensagem enviada pelos filhos:
-
-- posição;
-- timestamp;
-- altitude;
-- velocidade;
-- estado;
-- identificador do voo.
-
-## `FlightRuntime`
-
-Estado de runtime de cada voo:
-
-- PID;
-- pipes;
-- estado ativo;
-- `DepartureTime`.
-
-## `HistoryEntry`
-
-Entrada do histórico temporal.
-
-## `PositionTracker`
-
-Estrutura global de tracking das posições.
-
-## `SafetyLog`
-
-Estrutura de registo das violações de segurança.
-
-## `SimulationThreadContext`
-
-Encapsula os dados e os primitivos de sincronização locais necessários para as threads do processo pai:
-- Ponteiros para as estruturas globais (`SharedSimulationState`, `SimulationConfig`, `SafetyLog`, `FlightRuntime`);
-- **`step_mutex` e `step_cond`:** Mutex e variável de condição para a sincronização passo-a-passo entre o ciclo do pai e a thread de segurança;
-- **`report_mutex` e `violation_cond`:** Mutex e variável de condição que implementam o modelo produtor-consumidor entre a deteção de segurança e a thread de relatórios;
-- Contadores de progresso (`steps_ready`, `steps_checked`, `violations_reported`);
-- **`stop`:** Flag atómica volátil para coordenar a saída limpa das threads;
-- Caminho do ficheiro de log em tempo real (`realtime_log_path`).
-
----
-
-# 11. Decisões Técnicas
-
-## Um processo por voo
-
-Permite:
-
-- isolamento;
-- concorrência;
-- melhor escalabilidade;
-- alinhamento com o requisito de criação de um processo por voo.
-
-## Uso de pipes
-
-Os pipes permitem comunicação simples e eficiente entre processos.
-
-São usados para:
-
-- envio de `PositionUpdate`;
-- sincronização passo-a-passo.
-
-## Uso de `poll()`
-
-`poll()` evita busy waiting e permite acompanhar múltiplos voos simultaneamente.
-
-## Uso de sinais POSIX
-
-Os sinais são utilizados para:
-
-- sincronização inicial;
-- arranque;
-- notificação de violações;
-- terminação.
-
-## Compatibilidade POSIX
-
-Foi utilizada:
-
-```c
-#define _POSIX_C_SOURCE 200809L
-```
-
-para garantir compatibilidade com APIs POSIX.
-
-## Modelo Concorrente Multithreaded no Pai
-
-A delegação da análise de conflitos e da escrita em disco para threads dedicadas garante que tarefas pesadas de I/O e computação geométrica não introduzam latência nem atrasem o relógio mestre da simulação.
-
-## Sincronização por Variáveis de Condição Locais
-
-Evita cenários de *race conditions* e *busy waiting*. O uso das variáveis de controlo (`steps_ready` e `steps_checked`) cria uma barreira determinística: o pai aguarda pela validação de segurança antes de autorizar os filhos através dos semáforos, garantindo a integridade dos dados e outputs estáveis.
-
----
-
-# 12. Testes
-
-A pasta `tests/` contém testes unitários e testes de integração.
-
-```text
-tests/
-├── test_position_tracker.c
-├── test_safety_monitor.c
-├── test_simulation_threads.c
-├── run_tests.sh
-└── run_integration_tests.sh
-```
-
-## 12.1 Testes unitários
-
-### `test_position_tracker.c`
-
-Valida que o `PositionTracker`:
-
-- inicializa corretamente;
-- guarda um update;
-- mantém a última posição;
-- regista o histórico.
-
-### `test_safety_monitor.c`
-
-Valida que o `SafetyMonitor`:
-
-- deteta altitude abaixo do limite mínimo;
-- regista a violação no log;
-- devolve violações quando aplicável.
-
-### test_simulation_threads.c (Novo)
-
-Valida os mecanismos de sincronização e o ciclo de vida introduzidos pela US106:
-
-- inicializa e destrói o contexto de threads verificando se os estados arrancam a zero;
-- simula um cenário produtor-consumidor (ciclo principal vs thread de segurança) garantindo que as variáveis de condição bloqueiam e acordam os workers de forma correta e previsível.
-
-### Execução
-
-```bash
-chmod +x tests/run_tests.sh
-./tests/run_tests.sh
-```
-
-Resultado esperado:
-
-```text
-Compiling tests...
-
-test_position_tracker OK
-test_safety_monitor OK
-
-All tests passed
-```
-
-## 12.2 Testes de integração
-
-O script `run_integration_tests.sh` valida o executável completo.
-
-Cenários testados:
-
-1. Simulação com um voo.
-2. Simulação com dois voos diferentes.
-3. Simulação concorrente com múltiplos voos via Memória Partilhada.
-4. Criação do ficheiro `simulation_report.txt`.
-5. Validação de argumentos inválidos.
-6. Execução sem deixar processos pendurados.
-
-### Execução
-
-```bash
-chmod +x tests/run_integration_tests.sh
-./tests/run_integration_tests.sh
-```
-
-Resultado esperado:
-
-```text
-Building simulator...
-Running integration tests...
-All integration tests passed
-```
-
-## 12.3 Verificações finais realizadas
-
-### Processos pendurados
-
-Foi executado:
-
-```bash
-ps -ef | grep flight_simulator
-```
-
-Resultado esperado:
-
-```text
-grep flight_simulator
-```
-
-Isto confirma que não ficaram processos `flight_simulator` pendurados.
-
-### Execução sem `--start`
-
-Foi testado o comportamento em que o sistema usa o `DepartureTime` do ficheiro JSON.
-
-Comando:
-
-```bash
-./flight_simulator \
-  --area 39 43 -9 -3 \
-  --end 3600 \
-  --step 60 \
-  --flight data/Flight_Plan_v0a.json
-```
-
-Resultado validado:
-
-- a simulação começou no segundo `32400`;
-- `32400` corresponde a `09:00`;
-- foram gerados 61 pontos;
-- o relatório final foi criado.
-
-### Compilação com warnings agressivos
-
-Foi executado:
-
-```bash
-gcc -Wall -Wextra -Wpedantic -Wshadow -Wconversion \
-  -std=c11 -D_DEFAULT_SOURCE \
-  src/main.c \
-  src/flight_process.c \
-  src/flight_plan_parser.c \
-  src/position_tracker.c \
-  src/safety_monitor.c \
-  -o flight_simulator \
-  -lm
-```
-
-Resultado validado:
-
-- compilação sem erros;
-- compilação sem warnings.
-
----
-
-# 13. Build e Execução
-
-## Compilação
-
-```bash
-make
-```
-
-## Execução
-
-```bash
-./flight_simulator \
-  --area 39 43 -9 -3 \
-  --start 0 \
-  --end 3600 \
-  --step 60 \
-  --flight data/Flight_Plan_v0a.json
-```
-
-## Exemplo com múltiplos voos
-
-```bash
-./flight_simulator \
-  --area 38 43 -10 3 \
-  --start 0 \
-  --end 3600 \
-  --step 60 \
-  --flight data/Flight_Plan_v0a.json \
-  --flight data/Flight_Plan_v0c.json
-```
-
-## Nota sobre múltiplos ficheiros
-
-Cada ficheiro deve ser precedido de `--flight`.
-
-Correto:
-
-```bash
---flight data/Flight_Plan_v0a.json --flight data/Flight_Plan_v0c.json
-```
-
-Incorreto:
-
-```bash
---flight data/Flight_Plan_v0a.json data/Flight_Plan_v0c.json
-```
-
-## Execução em AntiX
-
-A execução do projeto foi validada numa máquina AntiX.
-
-### 1. Instalar dependências necessárias
-
-```bash
-sudo apt update
-sudo apt install default-jdk maven
-````
-
-Confirmar instalação:
-
-```bash
-java --version
-javac --version
-mvn -version
-```
-
-### 2. Corrigir terminações de linha do script (caso necessário)
-
-Como o `run.sh` foi desenvolvido em ambientes diferentes, pode ser necessário remover terminações Windows:
-
-```bash
-sed -i 's/\r$//' run.sh
-```
-
-### 3. Compilar o simulador SCOMP
-
-Entrar na pasta do simulador e gerar o executável:
+# SCOMP - Sprint 3
+
+Simulador concorrente de voos desenvolvido em C com APIs POSIX. O processo
+principal coordena o tempo da simulacao, cria um processo por voo, recolhe as
+posicoes, mantem o historico, deteta violacoes e produz os relatorios.
+
+## Diagrama de componentes
+
+![Diagrama de componentes](ComponentsDiagram.svg)
+
+O ficheiro editavel encontra-se em
+[`ComponentsDiagram.puml`](ComponentsDiagram.puml).
+
+O sistema tem um processo principal, dois workers implementados como threads e
+um processo filho por voo. Os filhos enviam posicoes por pipes e publicam o
+estado atual em memoria partilhada. O pai controla cada timestep através dos
+semaforos `step_start[]`; depois de receber os updates esperados, acorda a
+thread de seguranca e espera pela sua confirmacao antes de libertar o passo
+seguinte.
+
+## Estrutura principal
+
+| Ficheiro | Responsabilidade |
+|---|---|
+| `src/main.c` | Argumentos, processos, pipes, `poll()`, relogio global e relatorio final |
+| `src/flight_process.c` | Execucao de um voo, sinais, movimento e publicacao de updates |
+| `src/flight_plan_parser.c` | Leitura dos planos JSON |
+| `src/position_tracker.c` | Posicao atual e historico de cada voo |
+| `src/shared_simulation.c` | Memoria partilhada e sincronizacao entre processos |
+| `src/safety_monitor.c` | Violacoes de altitude e separacao |
+| `src/simulation_threads.c` | Threads de seguranca e relatorio em tempo real |
+
+## Abordagem por User Story
+
+| US | Abordagem seguida | Estado |
+|---|---|---|
+| US100 | Um processo por voo com `fork()`. Cada filho carrega o plano, simula o movimento e comunica com o pai. O arranque usa `SIGUSR2`. | Herdada do sprint anterior |
+| US101 | Cada filho envia `PositionUpdate` por pipe. O pai usa `poll()` e guarda a posicao atual e o historico no `PositionTracker`. | Herdada do sprint anterior |
+| US102 | Sao verificadas altitude minima e separacao horizontal/vertical. As ocorrencias ficam no `SafetyLog` e os voos envolvidos recebem `SIGUSR1`. | Herdada do sprint anterior |
+| US103 | O pai funciona como relogio global e apenas processa um novo timestep depois dos updates esperados no passo atual. | Herdada do sprint anterior |
+| US104 | Nao existe uma US104 atribuida ao modulo SCOMP neste incremento. | Nao aplicavel |
+| US105 | O estado atual dos voos e publicado em memoria partilhada POSIX, protegido por mecanismos process-shared. | Implementada |
+| US106 | O pai cria uma thread de seguranca e uma thread de relatorio, coordenadas por mutexes e condition variables locais. | Implementada |
+| US107 | A thread de seguranca sinaliza `violation_cond`; a thread de relatorio consome os novos eventos e escreve-os em tempo real. | Implementada |
+| US108 | Cada filho bloqueia em `sem_wait(step_start[i])` e o pai liberta o passo seguinte com `sem_post()`. | Implementada |
+| US109 | A implementacao e a documentacao existentes foram desenvolvidas no sprint anterior. Nao houve implementacao desta US no Sprint 3. | Nao realizada no Sprint 3 |
+| US110 | Nao foi implementada neste sprint. | Nao implementada |
+
+## Estado da implementacao
+
+Foi implementada com sucesso a execucao concorrente de varios voos, comunicacao
+por pipes, sinais POSIX, memoria partilhada, semaforos, threads especializadas,
+sincronizacao passo a passo e detecao de violacoes correspondentes as
+US105-US108.
+
+A US109 presente no repositorio pertence ao sprint anterior e nao foi
+desenvolvida no Sprint 3. A US110, nao foi implementada.
+
+## Compilacao, execucao e testes
 
 ```bash
 cd scomp
 make
-cd ..
+
+./flight_simulator \
+  --area 39 43 -9 -3 \
+  --start 0 --end 3600 --step 60 \
+  --weather clear \
+  --safety-min-sep 3 --safety-min-alt 300 \
+  --violation-threshold 10 --perf-max-flights 10 \
+  --flight data/Flight_Plan_v0a.json \
+  --output simulation_report.txt
+
+make test
 ```
 
-### 4. Dar permissões de execução
+Os testes cobrem tracking, seguranca, memoria partilhada, sincronizacao por
+semaforos, coordenacao das threads e cenarios completos com um ou varios voos,
+threshold de violacoes e argumentos invalidos.
 
-```bash
-chmod +x run.sh
-chmod +x scomp/flight_simulator
-```
+## Autoavaliacao da contribuicao
 
-### 5. Executar o projeto
-
-A partir da pasta raiz do projeto:
-
-```bash
-./run.sh
-```
-
-### Notas
-
-* O executável `scomp/flight_simulator` deve existir antes da execução do `run.sh`.
-* O simulador SCOMP é implementado em C, mas o projeto completo depende também de Java e Maven devido à componente EAPLI e à execução integrada.
-* Todos os testes e validações apresentados na documentação foram executados em ambiente AntiX.
-
----
-
-# 14. Diagrama de Componentes
-
-O diagrama foi atualizado apenas para incluir o bloco de testes e os ficheiros de dados usados na validação.
-
-A arquitetura principal não mudou devido aos testes.
-
-![ComponentsDiagram](ComponentsDiagram.svg)
-
-```puml
-@startuml
-
-skinparam componentStyle rectangle
-
-package "Flight Simulation System" {
-
-    [Simulation Controller\nmain.c] as Main
-    [Flight Process\nflight_process.c] as FlightProcess
-    [Flight Plan Parser\nflight_plan_parser.c] as Parser
-    [Position Tracker\nposition_tracker.c] as Tracker
-    [Safety Monitor\nsafety_monitor.c] as Safety
-    
-    package "Thread Infrastructure (US106)" {
-        [Safety Thread\nsafety_detection_thread] as SafetyThread
-        [Report Thread\nreport_generation_thread] as ReportThread
-    }
-    
-    [Shared Memory Layer\nshared_simulation.c] as Shared
-
-    database "Flight Plan Files\nJSON" as Json
-    file "simulation_report.txt" as ReportFile
-    file "simulation_report_violations.log" as ViolationLog
-}
-
-Main --> FlightProcess : fork()
-Main --> FlightProcess : SIGUSR2 / SIGTERM
-Main --> FlightProcess : sem_post(step_start)
-FlightProcess --> Main : PositionUpdate pipe
-
-FlightProcess --> Parser : loads plan
-Parser --> Json : reads
-
-Main --> Tracker : stores position history
-FlightProcess --> Shared : updates snapshot via semaphores
-
-' Sincronização US106
-Main --> SafetyThread : signals step ready (step_cond)
-SafetyThread --> Main : acknowledges check done (step_cond)
-SafetyThread --> Safety : invokes safety_check_shared()
-SafetyThread --> ReportThread : signals new events (violation_cond)
-
-Safety --> FlightProcess : SIGUSR1 (on alert)
-Main --> ReportFile : writes final summary
-ReportThread --> ViolationLog : writes realtime log
-
-@enduml
-```
+| Elemento | Contribuicao |
+|---|---:|
+| Joao Sousa | 0% |
+| Goncalo Pinto | 25% |
+| Guilherme Tavares | 25% |
+| Mariana Gabriel | 25% |
+| Pedro Soares | 25% |
+| **Total** | **100%** |

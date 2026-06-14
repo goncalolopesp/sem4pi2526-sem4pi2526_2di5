@@ -1,0 +1,20 @@
+@startuml US085_SSD
+title US085 - Test Flight Plan - SSD
+
+actor "Pilot" as Pilot
+participant "SEM4PI System" as System
+
+Pilot -> System : request to test/validate a flight plan
+System --> Pilot : show draft flight plans
+
+Pilot -> System : select flight plan
+
+alt DSL validation or persistence check fails
+    System --> Pilot : display errors and set status REJECTED
+else C flight test fails
+    System --> Pilot : display C test report and set status REJECTED
+else all checks pass
+    System --> Pilot : display success and set status VALIDATED
+end
+
+@enduml

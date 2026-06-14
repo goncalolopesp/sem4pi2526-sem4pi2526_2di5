@@ -1,14 +1,31 @@
-# US120 - Flight Plan Validation (ANTLR4)
+# US120 — Flight Plan Validation (ANTLR4)
 
-This project implements a syntactic and semantic analyzer for flight plan files using the `US120.g4` grammar (ANTLR4). The objective is to guarantee that input files are not only structurally valid but also comply with business rules (dates, coordinates, angles, etc.).
+## 1. Requirements Engineering
 
-We chose to add the aircraft and pilot information to the grammar to ensure that the code that we have regarding ESINF (US080, 081 and 085) stay in touch with the grammars that are validated by this US.
+### 1.1 User Story
 
-## File Structure
+As an **Air Transport Company Collaborator**, I want to validate flight plan files against the Core Flight DSL so that only structurally and semantically correct plans can be imported or tested.
 
-The grammar follows the `FlightPlan` aggregate. A flight plan declares, at the top level, the extracted flight id, the flight type, the assigned aircraft, the pilot and the route, followed by one or more legs:
+### 1.2 Acceptance Criteria
 
-```
+- Input files must use the `.dsldig5` extension.
+- Lexical and syntactic errors are detected by the ANTLR parser.
+- Semantic rules are enforced after a successful parse (listener + visitor).
+- If lexical/syntactic validation fails, semantic validation is skipped.
+- Validation results are reported with clear error messages.
+
+### 1.3 Dependencies
+
+- **ANTLR4:** grammar compilation during `mvn compile`.
+- **US080 / US081 / US085:** downstream consumers of validated parse trees.
+
+---
+
+## 2. Grammar Structure
+
+The grammar follows the `FlightPlan` aggregate. A flight plan declares, at the top level, the extracted flight id, flight type, assigned aircraft, pilot, and route, followed by one or more legs:
+
+```text
 flight <ID> <regular|charter> {
     aircraft <REGISTRATION>;
     pilot <PILOT_ID>;
@@ -22,37 +39,96 @@ flight <ID> <regular|charter> {
 };
 ```
 
-## Validation Architecture
+Grammar source: `src/main/antlr4/US120.g4`
+
+---
+
+## 3. Validation Architecture
 
 Validation is split into two strict phases. If the first phase fails, the second phase is automatically skipped to prevent processing corrupted parse trees.
 
-1. **Lexical and Syntactic Validation (`US120ErrorListener`)**
-    - Catches unrecognized characters.
-    - Detects structural failures (e.g., missing braces, misspelled keywords).
+```text
+US120FlightPlanValidator.analyze(path)
+        │
+        ├── Phase 1: Lexical + Syntactic (US120ErrorListener)
+        │       └── lexer + parser on .dsldig5 file
+        │
+        └── Phase 2: Semantic (only if Phase 1 passes)
+                ├── US120SemanticListener  (leg/segment/route coherence)
+                └── US120SemanticVisitor   (field-level business rules)
+```
 
-2. **Semantic Validation (`US120SemanticListener` + `US120SemanticVisitor`)**
-    - Both traverse the successfully built parse tree.
-    - The listener validates leg/segment/route coherence (consecutive legs, temporal order, repeated airports, coordinate continuity, route coverage).
-    - The visitor validates field-level business rules (dates, times, fuel, altitudes, speeds, coordinates).
+| Component | Responsibility |
+|-----------|----------------|
+| `US120Lexer` / `US120Parser` | Generated from `US120.g4` |
+| `US120ErrorListener` | Unrecognized characters, missing braces, misspelled keywords |
+| `US120SemanticListener` | Consecutive legs, temporal order, coordinate continuity, route coverage |
+| `US120SemanticVisitor` | Dates, times, fuel, altitudes, speeds, coordinates |
+| `US120ValidationResult` | Groups lexical/syntactic and semantic errors; holds parse tree on success |
 
-## Implemented Semantic Rules
+### 3.1 Semantic Rules (Visitor)
 
-The `US120SemanticVisitor` enforces the following constraints:
+| Rule | Constraint |
+|------|------------|
+| File extension | Must be `.dsldig5` |
+| Aircraft registration | Must not be empty |
+| Pilot identifier | Must not be empty |
+| Dates | Valid calendar date via `LocalDate` |
+| Times | Hours 0–23, minutes/seconds 0–59 |
+| Latitude | −90 to 90 |
+| Longitude | −180 to 180 |
+| Altitude slots | Minimum ≤ maximum |
+| Wind angle | [0, 360[ |
+| Width, speed | Must be > 0 |
 
-* **File Extension:** The input file must have the `.dsldig5` extension.
-* **Aircraft Registration (`visitRegistration`):** The assigned aircraft registration must not be empty.
-* **Pilot Identifier (`visitPilotId`):** The pilot identifier must not be empty.
-* **Dates (`visitDate`):** Validates if the day, month, and year form a legally existing calendar date via `LocalDate`.
-* **Times (`visitTime`):** Ensures hours, minutes, and seconds are within standard bounds (0-23h, 0-59m, 0-59s).
-* **Geographic Coordinates (`visitCoord`):**
-    * **Latitude:** Must be between `-90` and `90`.
-    * **Longitude:** Must be between `-180` and `180`.
-* **Altitude Slots (`visitAltSlot`):** Enforces that the minimum altitude in a slot does not exceed its maximum altitude.
-* **Wind Angle (`visitWindAngle`):** Ensures the wind direction angle belongs to the interval `[0, 360[`.
-* **Positive Quantities:** Prevents physical magnitudes like Width (`visitWidth`) and Speed (`visitSpeed`) from having values less than or equal to `0`.
+---
 
-## How to Run
+## 4. Integration Points
+
+| Consumer | Usage |
+|----------|-------|
+| `ValidateFlightPlanUI` | Standalone validation menu (**Air Transport Company > Validate flight plan**) |
+| `ImportFlightPlanService` (US081) | Validates before import |
+| `CreateFlightPlanFromFileService` (US121) | Validates after format detection |
+| `TestFlightPlanService` (US085) | Re-validates stored DSL before C test |
+| `US081FlightPlanMapper` | Maps validated parse tree to `CreateFlightPlanDTO` |
+
+---
+
+## 5. How to Run
 
 Compile and start the application as usual (`run.sh`, `run-client.sh`, or `mvn exec:java`). After login, open **Air Transport Company > Validate flight plan** and enter the path to a `.dsldig5` file (e.g. `docs/us_120/testFiles/exemplo.dsldig5`).
 
-The ANTLR lexer, parser, visitor and listener are generated automatically during `mvn compile` from `src/main/antlr4/US120.g4`.
+The ANTLR lexer, parser, visitor, and listener are generated automatically during `mvn compile` from `src/main/antlr4/US120.g4`.
+
+---
+
+## 6. Example Files
+
+| File | Purpose |
+|------|---------|
+| `docs/us_120/testFiles/exemplo.dsldig5` | Reference valid file |
+| `docs/us_081/examples/exampleValid.dsldig5` | Valid import example |
+| `docs/us_081/examples/exampleInvalid.dsldig5` | Invalid file for error testing |
+
+---
+
+## 7. Tests
+
+- `US120SemanticValidationTest`
+- Covered indirectly by `ImportFlightPlanServiceTest` and `TestFlightPlanServiceTest`
+
+Run:
+
+```bash
+mvn test
+```
+
+---
+
+## 8. Related Stories
+
+- **US081:** import validated DSL into the domain model.
+- **US121:** format detection + US120 validation.
+- **US085:** re-validation before C flight test.
+- **US080:** domain aggregate created after successful validation and mapping.

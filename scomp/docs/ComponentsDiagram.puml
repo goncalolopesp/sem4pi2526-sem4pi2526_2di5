@@ -1,46 +1,72 @@
 @startuml
 
+title SCOMP Sprint 3 - Diagrama de Componentes
+left to right direction
 skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam packageStyle rectangle
 
-package "Flight Simulation System" {
+actor "Flight Control\nOperator" as Operator
 
-    [Simulation Controller\nmain.c] as Main
-    [Flight Process\nflight_process.c] as FlightProcess
-    [Flight Plan Parser\nflight_plan_parser.c] as Parser
-    [Position Tracker\nposition_tracker.c] as Tracker
-    [Safety Monitor\nsafety_monitor.c] as Safety
-
-
-    [Safety Thread\nsafety_detection_thread] as SafetyThread
-    [Report Thread\nreport_generation_thread] as ReportThread
-
-
-    [Shared Memory Layer\nshared_simulation.c] as Shared
-
-    database "Flight Plan Files\nJSON" as Json
-    file "simulation_report.txt" as ReportFile
-    file "simulation_report_violations.log" as ViolationLog
+package "Processo principal - flight_simulator" {
+    component "Simulation Controller\nmain.c" as Main
+    component "Position Tracker\nposition_tracker.c" as Tracker
+    component "Safety Thread\nsafety_detection_thread()" as SafetyThread
+    component "Report Thread\nreport_generation_thread()" as ReportThread
+    component "Safety Monitor\nsafety_monitor.c" as Safety
 }
 
+package "Processos filho - um por voo" {
+    component "Flight Process [1..N]\nflight_process.c" as FlightProcess
+    component "Flight Plan Parser\nflight_plan_parser.c" as Parser
+}
+
+package "IPC e sincronizacao POSIX" {
+    queue "Update Pipe [1..N]\nPositionUpdate" as UpdatePipe
+    database "POSIX Shared Memory\nSharedSimulationState\nSharedFlightState [1..N]" as Shared
+    component "Semaforos process-shared\nmutex, update_sem,\nstep_start[1..N]" as Semaphores
+    component "pthread process-shared\npthread_mutex + pthread_cond" as SharedCond
+    component "pthread local\nstep_mutex/step_cond\nreport_mutex/violation_cond" as LocalSync
+}
+
+database "Planos de voo\nJSON" as Json
+file "Relatorio final\n<output>.txt" as FinalReport
+file "Log em tempo real\n<output>_violations.log" as LiveReport
+
+Operator --> Main : argumentos CLI
 Main --> FlightProcess : fork()
 Main --> FlightProcess : SIGUSR2 / SIGTERM
-Main --> FlightProcess : sem_post(step_start)
-FlightProcess --> Main : PositionUpdate pipe
+Safety --> FlightProcess : SIGUSR1
 
-FlightProcess --> Parser : loads plan
-Parser --> Json : reads
+FlightProcess --> Parser : parse_flight_plan()
+Parser --> Json : le
 
-Main --> Tracker : stores position history
-FlightProcess --> Shared : updates snapshot via semaphores
+FlightProcess --> UpdatePipe : write(PositionUpdate)
+UpdatePipe --> Main : poll() + read()
+Main --> Tracker : tracker_update()
 
-' Sincronização US106
-Main --> SafetyThread : signals step ready (step_cond)
-SafetyThread --> Main : acknowledges check done (step_cond)
-SafetyThread --> Safety : invokes safety_check_shared()
-SafetyThread --> ReportThread : signals new events (violation_cond)
+Main --> Shared : shm_open() + mmap()
+FlightProcess --> Shared : shm_open() + mmap()\natualiza SharedFlightState
+Shared *-- Semaphores
+Shared *-- SharedCond
+Main --> Semaphores : sem_post(step_start[i])\nliberta timestep
+FlightProcess --> Semaphores : sem_wait(step_start[i])\nsem_wait/post(mutex)\nsem_post(update_sem)
+FlightProcess --> SharedCond : incrementa contador\npthread_cond_signal()
 
-Safety --> FlightProcess : SIGUSR1 (on alert)
-Main --> ReportFile : writes final summary
-ReportThread --> ViolationLog : writes realtime log
+Main --> LocalSync : steps_ready++\nstep_cond signal/wait
+LocalSync --> SafetyThread : acorda por timestep
+SafetyThread --> Safety : safety_check_shared()
+Safety --> Semaphores : sem_wait/post(mutex)
+Safety --> Shared : copia snapshot dos voos
+SafetyThread --> LocalSync : steps_checked + ACK\nviolation_cond signal
+LocalSync --> ReportThread : acorda com novos eventos
+
+Main --> FinalReport : write_report()
+ReportThread --> LiveReport : safety_log_event_realtime()
+
+note bottom of LiveReport
+Se --output terminar em .txt, o sufixo e substituido por
+_violations.log; caso contrario usa simulation_violations.log.
+end note
 
 @enduml
