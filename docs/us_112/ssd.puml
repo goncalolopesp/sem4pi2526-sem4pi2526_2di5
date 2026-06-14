@@ -7,7 +7,7 @@ participant "Sistema AIControl" as System
 FCO -> System : gerarRelatorioMensal(ano, mês)
 System -> System : autenticar e autorizar
 System -> System : recolher estatísticas do período
-System -> System : construir secções e gráfico
+System -> System : construir secções e gráfico textual
 System -> System : exportar ficheiro e persistir metadados
 
 alt geração concluída

@@ -40,7 +40,7 @@ The AlSafe system focuses on air traffic control and simulation. The domain was 
   * Includes `AirControlArea`, `Airport`, `Manufacturer`, `AircraftModel`, and `EngineModel`.
 
 * **Air Transport Operations:** Managed by air transport companies. 
-  * Encompasses the `AirTransportCompany`, its `FlightRoute`, the `Aircraft` fleet, `CompanyCollaborator`, and `Pilot`.
+  * Encompasses the `AirTransportCompany`, its `FlightRoute`, the `Aircraft` fleet, `CustomerCollaborator`, and `Pilot`.
   
 * **Flight Planning:** The formal operation planning. 
   * Involves the `FlightPlan` (which includes `FuelInfo` and `RouteDefinition`) and the specific `Flight` instantiations.
@@ -48,9 +48,14 @@ The AlSafe system focuses on air traffic control and simulation. The domain was 
 * **Weather Service:** Weather data introduced in the system that affects the simulation. 
   * Includes `WeatherImportBatch`, `WeatherSource`, and `WeatherData`.
   
-* **Flight Simulation:** The integration and reporting context.
+* **Flight Simulation:** Integration with the external simulation component.
   * Involves `Simulation`, `SimulatedFlightInput` and the `SimulationReport`
     summary received from the external SCOMP component.
+
+* **Reporting:** Defines the common structure and persisted metadata of
+  generated reports.
+  * Includes `Report`, `ReportSection`, `MonthlyStatisticsReport` and
+    `ReportMetadata`.
 
 ## 4. Design
 
@@ -60,7 +65,11 @@ Main identified Aggregate Roots (`<<AggregateRoot>>`):
 * `User`
 * `Role`
 * `AirTransportCompany`
+* `CustomerCollaborator`
+* `Pilot`
+* `Aircraft`
 * `FlightRoute`
+* `Flight`
 * `Airport`
 * `AirControlArea`
 * `Manufacturer`
@@ -71,6 +80,8 @@ Main identified Aggregate Roots (`<<AggregateRoot>>`):
 * `SimulationReport`
 * `WeatherImportBatch`
 * `WeatherSource`
+* `WeatherData`
+* `ReportMetadata`
 
 ### 4.1. Realization
 
