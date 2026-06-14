@@ -28,10 +28,12 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
 
     private String username;
     private String password;
+    private String auditUsername;
     private boolean authenticated;
     private Set<String> roles = Set.of();
     private List<RemoteAccessService> availableServices = List.of();
     private RemoteAccessService selectedService;
+    private RemoteAccessService loggingService;
     private WeatherRemoteHandler weatherHandler;
     private PilotRemoteHandler pilotHandler;
     private AirTransportCompanyRemoteHandler airTransportHandler;
@@ -180,14 +182,27 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     }
 
     private void handleLogin(final String line, final BufferedWriter out) throws IOException {
-        final String[] parts = line.split("\\s+", 3);
+        final String[] parts = line.split("\\s+", 4);
         if (parts.length < 3) {
-            send(out, RemoteAccessProtocol.ERR + " Usage: LOGIN <username> <password>");
+            send(out, RemoteAccessProtocol.ERR + " Usage: LOGIN <username> <password> [service]");
             logRemoteAccess(parts.length > 1 ? parts[1] : "-", RemoteAccessEventType.LOGIN_FAILED);
             return;
         }
         final String user = parts[1];
         final String pass = parts[2];
+        auditUsername = user;
+        final RemoteAccessService requestedService;
+        if (parts.length == 4) {
+            requestedService = RemoteAccessService.fromId(parts[3]);
+            if (requestedService == null) {
+                send(out, RemoteAccessProtocol.ERR + " Unknown service: " + parts[3]);
+                return;
+            }
+            loggingService = requestedService;
+        } else {
+            requestedService = null;
+            loggingService = null;
+        }
 
         final String roleList;
         synchronized (AUTHZ_LOCK) {
@@ -211,6 +226,9 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         this.authenticated = true;
         this.roles = parseRoles(roleList);
         this.availableServices = RemoteAccessServiceRegistry.availableServices(this.roles);
+        if (requestedService != null && !availableServices.contains(requestedService)) {
+            loggingService = null;
+        }
         this.selectedService = null;
         this.weatherHandler = null;
         this.pilotHandler = null;
@@ -276,6 +294,7 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         }
 
         selectedService = service;
+        loggingService = service;
         if (service == RemoteAccessService.WEATHER) {
             weatherHandler = new WeatherRemoteHandler(this);
             pilotHandler = null;
@@ -437,7 +456,10 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     }
 
     private String currentUsername() {
-        return username == null || username.isBlank() ? "-" : username;
+        if (username != null && !username.isBlank()) {
+            return username;
+        }
+        return auditUsername == null || auditUsername.isBlank() ? "-" : auditUsername;
     }
 
     private void logRemoteAccess(final String user, final RemoteAccessEventType eventType) {
@@ -452,6 +474,9 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     private String resolveLoggingService() {
         if (selectedService != null) {
             return selectedService.userStory();
+        }
+        if (loggingService != null) {
+            return loggingService.userStory();
         }
         if (availableServices.size() == 1) {
             return availableServices.get(0).userStory();

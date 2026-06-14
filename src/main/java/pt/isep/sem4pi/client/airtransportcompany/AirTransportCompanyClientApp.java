@@ -87,7 +87,7 @@ public final class AirTransportCompanyClientApp {
             System.out.print("Password: ");
             final String pass = console.nextLine();
 
-            sendLine("LOGIN " + user + " " + pass);
+            sendLine("LOGIN " + user + " " + pass + " " + SERVICE_ATCC);
             final String response = readLine();
             if (response == null) {
                 System.out.println("Connection closed by server.");
@@ -294,7 +294,6 @@ public final class AirTransportCompanyClientApp {
         } else {
             System.out.println("Session ended (connection was lost).");
         }
-        connected = false;
         serviceSelected = false;
         username = null;
         roles = new HashSet<>();

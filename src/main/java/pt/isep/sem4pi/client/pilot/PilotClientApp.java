@@ -89,7 +89,7 @@ public final class PilotClientApp {
             System.out.print("Password: ");
             final String pass = console.nextLine();
 
-            sendLine("LOGIN " + user + " " + pass);
+            sendLine("LOGIN " + user + " " + pass + " " + SERVICE_PILOT);
             final String response = readLine();
             if (response == null) {
                 System.out.println("Connection closed by server.");
