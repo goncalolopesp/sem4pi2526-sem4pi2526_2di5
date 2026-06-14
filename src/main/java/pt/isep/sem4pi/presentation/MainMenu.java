@@ -20,7 +20,7 @@ import pt.isep.sem4pi.presentation.aircraftModel.CertifyEngineModelAction;
 import pt.isep.sem4pi.presentation.airtransportcompany.*;
 import pt.isep.sem4pi.presentation.authz.ListUsersAction;
 import pt.isep.sem4pi.presentation.flightplan.CreateFlightPlanAction;
-import pt.isep.sem4pi.presentation.flightplan.ImportFlightPlanAction;
+import pt.isep.sem4pi.presentation.flightplan.CreateFlightPlanFromFileAction;
 import pt.isep.sem4pi.presentation.flightplan.ListFlightPlansAction;
 import pt.isep.sem4pi.presentation.flightplan.AssociateWeatherDataAction;
 import pt.isep.sem4pi.presentation.flightplan.TestFlightPlanAction;
@@ -288,7 +288,8 @@ public class MainMenu extends AbstractUI {
         final var menu = new Menu("Flight Planning >");
         menu.addItem(CREATE_FLIGHT_PLAN_OPTION, "Create flight plan", new CreateFlightPlanAction());
         menu.addItem(LIST_FLIGHT_PLANS_OPTION, "List flight plans", new ListFlightPlansAction());
-        menu.addItem(IMPORT_FLIGHT_PLAN_OPTION, "Import flight plan from file", new ImportFlightPlanAction());
+        menu.addItem(IMPORT_FLIGHT_PLAN_OPTION, "Create flight plan from file (US121)",
+                new CreateFlightPlanFromFileAction());
         menu.addItem(ASSOCIATE_WEATHER_DATA_OPTION, "Add weather data to flight plan",
                 new AssociateWeatherDataAction());
         menu.addItem(TEST_FLIGHT_PLAN_OPTION, "Test / validate flight plan", new TestFlightPlanAction());

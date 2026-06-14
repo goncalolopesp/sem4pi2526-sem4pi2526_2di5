@@ -3,6 +3,7 @@ package pt.isep.sem4pi.application.controller.flightplan;
 import eapli.framework.application.UseCaseController;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+import pt.isep.sem4pi.application.service.flightplan.CreateFlightPlanFromFileService;
 import pt.isep.sem4pi.application.service.flightplan.CreateFlightPlanService;
 import pt.isep.sem4pi.application.service.flightplan.ImportFlightPlanService;
 import pt.isep.sem4pi.domain.model.flight.DTO.FlightPlanImportResultDTO;
@@ -36,6 +37,6 @@ public class ImportFlightPlanController {
 
     public FlightPlanImportResultDTO importFlightPlan(final String filePath) {
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.PILOT, SEM4PIRoles.ADMIN);
-        return service.importFlightPlan(filePath);
+        return new CreateFlightPlanFromFileService(service).createFromFile(filePath);
     }
 }

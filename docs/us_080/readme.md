@@ -23,5 +23,5 @@ As Pilot, I want to register a flight plan for a route. I must add the aircraft,
 
 ## Related stories
 
-- **US081:** import plan from DSL file.
+- **US121:** import plan from DSL file — see [docs/us_121/readme.md](../us_121/readme.md).
 - **US085:** test/validate flight plan — see [docs/us_085/readme.md](../us_085/readme.md).
