@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
+import pt.isep.sem4pi.application.viadto.GeneratedReportDTO;
 import pt.isep.sem4pi.domain.model.reporting.Report;
 import pt.isep.sem4pi.domain.model.reporting.ReportMetadata;
 import pt.isep.sem4pi.domain.repositories.ReportMetadataRepository;

@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.reporting;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.reporting.GenerateMonthlyReportController;
-import pt.isep.sem4pi.application.service.reporting.GeneratedReportDTO;
+import pt.isep.sem4pi.application.viadto.GeneratedReportDTO;
 
 public class GenerateMonthlyReportUI extends AbstractUI {
 

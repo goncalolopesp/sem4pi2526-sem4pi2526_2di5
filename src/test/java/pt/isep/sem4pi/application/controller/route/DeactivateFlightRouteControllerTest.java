@@ -3,6 +3,7 @@ package pt.isep.sem4pi.application.controller.route;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import pt.isep.sem4pi.application.service.route.DeactivateFlightRouteService;
 import pt.isep.sem4pi.domain.model.route.FlightRoute;
 import pt.isep.sem4pi.domain.repositories.FlightRouteRepository;
@@ -31,6 +32,9 @@ import static org.mockito.Mockito.*;
  */
 public class DeactivateFlightRouteControllerTest {
 
+    /** Mock authorization service */
+    private AuthorizationService mockAuthz;
+
     /** Mock flight route deactivation service */
     private DeactivateFlightRouteService mockService;
     
@@ -45,9 +49,10 @@ public class DeactivateFlightRouteControllerTest {
      */
     @Before
     public void setUp() {
+        mockAuthz = Mockito.mock(AuthorizationService.class);
         mockService = Mockito.mock(DeactivateFlightRouteService.class);
         mockRouteRepo = Mockito.mock(FlightRouteRepository.class);
-        controller = new DeactivateFlightRouteController(mockService, mockRouteRepo);
+        controller = new DeactivateFlightRouteController(mockAuthz, mockService, mockRouteRepo);
     }
 
     // ========================

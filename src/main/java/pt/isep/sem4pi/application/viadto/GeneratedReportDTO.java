@@ -1,4 +1,4 @@
-package pt.isep.sem4pi.application.service.reporting;
+package pt.isep.sem4pi.application.viadto;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;

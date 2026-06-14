@@ -20,6 +20,8 @@ public final class RemoteAccessProtocol {
     public static final String OK = "OK";
     public static final String ERR = "ERR";
 
+    public static final String FIELD_SEP = ";";
+
     public static int resolvePort() {
         final String prop = System.getProperty("remote.access.server.port");
         if (prop != null && !prop.isBlank()) {
