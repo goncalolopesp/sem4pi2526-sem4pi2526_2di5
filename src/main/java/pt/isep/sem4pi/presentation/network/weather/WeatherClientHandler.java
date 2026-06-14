@@ -90,7 +90,7 @@ public final class WeatherClientHandler implements Runnable {
                 final String trimmed = line.trim();
                 if (pendingImport != null) {
                     WeatherServerLog.log("<< " + remote + " IMPORT_CHUNK "
-                            + (pendingImport.getReceivedChunks() + 1) + "/"
+                            + pendingImport.getReceivedChunks() + 1 + "/"
                             + pendingImport.getExpectedChunks());
                     receiveImportChunk(trimmed, out);
                     continue;
@@ -145,9 +145,6 @@ public final class WeatherClientHandler implements Runnable {
                     return true;
                 case WeatherProtocol.CMD_CONSULT:
                     handleConsult(line, out);
-                    return true;
-                case "COLLABORATOR":
-                    handleCollaborator(out);
                     return true;
                 case WeatherProtocol.CMD_QUIT:
                     send(out, WeatherProtocol.OK + " Bye.");
@@ -261,6 +258,7 @@ public final class WeatherClientHandler implements Runnable {
 
         send(out, WeatherProtocol.OK + " Weather data registered for area " + areaId + " on " + date
                 + " (" + startTime + " - " + endTime + ").");
+        logRemoteAccess(currentUsername(), RemoteAccessEventType.REGISTER_WEATHER_DATA);
     }
 
     private void handleImport(final String line, final BufferedWriter out) throws IOException {
@@ -352,25 +350,11 @@ public final class WeatherClientHandler implements Runnable {
             for (final String error : errors) {
                 send(out, error);
             }
+            logRemoteAccess(currentUsername(), RemoteAccessEventType.IMPORT_WEATHER_DATA);
         } finally {
             deleteQuietly(tempFile);
             deleteQuietly(tempDir);
         }
-    }
-
-    private void handleCollaborator(final BufferedWriter out) throws IOException {
-        ensureAuthenticated();
-        final boolean authorized = runAuthenticated(() -> {
-            final AuthorizationService authz = AuthzRegistry.authorizationService();
-            return authz.isAuthenticatedUserAuthorizedTo(
-                    SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR);
-        });
-        if (!authorized) {
-            send(out, WeatherProtocol.ERR + " Access denied.");
-            return;
-        }
-        send(out, WeatherProtocol.OK
-                + " Air Transport Company Collaborator access granted.");
     }
 
     private void handleConsult(final String line, final BufferedWriter out) throws IOException {
@@ -394,6 +378,7 @@ public final class WeatherClientHandler implements Runnable {
 
         if (results.isEmpty()) {
             send(out, WeatherProtocol.OK + " 0 " + WeatherProtocol.NO_DATA);
+            logRemoteAccess(currentUsername(), RemoteAccessEventType.CONSULT_WEATHER_DATA);
             return;
         }
 
@@ -410,6 +395,7 @@ public final class WeatherClientHandler implements Runnable {
                     String.valueOf(dto.getHumidityPercentage()),
                     String.valueOf(dto.getAltitudeMeters())));
         }
+        logRemoteAccess(currentUsername(), RemoteAccessEventType.CONSULT_WEATHER_DATA);
     }
 
     private WeatherImportResultDTO runImportWithKeepalive(
@@ -476,7 +462,6 @@ public final class WeatherClientHandler implements Runnable {
         send(out, "  IMPORT_BEGIN <fileName> <fileType|-> <chunkCount>  (+ base64 chunk lines)");
         send(out, "  IMPORT <fileName> <fileType|-> <base64Content>  (legacy, small files)");
         send(out, "  CONSULT <areaId> <yyyy-MM-dd>");
-        send(out, "  COLLABORATOR");
         send(out, "  LOGOUT | QUIT | HELP");
     }
 

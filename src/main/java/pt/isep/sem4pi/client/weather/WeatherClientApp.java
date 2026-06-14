@@ -26,30 +26,22 @@ import java.util.Set;
 import pt.isep.sem4pi.presentation.network.weather.WeatherDataFileResolver;
 import pt.isep.sem4pi.presentation.network.weather.WeatherProtocol;
 
-import pt.isep.sem4pi.application.controller.aircraft.AddAircraftController;
-import pt.isep.sem4pi.application.controller.aircraft.RetireAircraftController;
-import pt.isep.sem4pi.application.controller.airtransportcompany.ListCompanyFleetController;
-import pt.isep.sem4pi.application.controller.route.CreateFlightRouteController;
-import pt.isep.sem4pi.application.controller.route.DeactivateFlightRouteController;
-
-import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
-import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
-import pt.isep.sem4pi.domain.model.route.DTO.FlightRouteDTO;
-
-import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
-
 public final class WeatherClientApp {
 
     private static final String DEFAULT_HOST = "127.0.0.1";
     private static final int DEFAULT_PORT = 8044;
     private static final int CONNECT_TIMEOUT_MS = 5000;
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+    private static final String SERVICE_WEATHER = "WEATHER";
+
+    private static final int ACTION_LOGOUT = -1;
+    private static final int ACTION_SELECT = 0;
+    private static final int ACTION_QUIT = 1;
 
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_WEATHER_PERSON = "WEATHER_PERSON";
     private static final String ROLE_PILOT = "PILOT";
     private static final String ROLE_FLIGHT_CONTROL_OPERATOR = "FLIGHT_CONTROL_OPERATOR";
-    private static final String ROLE_AIR_TRANSPORT_COMPANY_COLLABORATOR = "AIR_TRANSPORT_COMPANY_COLLABORATOR";
 
     private final BufferedReader in;
     private final BufferedWriter out;
@@ -57,6 +49,7 @@ public final class WeatherClientApp {
 
     private String username;
     private Set<String> roles = new HashSet<>();
+    private List<String> availableServices = new ArrayList<>();
     private boolean connected = true;
 
     private WeatherClientApp(final BufferedReader in, final BufferedWriter out) {
@@ -124,6 +117,7 @@ public final class WeatherClientApp {
             }
             if (response.startsWith("OK")) {
                 parseLogin(response, user);
+                parseMenu(readLine());
                 System.out.println("Welcome " + username + " (roles: " + String.join(", ", roles) + ")");
                 return true;
             }
@@ -150,14 +144,77 @@ public final class WeatherClientApp {
                 || roles.contains(ROLE_FLIGHT_CONTROL_OPERATOR);
     }
 
-    private boolean isAirTransportCollaborator() {
-        return roles.contains(ROLE_AIR_TRANSPORT_COMPANY_COLLABORATOR)
-                || roles.contains(ROLE_ADMIN);
+    private void parseMenu(final String menuLine) {
+        availableServices.clear();
+        if (menuLine == null || !menuLine.startsWith("OK MENU ")) {
+            return;
+        }
+        final String services = menuLine.substring("OK MENU ".length()).trim();
+        if (!"-".equals(services) && !services.isEmpty()) {
+            availableServices.addAll(Arrays.asList(services.split(",")));
+        }
     }
 
     private boolean sessionMenu() throws IOException {
         while (true) {
-            printMenu();
+            final int action = serviceSelectionMenu();
+            if (action == ACTION_QUIT) {
+                return true;
+            }
+            if (action == ACTION_LOGOUT) {
+                return false;
+            }
+            final int weatherAction = weatherOperationsMenu();
+            if (weatherAction == ACTION_QUIT) {
+                return true;
+            }
+            if (weatherAction == ACTION_LOGOUT) {
+                return false;
+            }
+        }
+    }
+
+    private int serviceSelectionMenu() throws IOException {
+        while (true) {
+            printServiceMenu();
+            final String option = console.nextLine().trim();
+
+            if ("1".equals(option) && availableServices.contains(SERVICE_WEATHER)) {
+                sendLine("SELECT " + SERVICE_WEATHER);
+                final String response = readLine();
+                if (response == null) {
+                    System.out.println("Connection closed by server.");
+                    connected = false;
+                    return ACTION_LOGOUT;
+                }
+                if (response.startsWith("OK")) {
+                    System.out.println(response);
+                    return ACTION_SELECT;
+                }
+                System.out.println(response);
+                continue;
+            }
+
+            switch (option) {
+                case "9" -> {
+                    logoutQuietly();
+                    return ACTION_LOGOUT;
+                }
+                case "0" -> {
+                    if (connected) {
+                        sendLine("QUIT");
+                        System.out.println(readLine());
+                    }
+                    return ACTION_QUIT;
+                }
+                default -> System.out.println("Invalid option.");
+            }
+        }
+    }
+
+    private int weatherOperationsMenu() throws IOException {
+        while (true) {
+            printWeatherMenu();
             final String option = console.nextLine().trim();
 
             if (isWeatherManager() && ("1".equals(option) || "2".equals(option))) {
@@ -180,108 +237,59 @@ public final class WeatherClientApp {
                 }
                 continue;
             }
-            if (isAirTransportCollaborator()) {
-
-                switch (option) {
-
-                    case "4" -> {
-                        addAircraft();
-                        continue;
-                    }
-
-                    case "5" -> {
-                        retireAircraft();
-                        continue;
-                    }
-
-                    case "6" -> {
-                        listFleet();
-                        continue;
-                    }
-
-                    case "7" -> {
-                        createFlightRoute();
-                        continue;
-                    }
-
-                    case "8" -> {
-                        deactivateFlightRoute();
-                        continue;
-                    }
-
-                    case "11" -> {
-                        System.out.println("US075 not implemented.");
-                        continue;
-                    }
-
-                    case "12" -> {
-                        System.out.println("US076 not implemented.");
-                        continue;
-                    }
-
-                    case "13" -> {
-                        System.out.println("US077 not implemented.");
-                        continue;
-                    }
-                }
-            }
 
             switch (option) {
+                case "8" -> {
+                    sendLine("BACK");
+                    final String response = readLine();
+                    if (response != null) {
+                        System.out.println(response);
+                    }
+                    parseMenu(readLine());
+                    return ACTION_SELECT;
+                }
                 case "9" -> {
                     logoutQuietly();
-                    return false;
+                    return ACTION_LOGOUT;
                 }
                 case "0" -> {
                     if (connected) {
                         sendLine("QUIT");
                         System.out.println(readLine());
                     }
-                    return true;
+                    return ACTION_QUIT;
                 }
                 default -> System.out.println("Invalid option.");
             }
         }
     }
 
-    private void printMenu() {
+    private void printServiceMenu() {
         System.out.println();
-        System.out.println("=== Remote Access [" + username + "] ===");
+        System.out.println("=== Remote Access Services [" + username + "] ===");
+        if (availableServices.contains(SERVICE_WEATHER)) {
+            System.out.println("1. Weather Data (US44)");
+        } else {
+            System.out.println("(No remote access services available for your role.)");
+        }
+        System.out.println("9. Logout");
+        System.out.println("0. Quit");
+        System.out.print("Option: ");
+    }
+
+    private void printWeatherMenu() {
+        System.out.println();
+        System.out.println("=== Weather Data (US44) [" + username + "] ===");
         final boolean manager = isWeatherManager();
         final boolean consultant = isWeatherConsultant();
-        final boolean collaborator = isAirTransportCollaborator();
-
-        boolean hasOperations = false;
-
-        if (manager || consultant) {
-            hasOperations = true;
-            System.out.println("--- Weather Data ---");
-            if (manager) {
-                System.out.println("1. Register weather data (US041)");
-                System.out.println("2. Import bulk weather data (US042)");
-            }
-            if (consultant) {
-                System.out.println("3. Consult weather data (US043)");
-            }
+        if (manager) {
+            System.out.println("1. Register weather data (US041)");
+            System.out.println("2. Import bulk weather data (US042)");
         }
-        if (collaborator) {
-
-            hasOperations = true;
-
-            System.out.println("--- Air Transport Company ---");
-            System.out.println("4. Add aircraft (US070)");
-            System.out.println("5. Retire aircraft (US071)");
-            System.out.println("6. List fleet (US072)");
-            System.out.println("7. Create flight route (US073)");
-            System.out.println("8. Deactivate flight route (US074)");
-
-            System.out.println("11. Add pilot (US075) (Not implemented)");
-            System.out.println("12. List pilot roster (US076) (Not implemented)");
-            System.out.println("13. Remove pilot (US077) (Not implemented)");
+        if (consultant) {
+            System.out.println("3. Consult weather data (US043)");
         }
-
-        if (!hasOperations) {
-            System.out.println("(No remote operations available for your role.)");
-        }
+        System.out.println("8. Back to services");
         System.out.println("9. Logout");
         System.out.println("0. Quit");
         System.out.print("Option: ");
@@ -454,7 +462,9 @@ public final class WeatherClientApp {
         } else {
             System.out.println("Session ended (connection was lost).");
         }
-        connected = false;
+        username = null;
+        roles = new HashSet<>();
+        availableServices.clear();
     }
 
     private void sendLine(final String message) throws IOException {
@@ -502,146 +512,5 @@ public final class WeatherClientApp {
             chunks.add(base64.substring(i, Math.min(i + chunkSize, base64.length())));
         }
         return chunks;
-    }
-
-    private void addAircraft() {
-        try {
-
-            System.out.print("Company IATA: ");
-            String company = console.nextLine();
-
-            System.out.print("Registration: ");
-            String reg = console.nextLine();
-
-            System.out.print("Manufacturer: ");
-            String manufacturer = console.nextLine();
-
-            System.out.print("Model: ");
-            String model = console.nextLine();
-
-            System.out.print("Country: ");
-            String country = console.nextLine();
-
-            System.out.print("Economy seats: ");
-            int e = Integer.parseInt(console.nextLine());
-
-            System.out.print("Business seats: ");
-            int b = Integer.parseInt(console.nextLine());
-
-            System.out.print("First seats: ");
-            int f = Integer.parseInt(console.nextLine());
-
-            AddAircraftController controller =
-                    new AddAircraftController(
-                            PersistenceContext.repositories().airTransportCompanies(),
-                            PersistenceContext.repositories().aircraftModels()
-                    );
-
-            controller.addAircraft(company, reg, manufacturer, model, country, e, b, f);
-
-            System.out.println("Aircraft added successfully.");
-
-        } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
-        }
-    }
-
-    private void retireAircraft() {
-        try {
-            System.out.print("Aircraft registration: ");
-            String reg = console.nextLine();
-
-            RetireAircraftController controller =
-                    new RetireAircraftController();
-
-            controller.retireAircraft(
-                    new AircraftRegistration(reg)
-            );
-
-            System.out.println("Aircraft retired successfully.");
-
-        } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
-        }
-    }
-
-    private void listFleet() {
-
-        try {
-            ListCompanyFleetController controller =
-                    new ListCompanyFleetController();
-
-            Iterable<Aircraft> fleet =
-                    controller.listMyCompanyFleet(
-                            ListCompanyFleetController.FleetSortOption.REGISTRATION
-                    );
-
-            System.out.println("=== Fleet ===");
-
-            for (Aircraft a : fleet) {
-                System.out.println(a);
-            }
-
-        } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
-        }
-    }
-
-    private void createFlightRoute() {
-
-        try {
-            System.out.print("Route ID: ");
-            String routeId = console.nextLine();
-
-            System.out.print("Company IATA: ");
-            String company = console.nextLine();
-
-            System.out.print("Origin airport: ");
-            String origin = console.nextLine();
-
-            System.out.print("Destination airport: ");
-            String destination = console.nextLine();
-
-            FlightRouteDTO dto = new FlightRouteDTO();
-
-            dto.setRouteID(routeId);
-            dto.setCompanyCode(company);
-            dto.setOriginAirport(origin);
-            dto.setDestinationAirport(destination);
-
-            CreateFlightRouteController controller =
-                    new CreateFlightRouteController();
-
-            controller.createFlightRoute(dto);
-
-            System.out.println("Flight route created successfully.");
-
-        } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
-        }
-    }
-
-    private void deactivateFlightRoute() {
-
-        try {
-            System.out.print("Route ID: ");
-            String routeId = console.nextLine();
-
-            System.out.print("Deactivation date (yyyy-mm-dd): ");
-            String date = console.nextLine();
-
-            DeactivateFlightRouteController controller =
-                    new DeactivateFlightRouteController();
-
-            controller.deactivateRoute(
-                    routeId,
-                    LocalDate.parse(date)
-            );
-
-            System.out.println("Route deactivated successfully.");
-
-        } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
-        }
     }
 }
