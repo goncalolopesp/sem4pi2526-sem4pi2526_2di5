@@ -7,7 +7,9 @@ import pt.isep.sem4pi.infrastructure.bootstrap.BackofficeConfigurationBootstrapp
 import pt.isep.sem4pi.infrastructure.bootstrap.MasterUsersBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airport.AirportBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.AirTransportCompanyBootstrapper;
+import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.CompanyFleetBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.FlightRouteBootstrapper;
+import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.PilotBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.weatherdata.WeatherBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirTransportCompanyRepository;
 import pt.isep.sem4pi.infrastructure.persistence.JPA.JpaAirportRepository;
@@ -41,6 +43,8 @@ public final class MainServer {
         new WeatherBootstrapper(new JpaWeatherBatchRepository()).execute();
         new AirTransportCompanyBootstrapper(new JpaAirTransportCompanyRepository()).execute();
         new FlightRouteBootstrapper().execute();
+        new CompanyFleetBootstrapper().execute();
+        new PilotBootstrapper().execute();
     }
 
     private static int resolvePort(final String[] args) {

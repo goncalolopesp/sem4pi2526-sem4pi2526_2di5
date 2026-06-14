@@ -28,11 +28,15 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
 
     private String username;
     private String password;
+    private String auditUsername;
     private boolean authenticated;
     private Set<String> roles = Set.of();
     private List<RemoteAccessService> availableServices = List.of();
     private RemoteAccessService selectedService;
+    private RemoteAccessService loggingService;
     private WeatherRemoteHandler weatherHandler;
+    private PilotRemoteHandler pilotHandler;
+    private AirTransportCompanyRemoteHandler airTransportHandler;
 
     public RemoteAccessClientHandler(final Socket socket) {
         this.socket = socket;
@@ -64,6 +68,11 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                     weatherHandler.receiveImportChunk(trimmed, out);
                     continue;
                 }
+                if (pilotHandler != null && pilotHandler.hasPendingImport()) {
+                    RemoteAccessLog.log("<< " + remote + " PLAN_LINE");
+                    pilotHandler.receiveImportLine(trimmed, out);
+                    continue;
+                }
                 RemoteAccessLog.log("<< " + remote + " " + RemoteAccessLog.summarizeIncoming(trimmed));
                 final boolean keepGoing = dispatch(trimmed, out);
                 if (!keepGoing) {
@@ -93,6 +102,24 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                     return dispatchGlobal(line, command, out);
                 }
                 return weatherHandler.dispatch(line, out);
+            }
+            if (selectedService == RemoteAccessService.PILOT) {
+                if (RemoteAccessProtocol.CMD_BACK.equals(command)) {
+                    return handleBack(out);
+                }
+                if (isGlobalCommand(command)) {
+                    return dispatchGlobal(line, command, out);
+                }
+                return pilotHandler.dispatch(line, out);
+            }
+            if (selectedService == RemoteAccessService.ATCC) {
+                if (RemoteAccessProtocol.CMD_BACK.equals(command)) {
+                    return handleBack(out);
+                }
+                if (isGlobalCommand(command)) {
+                    return dispatchGlobal(line, command, out);
+                }
+                return airTransportHandler.dispatch(line, out);
             }
 
             return dispatchGlobal(line, command, out);
@@ -155,14 +182,27 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     }
 
     private void handleLogin(final String line, final BufferedWriter out) throws IOException {
-        final String[] parts = line.split("\\s+", 3);
+        final String[] parts = line.split("\\s+", 4);
         if (parts.length < 3) {
-            send(out, RemoteAccessProtocol.ERR + " Usage: LOGIN <username> <password>");
+            send(out, RemoteAccessProtocol.ERR + " Usage: LOGIN <username> <password> [service]");
             logRemoteAccess(parts.length > 1 ? parts[1] : "-", RemoteAccessEventType.LOGIN_FAILED);
             return;
         }
         final String user = parts[1];
         final String pass = parts[2];
+        auditUsername = user;
+        final RemoteAccessService requestedService;
+        if (parts.length == 4) {
+            requestedService = RemoteAccessService.fromId(parts[3]);
+            if (requestedService == null) {
+                send(out, RemoteAccessProtocol.ERR + " Unknown service: " + parts[3]);
+                return;
+            }
+            loggingService = requestedService;
+        } else {
+            requestedService = null;
+            loggingService = null;
+        }
 
         final String roleList;
         synchronized (AUTHZ_LOCK) {
@@ -186,8 +226,13 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         this.authenticated = true;
         this.roles = parseRoles(roleList);
         this.availableServices = RemoteAccessServiceRegistry.availableServices(this.roles);
+        if (requestedService != null && !availableServices.contains(requestedService)) {
+            loggingService = null;
+        }
         this.selectedService = null;
         this.weatherHandler = null;
+        this.pilotHandler = null;
+        this.airTransportHandler = null;
 
         send(out, RemoteAccessProtocol.OK + " " + user + " " + roleList);
         sendMenu(out);
@@ -212,7 +257,15 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
             RemoteAccessLog.log("User " + username + " left service " + selectedService.id());
         }
         selectedService = null;
+        if (weatherHandler != null) {
+            weatherHandler.clearPendingImport();
+        }
+        if (pilotHandler != null) {
+            pilotHandler.clearPendingImport();
+        }
         weatherHandler = null;
+        pilotHandler = null;
+        airTransportHandler = null;
         send(out, RemoteAccessProtocol.OK + " Returned to service menu.");
         sendMenu(out);
         return true;
@@ -241,8 +294,17 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         }
 
         selectedService = service;
+        loggingService = service;
         if (service == RemoteAccessService.WEATHER) {
             weatherHandler = new WeatherRemoteHandler(this);
+            pilotHandler = null;
+        } else if (service == RemoteAccessService.PILOT) {
+            pilotHandler = new PilotRemoteHandler(this);
+            weatherHandler = null;
+            airTransportHandler = null;
+        } else if (service == RemoteAccessService.ATCC) {
+            airTransportHandler = new AirTransportCompanyRemoteHandler(this);
+            weatherHandler = null;
         }
         send(out, RemoteAccessProtocol.OK + " Selected " + service.label()
                 + " (" + service.userStory() + "). Type HELP for commands.");
@@ -258,6 +320,14 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     private void sendHelp(final BufferedWriter out) throws IOException {
         if (selectedService == RemoteAccessService.WEATHER) {
             weatherHandler.sendHelp(out);
+            return;
+        }
+        if (selectedService == RemoteAccessService.PILOT) {
+            pilotHandler.sendHelp(out);
+            return;
+        }
+        if (selectedService == RemoteAccessService.ATCC) {
+            airTransportHandler.sendHelp(out);
             return;
         }
         send(out, RemoteAccessProtocol.OK + " Available commands:");
@@ -287,6 +357,8 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
         availableServices = List.of();
         selectedService = null;
         weatherHandler = null;
+        pilotHandler = null;
+        airTransportHandler = null;
     }
 
     @Override
@@ -332,6 +404,8 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                 this.authenticated = false;
                 this.selectedService = null;
                 this.weatherHandler = null;
+                this.pilotHandler = null;
+                this.airTransportHandler = null;
                 throw new SecurityException("Session expired or access revoked. Please LOGIN again.");
             }
             try {
@@ -382,7 +456,10 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
     }
 
     private String currentUsername() {
-        return username == null || username.isBlank() ? "-" : username;
+        if (username != null && !username.isBlank()) {
+            return username;
+        }
+        return auditUsername == null || auditUsername.isBlank() ? "-" : auditUsername;
     }
 
     private void logRemoteAccess(final String user, final RemoteAccessEventType eventType) {
@@ -390,8 +467,21 @@ public final class RemoteAccessClientHandler implements Runnable, AuthenticatedS
                 user,
                 clientIp(),
                 clientPort(),
-                RemoteAccessService.WEATHER.userStory(),
+                resolveLoggingService(),
                 eventType);
+    }
+
+    private String resolveLoggingService() {
+        if (selectedService != null) {
+            return selectedService.userStory();
+        }
+        if (loggingService != null) {
+            return loggingService.userStory();
+        }
+        if (availableServices.size() == 1) {
+            return availableServices.get(0).userStory();
+        }
+        return RemoteAccessService.WEATHER.userStory();
     }
 
     private static void sendSafe(final BufferedWriter out, final String message) {

@@ -85,7 +85,7 @@ public class CreateFlightRouteController {
      * @throws IllegalArgumentException if the DTO data is invalid
      */
     public FlightRoute createFlightRoute(FlightRouteDTO flightRouteDTO) {
-        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
+        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR, SEM4PIRoles.ADMIN);
         return service.createFlightRoute(flightRouteDTO);
     }
 
@@ -99,7 +99,7 @@ public class CreateFlightRouteController {
      * @throws AuthorizationException if the user doesn't have the required roles
      */
     public Iterable<AirTransportCompany> getCompanies() {
-        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
+        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR, SEM4PIRoles.ADMIN);
         return companyRepo.findAll();
     }
 
@@ -113,7 +113,7 @@ public class CreateFlightRouteController {
      * @throws AuthorizationException if the user doesn't have the required roles
      */
     public Iterable<Airport> getAirports() {
-        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.BACKOFFICE_OPERATOR, SEM4PIRoles.ADMIN);
+        authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR, SEM4PIRoles.ADMIN);
         return airportRepo.findAll();
     }
 }

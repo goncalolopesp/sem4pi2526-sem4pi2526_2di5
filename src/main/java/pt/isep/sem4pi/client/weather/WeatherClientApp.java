@@ -269,7 +269,8 @@ public final class WeatherClientApp {
         System.out.println("=== Remote Access Services [" + username + "] ===");
         if (availableServices.contains(SERVICE_WEATHER)) {
             System.out.println("1. Weather Data (US44)");
-        } else {
+        }
+        if (availableServices.isEmpty()) {
             System.out.println("(No remote access services available for your role.)");
         }
         System.out.println("9. Logout");
