@@ -8,22 +8,22 @@ As an Air Transport Company Collaborator, I want to remotely access the system u
 
 ## 2. Acceptance Criteria
 
-| Critério | Estado |
-|----------|--------|
-| Cliente TCP dedicado | Implementado (`AirTransportCompanyClientApp`) |
-| Interação limitada a TCP (sem acesso directo à BD no cliente) | Implementado |
-| Operações ATCC disponíveis remotamente | Implementado (US070–US074) |
-| Autenticação e autorização | Implementado (role `AIR_TRANSPORT_COMPANY_COLLABORATOR` ou `ADMIN`) |
-| Integração com US090 (logging remoto) | Implementado (identificador de serviço `US78`) |
+| Criterion | Status |
+|-----------|--------|
+| Dedicated TCP client | Implemented (`AirTransportCompanyClientApp`) |
+| TCP-only interaction (no direct database access on the client) | Implemented |
+| ATCC operations available remotely | Implemented (US070–US074) |
+| Authentication and authorization | Implemented (role `AIR_TRANSPORT_COMPANY_COLLABORATOR` or `ADMIN`) |
+| US090 integration (remote logging) | Implemented (service identifier `US78`) |
 
-**Nota:** As user stories de pilotos (US075, US076, US077) não estão incluídas nesta implementação porque ainda não existem no projecto.
+**Note:** Pilot user stories (US075, US076, US077) are not included in this implementation because they do not yet exist in the project.
 
 ---
 
-## 3. User Stories expostas remotamente
+## 3. Remotely Exposed User Stories
 
-| US | Operação | Comando TCP |
-|----|----------|-------------|
+| US | Operation | TCP Command |
+|----|-----------|-------------|
 | US070 | Add aircraft to fleet | `ADD_AIRCRAFT` |
 | US071 | Decommission aircraft | `RETIRE_AIRCRAFT` |
 | US072 | List company fleet | `LIST_FLEET` |
@@ -31,18 +31,18 @@ As an Air Transport Company Collaborator, I want to remotely access the system u
 | US073 | Create flight route | `CREATE_ROUTE` |
 | US074 | Deactivate flight route | `DEACTIVATE_ROUTE` |
 
-Opções de ordenação para `LIST_FLEET`: `REGISTRATION`, `MAKER`, `MODEL`, `CAPACITY`, `AGE`.
+Sort options for `LIST_FLEET`: `REGISTRATION`, `MAKER`, `MODEL`, `CAPACITY`, `AGE`.
 
 ---
 
-## 4. Arquitectura
+## 4. Architecture
 
-A US78 partilha o **servidor TCP unificado** com a US44, mas está **separada** a nível de serviço, handler e cliente.
+US078 shares the **unified TCP server** with US044, but is **separated** at the service, handler, and client level.
 
 ```text
 AirTransportCompanyClientApp (US78)
         │
-        │  TCP (porta 8044 por defeito)
+        │  TCP (default port 8044)
         ▼
 RemoteAccessTcpServer
         │
@@ -57,37 +57,37 @@ AirTransportCompanyRemoteHandler
         └── DeactivateFlightRouteController
         │
         ▼
-   Persistência (servidor)
+   Persistence (server-side)
 ```
 
-A US44 (`WeatherClientApp` + `WeatherRemoteHandler`) permanece independente e usa `SELECT WEATHER`.
+US044 (`WeatherClientApp` + `WeatherRemoteHandler`) remains independent and uses `SELECT WEATHER`.
 
-Componentes principais:
+Main components:
 
-| Componente | Pacote / ficheiro |
-|------------|-------------------|
-| Cliente | `pt.isep.sem4pi.client.airtransportcompany.AirTransportCompanyClientApp` |
-| Handler servidor | `pt.isep.sem4pi.presentation.network.remoteaccess.AirTransportCompanyRemoteHandler` |
-| Registo de serviço | `RemoteAccessService.ATCC` (`US78`) |
-| Servidor TCP | `RemoteAccessTcpServer` / `MainServer` |
+| Component | Package / file |
+|-----------|----------------|
+| Client | `pt.isep.sem4pi.client.airtransportcompany.AirTransportCompanyClientApp` |
+| Server handler | `pt.isep.sem4pi.presentation.network.remoteaccess.AirTransportCompanyRemoteHandler` |
+| Service registration | `RemoteAccessService.ATCC` (`US78`) |
+| TCP server | `RemoteAccessTcpServer` / `MainServer` |
 
 ---
 
-## 5. Protocolo TCP
+## 5. TCP Protocol
 
-### 5.1 Sessão
+### 5.1 Session
 
-1. Cliente liga ao servidor.
+1. Client connects to the server.
 2. `LOGIN <username> <password>`
-3. Servidor responde com roles e menu de serviços.
+3. Server responds with roles and service menu.
 4. `SELECT ATCC`
-5. Comandos de negócio ATCC.
-6. `BACK` — volta ao menu de serviços.
+5. ATCC business commands.
+6. `BACK` — return to the service menu.
 7. `LOGOUT` / `QUIT`
 
-Respostas usam prefixos `OK` ou `ERR` (definidos em `RemoteAccessProtocol`).
+Responses use `OK` or `ERR` prefixes (defined in `RemoteAccessProtocol`).
 
-### 5.2 Comandos ATCC
+### 5.2 ATCC Commands
 
 ```text
 ADD_AIRCRAFT <companyIata> <registration> <manufacturer> <model> <country> <eco> <bus> <first>
@@ -99,65 +99,65 @@ HELP
 BACK
 ```
 
-### 5.3 Exemplo — listar frota
+### 5.3 Example — list fleet
 
-**Cliente envia:**
+**Client sends:**
 ```text
 LIST_FLEET REGISTRATION
 ```
 
-**Servidor responde:**
+**Server responds:**
 ```text
 OK 2
 CS-TST;A320;Airbus;ACTIVE;180;5
 CS-RET;B737;Boeing;ACTIVE;160;8
 ```
 
-Cada linha de frota usa `;` como separador: registo, modelo, fabricante, estado, capacidade, idade.
+Each fleet line uses `;` as separator: registration, model, manufacturer, status, capacity, age.
 
 ---
 
-## 6. Autenticação e autorização
+## 6. Authentication and Authorization
 
-- Login validado pelo `AuthenticationController` no servidor.
-- Cada operação ATCC exige role `AIR_TRANSPORT_COMPANY_COLLABORATOR` ou `ADMIN`.
-- O cliente **não** acede a repositórios nem à base de dados; toda a lógica corre no servidor após autenticação TCP.
-- Utilizador de teste (bootstrap): `atccollaborator` / `Password1`
+- Login validated by `AuthenticationController` on the server.
+- Each ATCC operation requires role `AIR_TRANSPORT_COMPANY_COLLABORATOR` or `ADMIN`.
+- The client does **not** access repositories or the database; all logic runs on the server after TCP authentication.
+- Test user (bootstrap): `atccollaborator` / `Password1`
 
 ---
 
-## 7. Execução
+## 7. Running
 
-### Servidor (partilhado US44 + US78)
+### Server (shared US44 + US78)
 
 ```bash
 ./run-weather-server.sh
-# ou: ./run-weather-server.sh 8044
+# or: ./run-weather-server.sh 8044
 ```
 
-### Cliente US78
+### US78 client
 
 ```bash
 ./run-atcc-client.sh
-# ou: ./run-atcc-client.sh 127.0.0.1 8044
+# or: ./run-atcc-client.sh 127.0.0.1 8044
 ```
 
-Variáveis de ambiente opcionais para a porta do servidor:
+Optional environment variables for the server port:
 
 - `REMOTE_ACCESS_SERVER_PORT`
-- `WEATHER_SERVER_PORT` (compatibilidade)
+- `WEATHER_SERVER_PORT` (compatibility)
 
 ---
 
-## 8. Testes
+## 8. Tests
 
-Testes de integração TCP:
+TCP integration tests:
 
 - `src/test/java/pt/isep/sem4pi/presentation/network/remoteaccess/AirTransportCompanyRemoteAccessIT.java`
 
-Cobrem autenticação, selecção de serviço, autorização por role e listagem de frota.
+They cover authentication, service selection, role-based authorization, and fleet listing.
 
-Executar:
+Run:
 
 ```bash
 mvn test
@@ -165,18 +165,18 @@ mvn test
 
 ---
 
-## 9. Dependências
+## 9. Dependencies
 
-Esta US depende de:
+This user story depends on:
 
-- US030 — autenticação e autorização
-- US070–US074 — controllers de negócio já implementados
-- US044 — infraestrutura TCP unificada (`development`)
-- US090 — logging remoto (identificador `US78`)
+- US030 — authentication and authorization
+- US070–US074 — already implemented business controllers
+- US044 — unified TCP infrastructure (`development`)
+- US090 — remote logging (identifier `US78`)
 
 ---
 
-## 10. Limitações conhecidas
+## 10. Known Limitations
 
-- US075, US076 e US077 (gestão de pilotos) **não implementadas** — fora de scope até existirem controllers de domínio.
-- O cliente US78 e o cliente US44 ligam-se ao **mesmo servidor TCP**; a separação é feita por serviço (`SELECT ATCC` vs `SELECT WEATHER`), não por portas distintas.
+- US075, US076, and US077 (pilot management) are **not implemented** — out of scope until domain controllers exist.
+- The US78 client and the US44 client connect to the **same TCP server**; separation is done by service (`SELECT ATCC` vs `SELECT WEATHER`), not by different ports.
