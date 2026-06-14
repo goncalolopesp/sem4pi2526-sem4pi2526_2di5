@@ -1,0 +1,43 @@
+@startuml US080_SD
+title US080 - Create Flight Plan - Sequence Diagram
+
+actor "Pilot" as Pilot
+
+participant "CreateFlightPlanUI" as UI
+participant "CreateFlightPlan\nController" as Controller
+participant "CreateFlightPlan\nService" as Service
+participant "FlightRouteRepository" as RouteRepo
+participant "PilotRepository" as PilotRepo
+participant "FlightRepository" as FlightRepo
+participant "AirTransportCompany\nRepository" as CompanyRepo
+participant "FlightPlan" as Plan
+participant "FlightPlanRepository" as PlanRepo
+
+Pilot -> UI : select route, flight, pilot, legs
+UI -> UI : build CreateFlightPlanDTO
+UI -> Controller : createFlightPlan(dto)
+Controller -> Service : createFlightPlan(dto)
+
+Service -> RouteRepo : ofIdentity(routeId)
+RouteRepo --> Service : FlightRoute
+
+Service -> PilotRepo : ofIdentity(pilotId)
+PilotRepo --> Service : Pilot
+
+Service -> FlightRepo : ofIdentity(flightId)
+FlightRepo --> Service : Flight
+
+Service -> CompanyRepo : findByIataCode(companyCode)
+CompanyRepo --> Service : AirTransportCompany
+note right of Service: Validates pilot company,\naircraft fleet membership,\nleg/route alignment
+
+Service -> Plan ** : create(planId, flightId, type, route, legs, aircraft, pilot)
+note right of Plan: Status set to DRAFT
+
+Service -> PlanRepo : save(flightPlan)
+PlanRepo --> Service : savedPlan
+Service --> Controller : savedPlan
+Controller --> UI : savedPlan
+UI --> Pilot : display success message
+
+@enduml

@@ -1,0 +1,40 @@
+@startuml US081_SD
+title US081 - Import Flight Plan From File - Sequence Diagram
+
+actor "Pilot" as Pilot
+
+participant "ImportFlightPlanUI" as UI
+participant "ImportFlightPlan\nController" as Controller
+participant "ImportFlightPlan\nService" as Service
+participant "US120FlightPlan\nValidator" as Validator
+participant "US081FlightPlan\nMapper" as Mapper
+participant "CreateFlightPlan\nService" as CreateService
+participant "FlightPlanRepository" as PlanRepo
+
+Pilot -> UI : provide file path
+UI -> Controller : importFlightPlan(filePath)
+Controller -> Service : importFlightPlan(filePath)
+
+Service -> Validator : analyze(path)
+Validator --> Service : US120ValidationResult
+
+alt validation failed
+    Service --> Controller : FlightPlanImportResultDTO.failure(errors)
+    Controller --> UI : failure result
+    UI --> Pilot : display validation errors
+else validation succeeded
+    Service -> Mapper : map(parseTree)
+    Mapper --> Service : CreateFlightPlanDTO
+
+    Service -> CreateService : createFlightPlanFromDsl(dto, path)
+    note right of CreateService: US080 domain rules\n+ stores dslSourcePath
+    CreateService -> PlanRepo : save(flightPlan)
+    PlanRepo --> CreateService : savedPlan
+    CreateService --> Service : FlightPlan
+
+    Service --> Controller : FlightPlanImportResultDTO.success(planId)
+    Controller --> UI : success result
+    UI --> Pilot : display flight plan id
+end
+
+@enduml

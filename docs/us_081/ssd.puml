@@ -1,0 +1,20 @@
+@startuml US081_SSD
+title US081 - Import Flight Plan From File - SSD
+
+actor "Pilot" as Pilot
+participant "SEM4PI System" as System
+
+Pilot -> System : request to import flight plan from file
+System --> Pilot : request file path
+
+Pilot -> System : provide .dsldig5 file path
+
+alt file invalid (lexical, syntactic, or semantic)
+    System --> Pilot : display validation errors
+else domain validation fails
+    System --> Pilot : display domain error messages
+else import successful
+    System --> Pilot : display flight plan id (status DRAFT)
+end
+
+@enduml
