@@ -33,6 +33,7 @@ public final class WeatherClientApp {
     private static final int CONNECT_TIMEOUT_MS = 5000;
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
     private static final String SERVICE_WEATHER = "WEATHER";
+    private static final String SERVICE_PILOT = "PILOT";
 
     private static final int ACTION_LOGOUT = -1;
     private static final int ACTION_SELECT = 0;
@@ -195,6 +196,11 @@ public final class WeatherClientApp {
                 continue;
             }
 
+            if ("2".equals(option) && roles.contains(ROLE_PILOT)) {
+                pilotOperationsMenu();
+                continue;
+            }
+
             switch (option) {
                 case "9" -> {
                     logoutQuietly();
@@ -269,7 +275,10 @@ public final class WeatherClientApp {
         System.out.println("=== Remote Access Services [" + username + "] ===");
         if (availableServices.contains(SERVICE_WEATHER)) {
             System.out.println("1. Weather Data (US44)");
-        } else {
+        }
+        if (roles.contains(ROLE_PILOT)) {
+            System.out.println("2. Pilot Operations (US86)");
+        }else{
             System.out.println("(No remote access services available for your role.)");
         }
         System.out.println("9. Logout");
@@ -512,5 +521,48 @@ public final class WeatherClientApp {
             chunks.add(base64.substring(i, Math.min(i + chunkSize, base64.length())));
         }
         return chunks;
+    }
+    private void pilotOperationsMenu() {
+
+        while (true) {
+
+            System.out.println();
+            System.out.println("=== Pilot Operations (US86) [" + username + "] ===");
+
+            System.out.println("1. US080 - Create flight plan -> US075, US076 and US077 not implemented");
+            System.out.println("2. US081 - Create flight plan from file -> US075, US076 and US077 not implemented");
+            System.out.println("3. US082 - Insert weather data for flight -> US075, US076 and US077 not implemented");
+            System.out.println("4. US085 - Validate flight plan -> US075, US076 and US077 not implemented");
+
+            System.out.println("8. Back");
+            System.out.print("Option: ");
+
+            final String option = console.nextLine().trim();
+
+            switch (option) {
+
+                case "1" -> System.out.println(
+                        "US080 unavailable because US075, US076 and US077 are not implemented."
+                );
+
+                case "2" -> System.out.println(
+                        "US081 unavailable because US075, US076 and US077 are not implemented."
+                );
+
+                case "3" -> System.out.println(
+                        "US082 unavailable because US075, US076 and US077 are not implemented."
+                );
+
+                case "4" -> System.out.println(
+                        "US085 unavailable because US075, US076 and US077 are not implemented."
+                );
+
+                case "8" -> {
+                    return;
+                }
+
+                default -> System.out.println("Invalid option.");
+            }
+        }
     }
 }
