@@ -2,7 +2,8 @@ package pt.isep.sem4pi.presentation.network.remoteaccess;
 
 public enum RemoteAccessService {
 
-    WEATHER("WEATHER", "Weather Data", "US44");
+    WEATHER("WEATHER", "Weather Data", "US44"),
+    PILOT("PILOT", "Pilot Operations", "US86");
 
     private final String id;
     private final String label;
