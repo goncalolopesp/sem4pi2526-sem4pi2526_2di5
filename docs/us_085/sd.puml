@@ -1,0 +1,65 @@
+@startuml US085_SD
+title US085 - Test Flight Plan - Sequence Diagram
+
+actor "Pilot" as Pilot
+
+participant "TestFlightPlanUI" as UI
+participant "TestFlightPlan\nController" as Controller
+participant "TestFlightPlan\nService" as Service
+participant "US120FlightPlan\nValidator" as Validator
+participant "FlightPlanDsl\nPersistenceComparator" as Comparator
+participant "FlightPlanJson\nExporter" as Exporter
+participant "CFlightTestRunner" as CRunner
+participant "FlightPlan" as Plan
+participant "FlightPlanRepository" as PlanRepo
+
+Pilot -> UI : select draft flight plan
+UI -> Controller : testFlightPlan(planId)
+Controller -> Service : testFlightPlan(planId, username, canManageAll)
+
+Service -> PlanRepo : ofIdentity(planId)
+PlanRepo --> Service : FlightPlan
+
+Service -> Validator : analyze(dslSourcePath)
+Validator --> Service : US120ValidationResult
+
+alt DSL validation failed
+    Service -> Plan : reject()
+    Service -> PlanRepo : save(plan)
+    Service --> Controller : TestFlightPlanResultDTO (rejected)
+    Controller --> UI : result
+    UI --> Pilot : display DSL errors
+else DSL valid
+    Service -> Comparator : compare(plan, dslDto)
+    Comparator --> Service : persistenceErrors
+
+    alt persistence mismatch
+        Service -> Plan : reject()
+        Service -> PlanRepo : save(plan)
+        Service --> Controller : TestFlightPlanResultDTO (rejected)
+        Controller --> UI : result
+        UI --> Pilot : display mismatch errors
+    else persistence matches
+        Service -> Exporter : export(plan, dslDto)
+        Exporter --> Service : jsonFilePath
+
+        Service -> CRunner : run(jsonPath, minAlt, reserveFuel, step, reportPath)
+        CRunner --> Service : FlightTestExecutionResult
+
+        alt C test success
+            Service -> Plan : validate()
+            Service -> PlanRepo : save(plan)
+            Service --> Controller : TestFlightPlanResultDTO (validated)
+            Controller --> UI : result
+            UI --> Pilot : display VALIDATED
+        else C test failure
+            Service -> Plan : reject()
+            Service -> PlanRepo : save(plan)
+            Service --> Controller : TestFlightPlanResultDTO (rejected)
+            Controller --> UI : result
+            UI --> Pilot : display C test report
+        end
+    end
+end
+
+@enduml

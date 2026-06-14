@@ -2,6 +2,8 @@ package pt.isep.sem4pi.infrastructure.persistence.memory;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
+import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
+import eapli.framework.infrastructure.authz.repositories.impl.inmemory.InMemoryUserRepository;
 import pt.isep.sem4pi.domain.repositories.*;
 import pt.isep.sem4pi.domain.usermanagement.Email;
 import pt.isep.sem4pi.domain.usermanagement.PhoneNumber;
@@ -15,35 +17,68 @@ import java.time.LocalDate;
 
 /**
  * Fábrica de repositórios em memória.
- *
+ * <p>
  * Usada como implementação padrão para persistência nas user stories US30-32.
  * Cria repositórios e semeia alguns utilizadores por omissão.
  */
 public class InMemoryRepositoryFactory implements RepositoryFactory {
 
-    private static eapli.framework.infrastructure.authz.domain.repositories.UserRepository userRepository;
-    private static BackofficeUserRepository backofficeUserRepository;
-    private static AircraftModelRepository aircraftModelRepository;
-    private static EngineModelRepository engineModelRepository;
-    private static ManufacturerRepository manufacturerRepository;
-    private static AirControlAreaRepository airControlAreaRepository;
-    private static AircraftRepository aircraftRepository;
-    private static FlightRepository flightRepository;
+    private eapli.framework.infrastructure.authz.domain.repositories.UserRepository userRepository;
+    private BackofficeUserRepository backofficeUserRepository;
+    private AircraftModelRepository aircraftModelRepository;
+    private EngineModelRepository engineModelRepository;
+    private ManufacturerRepository manufacturerRepository;
+    private AirControlAreaRepository airControlAreaRepository;
+    private AircraftRepository aircraftRepository;
+    private FlightRepository flightRepository;
+    private WeatherBatchRepository weatherBatchRepository;
+    private FlightRouteRepository flightRouteRepository;
+    private AirportRepository airportRepository;
+    private SimulationRepository simulationRepository;
+    private SimulationReportRepository simulationReportRepository;
+    private FlightPlanRepository flightPlanRepository;
+    private PilotRepository pilotRepository;
+    private ReportMetadataRepository reportMetadataRepository;
 
     @Override
     public TransactionalContext newTransactionalContext() {
-        return null;
+        return new TransactionalContext() {
+            @Override
+            public void beginTransaction() {
+                // no-op for in-memory repositories
+            }
+
+            @Override
+            public void commit() {
+                // no-op for in-memory repositories
+            }
+
+            @Override
+            public void rollback() {
+                // no-op for in-memory repositories
+            }
+
+            @Override
+            public void close() {
+                // no-op for in-memory repositories
+            }
+
+            @Override
+            public boolean isActive() {
+                return true;
+            }
+        };
     }
 
     @Override
-    public eapli.framework.infrastructure.authz.domain.repositories.UserRepository users(TransactionalContext tx) {
+    public UserRepository users(TransactionalContext tx) {
         return users();
     }
 
     @Override
-    public eapli.framework.infrastructure.authz.domain.repositories.UserRepository users() {
+    public UserRepository users() {
         if (userRepository == null) {
-            userRepository = new eapli.framework.infrastructure.authz.repositories.impl.inmemory.InMemoryUserRepository();
+            userRepository = new InMemoryUserRepository();
             seedDefaultUsers(userRepository);
         }
 
@@ -90,14 +125,14 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
 
     @Override
     public AirControlAreaRepository airControlAreas() {
-        if (airControlAreaRepository == null){
-            return new InMemoryAirControlAreaRepository();
+        if (airControlAreaRepository == null) {
+            airControlAreaRepository = new InMemoryAirControlAreaRepository();
         }
         return airControlAreaRepository;
     }
 
     @Override
-    public AirControlAreaRepository airControlAreas(TransactionalContext tx){
+    public AirControlAreaRepository airControlAreas(TransactionalContext tx) {
         return airControlAreas();
     }
 
@@ -125,6 +160,44 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
             flightRepository = new InMemoryFlightRepository();
         }
         return flightRepository;
+    }
+
+    @Override
+    public WeatherBatchRepository weatherBatches() {
+        if (weatherBatchRepository == null) {
+            weatherBatchRepository = new InMemoryWeatherBatchRepository();
+        }
+        return weatherBatchRepository;
+    }
+
+    @Override
+    public FlightRouteRepository flightRoutes() {
+        if (flightRouteRepository == null) {
+            flightRouteRepository = new InMemoryFlightRouteRepository();
+        }
+        return flightRouteRepository;
+    }
+
+    @Override
+    public AirportRepository airports() {
+        if (airportRepository == null) {
+            airportRepository = new InMemoryAirportRepository();
+        }
+        return airportRepository;
+    }
+
+    @Override
+    public SimulationRepository simulations() {
+        if (simulationRepository == null) {
+            simulationRepository = new InMemorySimulationRepository();
+        }
+
+        return simulationRepository;
+    }
+
+    @Override
+    public SimulationRepository simulations(TransactionalContext tx) {
+        return simulations();
     }
 
     private void seedDefaultUsers(final eapli.framework.infrastructure.authz.domain.repositories.UserRepository repo) {
@@ -167,11 +240,64 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
                     "bo",
                     "Backoffice User",
                     Email.valueOf("bo@example.org"),
-                    PhoneNumber.valueOf("+351000000000"),
+                    PhoneNumber.valueOf("+351900000000"),
                     LocalDate.now().plusYears(1),
                     LocalDate.now()
             );
             repo.save(bo);
         }
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports() {
+        if (simulationReportRepository == null) {
+            simulationReportRepository = new InMemorySimulationReportRepository();
+        }
+
+        return simulationReportRepository;
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports(TransactionalContext tx) {
+        return simulationReports();
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans() {
+        if (flightPlanRepository == null) {
+            flightPlanRepository = new InMemoryFlightPlanRepository();
+        }
+        return flightPlanRepository;
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans(TransactionalContext tx) {
+        return flightPlans();
+    }
+
+    @Override
+    public PilotRepository pilots() {
+        if (pilotRepository == null) {
+            pilotRepository = new InMemoryPilotRepository();
+        }
+        return pilotRepository;
+    }
+
+    @Override
+    public PilotRepository pilots(TransactionalContext tx) {
+        return pilots();
+    }
+
+    @Override
+    public ReportMetadataRepository reportMetadata() {
+        if (reportMetadataRepository == null) {
+            reportMetadataRepository = new InMemoryReportMetadataRepository();
+        }
+        return reportMetadataRepository;
+    }
+
+    @Override
+    public ReportMetadataRepository reportMetadata(final TransactionalContext tx) {
+        return reportMetadata();
     }
 }

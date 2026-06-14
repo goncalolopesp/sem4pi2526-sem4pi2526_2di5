@@ -1,0 +1,25 @@
+```plantuml
+@startuml US074_SSD
+title US074 - Deactivate Flight Route - SSD
+
+actor "ATCC" as Collab
+participant "SEM4PI System" as System
+
+Collab -> System : request to deactivate flight route
+System --> Collab : show list of active routes
+
+Collab -> System : select route
+System --> Collab : request deactivation date
+
+Collab -> System : input deactivation date (yyyy-MM-dd)
+alt date is in the past
+    System --> Collab : show error (date cannot be in the past)
+else planned flights exist after date
+    System --> Collab : show error (planned flights exist, impossible to deactivate)
+else valid date
+    System --> Collab : ask for confirmation
+end
+
+Collab -> System : confirm deactivation
+System --> Collab : success message
+@enduml

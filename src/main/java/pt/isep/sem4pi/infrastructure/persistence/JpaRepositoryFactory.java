@@ -11,6 +11,7 @@ import pt.isep.sem4pi.infrastructure.persistence.JPA.*;
 public class JpaRepositoryFactory implements RepositoryFactory {
 
     private static final String PERSISTENCE_UNIT_NAME = "sem4piPU";
+    private static final WeatherBatchRepository WEATHER_BATCH_REPOSITORY = new JpaWeatherBatchRepository();
 
     @Override
     public TransactionalContext newTransactionalContext() {
@@ -80,5 +81,68 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     @Override
     public FlightRepository flights() {
         return new JpaFlightRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public SimulationRepository simulations() {
+        return new JpaSimulationRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public SimulationRepository simulations(final TransactionalContext tx) {
+        return new JpaSimulationRepository(tx);
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports() {
+        return new JpaSimulationReportRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public SimulationReportRepository simulationReports(final TransactionalContext tx) {
+        return new JpaSimulationReportRepository(tx);
+    }
+
+    @Override
+    public WeatherBatchRepository weatherBatches() {
+        return WEATHER_BATCH_REPOSITORY;
+    }
+
+    @Override
+    public FlightRouteRepository flightRoutes() {return new JpaFlightRouteRepository();}
+
+    @Override
+    public AirportRepository airports() {
+        return new JpaAirportRepository();
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans() {
+        return new JpaFlightPlanRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public FlightPlanRepository flightPlans(final TransactionalContext tx) {
+        return new JpaFlightPlanRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public PilotRepository pilots() {
+        return new JpaPilotRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public PilotRepository pilots(final TransactionalContext tx) {
+        return new JpaPilotRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public ReportMetadataRepository reportMetadata() {
+        return new JpaReportMetadataRepository(PERSISTENCE_UNIT_NAME);
+    }
+
+    @Override
+    public ReportMetadataRepository reportMetadata(final TransactionalContext tx) {
+        return new JpaReportMetadataRepository(tx);
     }
 }

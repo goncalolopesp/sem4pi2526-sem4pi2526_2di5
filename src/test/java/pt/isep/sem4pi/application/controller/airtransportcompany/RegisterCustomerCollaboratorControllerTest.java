@@ -2,18 +2,22 @@ package pt.isep.sem4pi.application.controller.airtransportcompany;
 
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
 import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportCompanyCollaboratorRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportCompanyRepository;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryRepositoryFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -23,11 +27,22 @@ public class RegisterCustomerCollaboratorControllerTest {
     private InMemoryAirTransportCompanyCollaboratorRepository collaboratorRepo;
     private RegisterCustomerCollaboratorController controller;
 
-    private static final IcaoCode TAP_ICAO = new IcaoCode("TAP");
+    private static final IcaoCodeCompany TAP_ICAO = new IcaoCodeCompany("TAP");
+
+    private static void clearSharedCollaboratorRepository() {
+        final InMemoryAirTransportCompanyCollaboratorRepository repo =
+                new InMemoryAirTransportCompanyCollaboratorRepository();
+        final List<AirTransportCompanyCollaborator> toDelete = new ArrayList<>();
+        repo.findAll().forEach(toDelete::add);
+        for (final AirTransportCompanyCollaborator collaborator : toDelete) {
+            repo.delete(collaborator);
+        }
+    }
 
     @Before
     public void setUp() {
         System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
+        PersistenceContext.resetForTesting();
 
         final var factory = PersistenceContext.repositories();
         AuthzRegistry.configure(factory.users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());
@@ -36,15 +51,22 @@ public class RegisterCustomerCollaboratorControllerTest {
             AuthzRegistry.authorizationService().clearSession();
         }
 
+        clearSharedCollaboratorRepository();
+
         companyRepo = new InMemoryAirTransportCompanyRepository();
         collaboratorRepo = new InMemoryAirTransportCompanyCollaboratorRepository();
         controller = new RegisterCustomerCollaboratorController(companyRepo, collaboratorRepo);
 
         companyRepo.save(new AirTransportCompany(
                 new CompanyName("TAP Portugal"),
-                new IataCode("TP"),
+                new IataCodeCompany("TP"),
                 TAP_ICAO
         ));
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        clearSharedCollaboratorRepository();
     }
 
     @Test
@@ -62,7 +84,7 @@ public class RegisterCustomerCollaboratorControllerTest {
         );
 
         assertNotNull(result);
-        assertEquals(TAP_ICAO, result.company().identityIcao());
+        assertEquals(TAP_ICAO, result.company().getIcaoCode());
         assertEquals(username, result.systemUser().identity().toString());
         assertEquals(1, collaboratorRepo.size());
         assertTrue(collaboratorRepo.findBySystemUser(result.systemUser()).isPresent());
@@ -78,7 +100,7 @@ public class RegisterCustomerCollaboratorControllerTest {
                 "John",
                 "Doe",
                 "john@email.com",
-                new IcaoCode("XXX")
+                new IcaoCodeCompany("XXX")
         );
     }
 
@@ -95,7 +117,7 @@ public class RegisterCustomerCollaboratorControllerTest {
                     "John",
                     "Doe",
                     "john2@email.com",
-                    new IcaoCode("XXX")
+                    new IcaoCodeCompany("XXX")
             );
             fail("Expected IllegalArgumentException");
         } catch (IllegalArgumentException ignored) {

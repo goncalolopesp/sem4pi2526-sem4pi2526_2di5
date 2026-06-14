@@ -1,0 +1,44 @@
+@startuml US074_SD
+title US074 - Deactivate Flight Route - Sequence Diagram
+
+actor "ATCC" as Collab
+
+participant "DeactivateFlightRouteUI" as UI
+participant "DeactivateFlightRoute\nController" as Controller
+participant "DeactivateFlightRoute\nService" as Service
+participant "FlightRepository" as FlightRepo
+participant "FlightRouteRepository" as RouteRepo
+participant "FlightRoute" as Route
+
+Collab -> UI : input deactivation date
+UI -> Controller : validateDeactivation(routeId, date)
+Controller -> Service : validateDeactivation(routeId, date)
+
+Service -> FlightRepo : hasFlightsForRouteAfterDate(routeId, date)
+FlightRepo --> Service : boolean (false)
+Service --> Controller : void
+Controller --> UI : void
+
+UI --> Collab : ask for confirmation
+Collab -> UI : confirm
+
+UI -> Controller : deactivateRoute(routeId, date)
+Controller -> Service : deactivateRoute(routeId, date)
+
+Service -> RouteRepo : ofIdentity(routeId)
+RouteRepo --> Service : Optional<FlightRoute>
+
+Service -> FlightRepo : hasFlightsForRouteAfterDate(routeId, date)
+FlightRepo --> Service : false
+
+Service -> Route : deactivate(date)
+note right of Route: Checks if date is before LocalDate.now()
+Route --> Service : void
+
+Service -> RouteRepo : save(route)
+RouteRepo --> Service : savedRoute
+Service --> Controller : savedRoute
+Controller --> UI : savedRoute
+UI --> Collab : display success message
+
+@enduml

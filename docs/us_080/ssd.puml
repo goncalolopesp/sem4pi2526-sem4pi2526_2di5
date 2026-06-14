@@ -1,0 +1,25 @@
+@startuml US080_SSD
+title US080 - Create Flight Plan - SSD
+
+actor "Pilot" as Pilot
+participant "SEM4PI System" as System
+
+Pilot -> System : request to create a flight plan
+System --> Pilot : show available routes and flights
+
+Pilot -> System : select route, flight, pilot, and flight type
+System --> Pilot : request leg data (departure, arrival, segments, fuel)
+
+Pilot -> System : input leg data
+System --> Pilot : ask if another leg is required
+
+opt multiple legs
+    Pilot -> System : add another leg
+    System --> Pilot : request next leg data
+    Pilot -> System : input leg data
+end
+
+Pilot -> System : confirm creation
+System --> Pilot : display success message and flight plan id (status DRAFT)
+
+@enduml
