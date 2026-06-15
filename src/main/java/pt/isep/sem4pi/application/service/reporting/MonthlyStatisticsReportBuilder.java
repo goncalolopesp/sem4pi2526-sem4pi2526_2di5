@@ -1,3 +1,4 @@
+// Existe na US112 para organizar as estatísticas em secções sem depender do formato do ficheiro.
 package pt.isep.sem4pi.application.service.reporting;
 
 import pt.isep.sem4pi.domain.model.flight.FlightStatus;
@@ -11,8 +12,15 @@ import java.util.List;
 
 import static pt.isep.sem4pi.domain.model.reporting.ReportSection.Entry.of;
 
+/**
+ * Organiza as estatísticas nas secções do relatório.
+ * Não escreve ficheiros; apenas prepara o conteúdo.
+ */
 public class MonthlyStatisticsReportBuilder {
 
+    /**
+     * Cria as secções que depois serão escritas no ficheiro.
+     */
     public MonthlyStatisticsReport build(final YearMonth period,
                                          final LocalDateTime generatedAt,
                                          final MonthlyStatisticsData data) {
@@ -51,6 +59,7 @@ public class MonthlyStatisticsReportBuilder {
     }
 
     private String bar(final int value) {
+        // A barra tem um limite para não ficar demasiado comprida.
         final int visibleUnits = Math.min(Math.max(value, 0), 40);
         return "#".repeat(visibleUnits) + " (" + value + ")";
     }

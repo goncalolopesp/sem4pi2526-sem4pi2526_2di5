@@ -1,3 +1,4 @@
+// Existe para coordenar a US112, delegando recolha, construção e renderização a componentes próprios.
 package pt.isep.sem4pi.application.service.reporting;
 
 import eapli.framework.domain.repositories.TransactionalContext;
@@ -15,6 +16,10 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+/**
+ * Coordena a criação do relatório mensal da US112.
+ * Pede os dados, cria o conteúdo, escreve o ficheiro e guarda o registo.
+ */
 public class GenerateMonthlyReportService {
 
     private static final DateTimeFormatter FILE_TIMESTAMP =
@@ -42,8 +47,12 @@ public class GenerateMonthlyReportService {
         this.clock = clock;
     }
 
+    /**
+     * Recolhe dados, constrói e renderiza o relatório, guardando os metadados.
+     */
     public GeneratedReportDTO generate(final YearMonth period) throws IOException {
         final LocalDateTime generatedAt = LocalDateTime.now(clock);
+        // Cada passo fica numa classe própria para o código ser mais simples de alterar.
         final MonthlyStatisticsData data = collector.collect(period);
         final MonthlyStatisticsReport report =
                 reportBuilder.build(period, generatedAt, data);
@@ -65,6 +74,10 @@ public class GenerateMonthlyReportService {
                 metadata.generatedAt(), metadata.format(), metadata.fileLocation());
     }
 
+    /**
+     * Guarda a informação do relatório na BD.
+     * Se falhar, apaga o ficheiro que já tinha sido criado.
+     */
     private void persistMetadata(final ReportMetadata metadata,
                                  final Path renderedFile) throws IOException {
         final TransactionalContext tx = repositoryFactory.newTransactionalContext();

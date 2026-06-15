@@ -7,6 +7,10 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
+/**
+ * Junta todas as estatísticas recolhidas para um mês.
+ * Não tem identidade própria; apenas leva os dados para o builder.
+ */
 public record MonthlyStatisticsData(
         int simulations,
         Map<SimulationStatus, Long> simulationsByStatus,
@@ -22,6 +26,9 @@ public record MonthlyStatisticsData(
         flightsByStatus = immutableEnumMap(FlightStatus.class, flightsByStatus);
     }
 
+    /**
+     * Copia os mapas para evitar alterações depois da recolha.
+     */
     private static <E extends Enum<E>> Map<E, Long> immutableEnumMap(
             final Class<E> enumType, final Map<E, Long> values) {
         final EnumMap<E, Long> copy = new EnumMap<>(enumType);

@@ -6,6 +6,10 @@ import pt.isep.sem4pi.domain.model.simulation.SimulationValidationResult;
 
 import java.util.List;
 
+/**
+ * Junta os dados lidos do relatório SCOMP.
+ * Não tem identidade própria e serve apenas para transportar informação.
+ */
 public record ParsedSimulationReport(
         List<FlightExecutionSummary> flightSummaries,
         List<SafetyViolationSummary> safetyViolations,

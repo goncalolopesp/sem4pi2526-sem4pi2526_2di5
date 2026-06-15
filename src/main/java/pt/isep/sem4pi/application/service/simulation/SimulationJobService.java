@@ -6,6 +6,10 @@ import pt.isep.sem4pi.domain.repositories.SimulationRepository;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Executa a simulação em segundo plano.
+ * Assim, o utilizador não fica à espera do fim do simulador.
+ */
 public class SimulationJobService {
 
     private static final ExecutorService EXECUTOR =
@@ -23,16 +27,23 @@ public class SimulationJobService {
         this.reportService = reportService;
     }
 
+    /**
+     * Coloca a simulação na fila de execução em segundo plano.
+     */
     public void submit(final String simulationId) {
         EXECUTOR.submit(() -> runSimulation(simulationId));
     }
 
+    /**
+     * Executa o fluxo completo e persiste o resultado final.
+     */
     private void runSimulation(final String simulationId) {
         final Simulation simulation = simulationRepository.ofIdentity(simulationId)
                 .orElseThrow(() -> new IllegalArgumentException("Simulation not found."));
 
         try {
             simulation.markAsRunning();
+            // Guardamos RUNNING para ser possível acompanhar a simulação enquanto decorre.
             simulationRepository.save(simulation);
 
             final SimulationExecutionResult result =

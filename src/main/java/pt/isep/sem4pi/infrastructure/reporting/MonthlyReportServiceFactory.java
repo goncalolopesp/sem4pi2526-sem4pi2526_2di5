@@ -10,11 +10,18 @@ import pt.isep.sem4pi.infrastructure.persistence.RepositoryFactory;
 import java.nio.file.Path;
 import java.time.Clock;
 
+/**
+ * Cria o serviço da US112 com todas as classes de que precisa.
+ * Assim, o controller não tem de montar cada dependência.
+ */
 public final class MonthlyReportServiceFactory {
 
     private MonthlyReportServiceFactory() {
     }
 
+    /**
+     * Liga os repositórios às classes que criam o relatório.
+     */
     public static GenerateMonthlyReportService create() {
         final RepositoryFactory repositories = PersistenceContext.repositories();
         return new GenerateMonthlyReportService(

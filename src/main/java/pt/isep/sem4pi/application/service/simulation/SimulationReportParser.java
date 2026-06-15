@@ -1,3 +1,4 @@
+// Existe na US111 para isolar o formato SCOMP, convertendo e validando o ficheiro recebido.
 package pt.isep.sem4pi.application.service.simulation;
 
 import pt.isep.sem4pi.domain.model.simulation.FlightExecutionSummary;
@@ -14,6 +15,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Lê o relatório de texto produzido pelo SCOMP.
+ * Toda a interpretação do ficheiro fica concentrada nesta classe.
+ */
 public class SimulationReportParser {
 
     private static final Pattern FLIGHT_STATUS = Pattern.compile(
@@ -29,8 +34,12 @@ public class SimulationReportParser {
     private static final Pattern VIOLATION_SECTION_HEADER = Pattern.compile(
             "^=== US102 Safety Violations \\((\\d+) shown / (\\d+) total\\) ===$");
 
+    /**
+     * Lê o ficheiro e confirma que os dados estão completos.
+     */
     public ParsedSimulationReport parse(final String reportPath) throws IOException {
         final List<String> lines = Files.readAllLines(Path.of(reportPath));
+        // Guardamos as posições para indicar onde aconteceu cada violação.
         final Map<String, Map<Integer, String>> positions = parsePositions(lines);
         final List<FlightExecutionSummary> flights = parseFlightStatuses(lines);
         final List<SafetyViolationSummary> violations =
@@ -93,6 +102,7 @@ public class SimulationReportParser {
 
     private void validateViolationCount(final List<String> lines,
                                         final int parsedViolationCount) throws IOException {
+        // O total deve coincidir com as violações que aparecem no ficheiro.
         for (final String line : lines) {
             final Matcher header = VIOLATION_SECTION_HEADER.matcher(line);
             if (!header.matches()) {
@@ -121,6 +131,7 @@ public class SimulationReportParser {
         boolean inViolationSection = false;
 
         for (final String line : lines) {
+            // Só lemos violações dentro da secção respetiva.
             if (line.startsWith("=== US102 Safety Violations")) {
                 inViolationSection = true;
                 continue;

@@ -9,6 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Escreve o relatório num ficheiro de texto.
+ * Não procura dados nem decide as secções.
+ */
 public class TextReportRenderer implements ReportRenderer {
 
     private static final DateTimeFormatter TIMESTAMP =
@@ -24,6 +28,9 @@ public class TextReportRenderer implements ReportRenderer {
         return "txt";
     }
 
+    /**
+     * Escreve as secções num ficheiro de texto.
+     */
     @Override
     public Path render(final Report report, final Path destination) throws IOException {
         final StringBuilder output = new StringBuilder();
@@ -50,6 +57,7 @@ public class TextReportRenderer implements ReportRenderer {
         if (parent != null) {
             Files.createDirectories(parent);
         }
+        // A criação física do ficheiro fica no renderer, não no builder.
         Files.writeString(destination, output.toString(), StandardCharsets.UTF_8);
         return destination.toAbsolutePath().normalize();
     }

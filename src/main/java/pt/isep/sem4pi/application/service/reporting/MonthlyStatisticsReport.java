@@ -7,6 +7,10 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 
+/**
+ * Representa o relatório mensal já organizado.
+ * Pode depois ser escrito em texto ou noutro formato.
+ */
 public final class MonthlyStatisticsReport extends Report {
 
     public static final String TYPE = "MONTHLY_STATISTICS";

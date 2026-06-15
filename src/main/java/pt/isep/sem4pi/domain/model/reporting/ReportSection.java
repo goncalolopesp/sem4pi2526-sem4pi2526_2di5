@@ -6,11 +6,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Value Object que representa uma secção do relatório.
+ * Não tem identidade própria; contém apenas um título e valores.
+ */
 public final class ReportSection {
 
     private final String title;
     private final List<Entry> entries;
 
+    /**
+     * Cria uma secção com título e respetivos valores.
+     */
     public ReportSection(final String title, final List<Entry> entries) {
         Preconditions.nonEmpty(title, "Section title is required");
         Preconditions.nonNull(entries, "Section entries are required");
@@ -18,6 +25,9 @@ public final class ReportSection {
         this.entries = new ArrayList<>(entries);
     }
 
+    /**
+     * Atalho para construir uma secção a partir de várias entradas.
+     */
     public static ReportSection of(final String title, final Entry... entries) {
         return new ReportSection(title, List.of(entries));
     }
@@ -30,6 +40,9 @@ public final class ReportSection {
         return Collections.unmodifiableList(entries);
     }
 
+    /**
+     * Representa uma linha com nome e valor.
+     */
     public record Entry(String label, String value) {
         public Entry {
             Preconditions.nonEmpty(label, "Entry label is required");
@@ -37,6 +50,9 @@ public final class ReportSection {
             label = label.trim();
         }
 
+        /**
+         * Converte o valor para texto.
+         */
         public static Entry of(final String label, final Object value) {
             return new Entry(label, String.valueOf(value));
         }

@@ -1,3 +1,4 @@
+// Existe como Aggregate Root da US100: concentra as regras e protege o estado da simulação.
 package pt.isep.sem4pi.domain.model.simulation;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,10 @@ import eapli.framework.representations.Representationable;
 import eapli.framework.validations.Preconditions;
 import jakarta.persistence.*;
 
+/**
+ * Entidade principal da simulação e Aggregate Root.
+ * Guarda os dados e controla as mudanças de estado.
+ */
 @Entity
 public class Simulation implements AggregateRoot<String>, Representationable {
 
@@ -84,6 +89,10 @@ public class Simulation implements AggregateRoot<String>, Representationable {
         // for ORM
     }
 
+    /**
+     * Cria uma simulação válida no estado inicial CREATED.
+     * As validações impedem que seja criada com dados inválidos.
+     */
     public Simulation(final String simulationId,
                       final String airControlAreaId,
                       final LocalDateTime startTime,
@@ -140,12 +149,18 @@ public class Simulation implements AggregateRoot<String>, Representationable {
         this.violationThreshold = violationThreshold;
     }
 
+    /**
+     * Acrescenta um plano de voo aos dados de entrada da simulação.
+     */
     public void addFlightPlan(final String flightPlanId) {
         Preconditions.nonEmpty(flightPlanId, "Flight plan id is required");
 
         this.simulatedFlightInputs.add(new SimulatedFlightInput(flightPlanId));
     }
 
+    /**
+     * Inicia a simulação, apenas quando esta ainda está em CREATED.
+     */
     public void markAsRunning() {
         if (status != SimulationStatus.CREATED) {
             throw new IllegalStateException("Only created simulations can be started");
@@ -154,6 +169,9 @@ public class Simulation implements AggregateRoot<String>, Representationable {
         this.status = SimulationStatus.RUNNING;
     }
 
+    /**
+     * Conclui a simulação, apenas depois de esta ter sido iniciada.
+     */
     public void markAsFinished() {
         if (status != SimulationStatus.RUNNING) {
             throw new IllegalStateException("Only running simulations can be finished");
@@ -162,6 +180,9 @@ public class Simulation implements AggregateRoot<String>, Representationable {
         this.status = SimulationStatus.FINISHED;
     }
 
+    /**
+     * Regista uma falha genérica na simulação.
+     */
     public void markAsFailed() {
         markAsFailed("Simulation failed");
     }
@@ -303,6 +324,9 @@ public class Simulation implements AggregateRoot<String>, Representationable {
         return builder.build();
     }
 
+    /**
+     * Regista a falha e guarda uma razão adequada à persistência.
+     */
     public void markAsFailed(final String reason) {
         if (status == SimulationStatus.FINISHED) {
             throw new IllegalStateException("Finished simulations cannot be marked as failed");

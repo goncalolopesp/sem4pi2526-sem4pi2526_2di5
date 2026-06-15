@@ -1,3 +1,4 @@
+// Existe para coordenar a US111, mantendo parsing, exportação e persistência em componentes próprios.
 package pt.isep.sem4pi.application.service.simulation;
 
 import eapli.framework.domain.repositories.TransactionalContext;
@@ -14,6 +15,10 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Gera o resumo da simulação da US111.
+ * Coordena a leitura, criação do ficheiro e gravação na base de dados.
+ */
 public class GenerateSimulationSummaryReportService {
 
     private final RepositoryFactory repositoryFactory;
@@ -39,6 +44,10 @@ public class GenerateSimulationSummaryReportService {
         this.clock = clock;
     }
 
+    /**
+     * Interpreta o relatório SCOMP, exporta o resumo e atualiza a BD.
+     * Se a BD falhar, apaga o ficheiro para não deixar dados incoerentes.
+     */
     public SimulationReport generate(final String simulationId,
                                      final String scompReportPath) throws IOException {
         final ParsedSimulationReport parsed = parser.parse(scompReportPath);
@@ -82,6 +91,9 @@ public class GenerateSimulationSummaryReportService {
         }
     }
 
+    /**
+     * Atualiza o estado da Simulation a partir da decisão do relatório.
+     */
     private void updateSimulationStatus(
             final Simulation simulation,
             final SimulationValidationResult validationResult) {

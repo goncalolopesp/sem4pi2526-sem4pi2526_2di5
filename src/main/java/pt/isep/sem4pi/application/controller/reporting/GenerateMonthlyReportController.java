@@ -11,6 +11,10 @@ import pt.isep.sem4pi.infrastructure.reporting.MonthlyReportServiceFactory;
 import java.io.IOException;
 import java.time.YearMonth;
 
+/**
+ * Entrada aplicacional da US112.
+ * Autoriza o FCO e delega a geração mensal no serviço próprio.
+ */
 @UseCaseController
 public class GenerateMonthlyReportController {
 
@@ -28,6 +32,9 @@ public class GenerateMonthlyReportController {
         this.service = service;
     }
 
+    /**
+     * Valida o período pedido e inicia a geração do relatório mensal.
+     */
     public GeneratedReportDTO generate(final int year, final int month)
             throws IOException {
         authz.ensureAuthenticatedUserHasAnyOf(

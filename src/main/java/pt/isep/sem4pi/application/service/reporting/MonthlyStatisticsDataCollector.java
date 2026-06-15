@@ -1,3 +1,4 @@
+// Existe na US112 para reunir estatísticas dos repositórios sem decidir a sua apresentação.
 package pt.isep.sem4pi.application.service.reporting;
 
 import pt.isep.sem4pi.domain.model.flight.Flight;
@@ -14,6 +15,10 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Procura os dados necessários para o relatório mensal.
+ * Não decide como esses dados serão apresentados.
+ */
 public class MonthlyStatisticsDataCollector
         implements ReportDataCollector<MonthlyStatisticsData> {
 
@@ -32,8 +37,12 @@ public class MonthlyStatisticsDataCollector
         this.violationTotalReader = violationTotalReader;
     }
 
+    /**
+     * Conta as simulações, relatórios e voos do mês pedido.
+     */
     @Override
     public MonthlyStatisticsData collect(final YearMonth period) {
+        // Usamos a data adequada a cada dado: início, geração ou partida.
         final List<Simulation> monthlySimulations = simulations.findAll().stream()
                 .filter(simulation -> YearMonth.from(simulation.startTime()).equals(period))
                 .toList();

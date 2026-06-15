@@ -1,3 +1,4 @@
+// Existe como Aggregate Root da US111: calcula e protege o resultado final do relatório.
 package pt.isep.sem4pi.domain.model.simulation;
 
 import eapli.framework.domain.model.AggregateRoot;
@@ -19,6 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Entidade principal do resumo e Aggregate Root.
+ * Guarda os resultados e decide se a simulação passou ou falhou.
+ */
 @Entity
 public class SimulationReport implements AggregateRoot<String> {
 
@@ -59,6 +64,9 @@ public class SimulationReport implements AggregateRoot<String> {
         // for ORM
     }
 
+    /**
+     * Cria o relatório e calcula a validação final a partir dos seus dados.
+     */
     public SimulationReport(final String reportId,
                             final String simulationId,
                             final LocalDateTime generatedAt,
@@ -84,8 +92,12 @@ public class SimulationReport implements AggregateRoot<String> {
         this.finalValidationResult = calculateValidationResult(scompResult);
     }
 
+    /**
+     * Aplica a regra de negócio que decide PASS ou FAIL.
+     */
     private SimulationValidationResult calculateValidationResult(
             final SimulationValidationResult scompResult) {
+        // Basta uma falha, violação ou voo incompleto para o resultado ser FAIL.
         if (scompResult == SimulationValidationResult.FAIL) {
             return SimulationValidationResult.FAIL;
         }

@@ -11,6 +11,10 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Objects;
 
+/**
+ * Aggregate Root com a informação principal do relatório.
+ * A BD guarda onde está o ficheiro, mas não guarda o seu conteúdo.
+ */
 @Entity
 public class ReportMetadata implements AggregateRoot<String> {
 
@@ -46,6 +50,9 @@ public class ReportMetadata implements AggregateRoot<String> {
         // for ORM
     }
 
+    /**
+     * Cria o registo que permite encontrar o relatório mais tarde.
+     */
     public ReportMetadata(final String reportId,
                           final String reportType,
                           final String title,

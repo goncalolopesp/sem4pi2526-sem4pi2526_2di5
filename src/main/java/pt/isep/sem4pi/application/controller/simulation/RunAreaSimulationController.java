@@ -1,3 +1,4 @@
+// Existe como entrada da US100: autoriza e coordena o fluxo sem assumir regras de negócio.
 package pt.isep.sem4pi.application.controller.simulation;
 
 import eapli.framework.application.UseCaseController;
@@ -14,6 +15,10 @@ import pt.isep.sem4pi.infrastructure.simulation.CFlightSimulatorRunner;
 
 import java.util.List;
 
+/**
+ * Entrada aplicacional da US100.
+ * Autoriza o FCO e coordena criação, execução e submissão da simulação.
+ */
 @UseCaseController
 public class RunAreaSimulationController {
 
@@ -55,6 +60,10 @@ public class RunAreaSimulationController {
         this.simulationJobService = simulationJobService;
     }
 
+    /**
+     * Cria uma simulação e guarda-a antes de qualquer execução.
+     * A persistência permite consultar e acompanhar o seu estado.
+     */
     public SimulationDTO createSimulation(final String airControlAreaId,
                                           final Double minLat,
                                           final Double maxLat,
@@ -94,6 +103,10 @@ public class RunAreaSimulationController {
         return savedSimulation.buildRepresentation(builder);
     }
 
+    /**
+     * Executa imediatamente uma simulação e trata o relatório produzido.
+     * A integração externa é delegada ao runner.
+     */
     public SimulationExecutionResult runSimulation(final String simulationId) {
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.FLIGHT_CONTROL_OPERATOR, SEM4PIRoles.ADMIN);
 
@@ -120,6 +133,10 @@ public class RunAreaSimulationController {
         return result;
     }
 
+    /**
+     * Submete a simulação para execução em segundo plano.
+     * Assim, o caso de uso não fica bloqueado pelo processo SCOMP.
+     */
     public void submitSimulation(final String simulationId) {
 
         authz.ensureAuthenticatedUserHasAnyOf(

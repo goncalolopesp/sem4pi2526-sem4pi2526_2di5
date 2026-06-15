@@ -8,6 +8,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Prepara a simulação da US100.
+ * Organiza os dados e deixa as regras principais na entidade Simulation.
+ */
 public class RunAreaSimulationService {
 
     private final AuthorizationService authz;
@@ -16,6 +20,10 @@ public class RunAreaSimulationService {
         this.authz = authz;
     }
 
+    /**
+     * Cria a simulação e associa os planos de voo escolhidos pelo FCO.
+     * Depois, o controller guarda a simulação.
+     */
     public Simulation createSimulation(final String airControlAreaId, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon, final Integer startSecond, final Integer endSecond, final Integer timeStep, final String weather, final Double safetyMinSepNm, final Double safetyMinAltM, final Integer violationThreshold, final List<String> flightPlanIds) {
 
         authz.ensureAuthenticatedUserHasAnyOf(SEM4PIRoles.FLIGHT_CONTROL_OPERATOR, SEM4PIRoles.ADMIN);

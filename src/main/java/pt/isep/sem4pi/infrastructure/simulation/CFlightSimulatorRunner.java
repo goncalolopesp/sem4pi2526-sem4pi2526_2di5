@@ -1,3 +1,4 @@
+// Existe como adaptador da US100: isola ProcessBuilder, paths e o executável SCOMP da aplicação.
 package pt.isep.sem4pi.infrastructure.simulation;
 
 import pt.isep.sem4pi.application.service.simulation.SimulationExecutionResult;
@@ -13,12 +14,19 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Classe que chama o simulador C.
+ * Aqui ficam os detalhes do comando, dos caminhos e dos ficheiros.
+ */
 public class CFlightSimulatorRunner implements SimulationRunner {
 
     private static final String SIMULATOR_PATH = "scomp/flight_simulator";
     private static final String FLIGHT_PLAN_BASE_PATH = "scomp/data";
     private static final String REPORT_BASE_PATH = "scomp/reports";
 
+    /**
+     * Prepara o comando com os dados da simulação e executa o SCOMP.
+     */
     @Override
     public SimulationExecutionResult run(final Simulation simulation) {
         try {
@@ -71,6 +79,7 @@ public class CFlightSimulatorRunner implements SimulationRunner {
             command.add("--output");
             command.add(reportPath);
 
+            // Só esta classe precisa de saber como arrancar o programa externo.
             final ProcessBuilder processBuilder = new ProcessBuilder(command);
             processBuilder.redirectErrorStream(true);
 
