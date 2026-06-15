@@ -1,6 +1,7 @@
 package pt.isep.sem4pi.domain.model.airtransportcompany;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class CompanyNameTest {

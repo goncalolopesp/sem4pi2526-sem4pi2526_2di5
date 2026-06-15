@@ -1,0 +1,11 @@
+flight TP100 regular {
+aircraft CS-TST;
+pilot PILOT01;
+route TP1001 { (41.24|-8.67) (40.47|-3.56) };
+leg {
+departure { OPO, 19/06/2026, 14:30 };
+arrival { MAD, 15:20 };
+segment { (41.24|-8.67), (40.47|-3.56), {(30000,35000)}, 10, 45, 850 };
+fuel { 4200, kg };
+};
+};

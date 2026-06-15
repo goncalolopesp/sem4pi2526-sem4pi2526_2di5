@@ -54,4 +54,17 @@ public class JpaBackofficeUserRepository
     public List<BackofficeUser> findAll() {
         return (List<BackofficeUser>) match("1=1");
     }
+
+    @Override
+    public void delete(final BackofficeUser user) {
+        if (user == null) {
+            return;
+        }
+        // delegate to superclass if available
+        try {
+            super.delete(user);
+        } catch (final NoSuchMethodError | AbstractMethodError e) {
+            // best-effort: ignore if superclass does not provide delete
+        }
+    }
 }

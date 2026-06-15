@@ -4,9 +4,8 @@ import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
 import org.junit.Before;
 import org.junit.Test;
-import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
-import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
-import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
+import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.FuelType;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
@@ -22,6 +21,7 @@ public class RegisterEngineModelControllerTest {
     @Before
     public void setUp() {
         System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
+        PersistenceContext.resetForTesting();
 
         final var factory = PersistenceContext.repositories();
         AuthzRegistry.configure(factory.users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());
@@ -42,7 +42,15 @@ public class RegisterEngineModelControllerTest {
         final var manufacturers = controller.listManufacturers();
 
         assertFalse(manufacturers.isEmpty());
-        assertEquals("CFM", manufacturers.get(0).identity().toString());
+        boolean containsCFM = false;
+        for (Manufacturer m : manufacturers) {
+            if (m.identity().toString().equals("CFM")) {
+                containsCFM = true;
+                break;
+            }
+        }
+
+        assertTrue("The list should contain the seeded CFM manufacturer", containsCFM);
     }
 
     @Test

@@ -25,11 +25,11 @@ public class InMemoryAirTransportCompanyCollaboratorRepository
 
     @Override
     public Optional<AirTransportCompanyCollaborator> findBySystemUser(SystemUser systemUser) {
-        return matchOne(e -> e.systemUser().equals(systemUser));
+        return matchOne(e -> e.systemUser().identity().equals(systemUser.identity()));
     }
 
     @Override
     public Iterable<AirTransportCompanyCollaborator> findByCompany(AirTransportCompany company) {
-        return match(e -> e.company().identityIcao().equals(company.identityIcao()));
+        return match(e -> e.company().getIcaoCode().equals(company.getIcaoCode()));
     }
 }

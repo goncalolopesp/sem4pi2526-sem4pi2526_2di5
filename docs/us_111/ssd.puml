@@ -1,0 +1,18 @@
+@startuml
+title US111 - SSD - Gerar relatório de simulação
+
+actor "Operador de Controlo de Voo" as FCO
+participant "Sistema AIControl" as System
+
+FCO -> System : executarSimulacao(simulationId)
+System -> System : autenticar e autorizar
+System -> System : executar simulação no SCOMP
+System -> System : interpretar resultado
+System -> System : gerar e guardar relatório
+
+alt simulação concluída
+    System --> FCO : relatório com total, estados,\nviolações e PASS/FAIL
+else falha na simulação ou no relatório
+    System --> FCO : estado de falha
+end
+@enduml

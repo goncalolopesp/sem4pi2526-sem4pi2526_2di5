@@ -28,6 +28,9 @@ public class MasterUsersBootstrapper {
 
         registerAdmin(users, backofficeUsers);
         registerBackoffice(users, backofficeUsers);
+        registerWeatherPerson(users, backofficeUsers);
+        registerPilot(users);
+        registerAirTransportCollaborator(users);
 
 //        DEBUG
 //        System.out.println("BOOTSTRAP USERS:");
@@ -90,6 +93,59 @@ public class MasterUsersBootstrapper {
                     LocalDate.now().plusYears(1),
                     LocalDate.now()
             ));
+        }
+    }
+
+    private void registerWeatherPerson(final UserRepository users, final BackofficeUserRepository backofficeUsers) {
+        if (users.ofIdentity(eapli.framework.infrastructure.authz.domain.model.Username.valueOf("weather")).isEmpty()) {
+            final SystemUserBuilder builder = UserBuilderHelper.builder();
+            builder.withUsername("weather")
+                    .withPassword("Password1")
+                    .withName("Weather", "Person")
+                    .withEmail("weather@example.org")
+                    .withRoles(SEM4PIRoles.WEATHER_PERSON);
+
+            users.save(builder.build());
+        }
+
+        if (!backofficeUsers.existsByUsername("weather")) {
+            backofficeUsers.save(new BackofficeUser(
+                    "weather",
+                    "Weather Person",
+                    Email.valueOf("weather@example.org"),
+                    PhoneNumber.valueOf("+351000000002"),
+                    LocalDate.now().plusYears(1),
+                    LocalDate.now()
+            ));
+        }
+    }
+
+    private void registerPilot(final UserRepository users) {
+        if (users.ofIdentity(eapli.framework.infrastructure.authz.domain.model.Username.valueOf("pilot")).isEmpty()) {
+            final SystemUserBuilder builder = UserBuilderHelper.builder();
+            builder.withUsername("pilot")
+                    .withPassword("Password1")
+                    .withName("Pilot", "User")
+                    .withEmail("pilot@example.org")
+                    .withRoles(SEM4PIRoles.PILOT);
+
+            users.save(builder.build());
+        }
+    }
+
+    private void registerAirTransportCollaborator(final UserRepository users) {
+
+        if (users.ofIdentity(
+                eapli.framework.infrastructure.authz.domain.model.Username
+                        .valueOf("atccollaborator")).isEmpty()) {
+            final SystemUserBuilder builder = UserBuilderHelper.builder();
+            builder.withUsername("atccollaborator")
+                    .withPassword("Password1")
+                    .withName("ATC", "Collaborator")
+                    .withEmail("atccollaborator@example.org")
+                    .withRoles(SEM4PIRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR);
+
+            users.save(builder.build());
         }
     }
 }

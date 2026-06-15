@@ -11,6 +11,12 @@ import java.util.Optional;
 public interface BackofficeUserRepository {
 
     BackofficeUser save(BackofficeUser user);
+    
+    /**
+     * Remove a BackofficeUser from the repository. Needed to support compensating
+     * deletes in non-transactional environments.
+     */
+    void delete(BackofficeUser user);
 
     Optional<BackofficeUser> ofIdentity(String username);
 

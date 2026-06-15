@@ -1,0 +1,91 @@
+package pt.isep.sem4pi.domain.model.route;
+
+import org.junit.Test;
+import pt.isep.sem4pi.domain.model.route.Wind;
+
+import static org.junit.Assert.*;
+
+/**
+ * Test suite for Wind value object.
+ *
+ * Tests cover:
+ * - Valid wind creation with various direction and speed values
+ * - Direction validation (0-359 degrees)
+ * - Speed validation (non-negative)
+ * - Null parameter detection
+ * - Boundary conditions (direction 0, 359; speed 0)
+ * - Invalid values (direction -1, 360+; negative speed)
+ *
+ * @author SEM4PI Team
+ */
+public class WindTest {
+
+    /**
+     * Test that valid wind conditions can be created.
+     */
+    @Test
+    public void ensureValidWindIsCreated() {
+        Wind wind = new Wind(180, 15.5);
+        assertNotNull(wind);
+    }
+
+    @Test
+    public void ensureWindWithZeroDirectionIsAccepted() {
+        Wind wind = new Wind(0, 10.0);
+        assertNotNull(wind);
+    }
+
+    @Test
+    public void ensureWindWithMaxDirection359IsAccepted() {
+        Wind wind = new Wind(359, 10.0);
+        assertNotNull(wind);
+    }
+
+    @Test
+    public void ensureWindWithZeroSpeedIsAccepted() {
+        Wind wind = new Wind(90, 0.0);
+        assertNotNull(wind);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureWindFailsWithNullDirection() {
+        new Wind(null, 10.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureWindFailsWithNullSpeed() {
+        new Wind(180, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureWindFailsWithNegativeDirection() {
+        new Wind(-1, 10.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureWindFailsWithDirection360() {
+        new Wind(360, 10.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureWindFailsWithDirectionAbove360() {
+        new Wind(400, 10.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ensureWindFailsWithNegativeSpeed() {
+        new Wind(180, -5.0);
+    }
+
+    @Test
+    public void ensureWindWithHighSpeedIsAccepted() {
+        Wind wind = new Wind(270, 999.99);
+        assertNotNull(wind);
+    }
+
+    @Test
+    public void ensureWindWithDirection1IsAccepted() {
+        Wind wind = new Wind(1, 5.0);
+        assertNotNull(wind);
+    }
+}

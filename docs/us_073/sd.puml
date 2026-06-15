@@ -1,0 +1,28 @@
+@startuml US073_SD
+title US073 - Create Flight Route - Sequence Diagram
+
+actor "ATCC" as Collab
+
+participant "CreateFlightRouteUI" as UI
+participant "CreateFlightRoute\nController" as Controller
+participant "CreateFlightRoute\nService" as Service
+participant "FlightRoute" as Route
+participant "FlightRouteRepository" as Repo
+
+Collab -> UI : input route and segments data
+UI -> UI : build FlightRouteDTO
+UI -> Controller : createFlightRoute(dto)
+Controller -> Service : createFlightRoute(dto)
+
+note right of Service: Service maps DTOs to Domain Value Objects\n(FlightRouteID, IataCodeAirport, RouteSegment, etc.)
+
+Service -> Route ** : create(routeId, companyCode, origin, dest, segments)
+note right of Route: Domain validations are executed\n(e.g., ID format, non-empty segments)
+
+Service -> Repo : save(route)
+Repo --> Service : savedRoute
+Service --> Controller : savedRoute
+Controller --> UI : savedRoute
+UI --> Collab : display success message
+
+@enduml

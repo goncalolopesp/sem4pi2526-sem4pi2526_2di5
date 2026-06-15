@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.airtransportcompany;
 import eapli.framework.io.util.Console;
 import eapli.framework.presentation.console.AbstractUI;
 import pt.isep.sem4pi.application.controller.airtransportcompany.RegisterCustomerCollaboratorController;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 public class RegisterCompanyCollaboratorUI extends AbstractUI {
@@ -29,7 +29,7 @@ public class RegisterCompanyCollaboratorUI extends AbstractUI {
         final String email = Console.readLine("Email: ");
 
         try {
-            this.theController.registerCompanyCollaborator(username, password, firstName, lastName, email, new IcaoCode(companyIcao));
+            this.theController.registerCompanyCollaborator(username, password, firstName, lastName, email, new IcaoCodeCompany(companyIcao));
             System.out.println("\n[SUCCESS] Company Collaborator successfully registered!");
         } catch (IllegalArgumentException e) {
             System.out.println("\n[ERROR] Invalid data: " + e.getMessage());
