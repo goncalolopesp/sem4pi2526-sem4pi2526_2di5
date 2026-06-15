@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 public class SimulationReportFileViolationReader
         implements SafetyViolationTotalReader {
 
+    // DEFESA:
+    // Este adaptador contém a variação do formato físico legado, evitando contaminar o coletor mensal.
     private static final Pattern VIOLATION_TOTAL = Pattern.compile(
             "Safety Violations \\(\\d+ shown / (\\d+) total\\)",
             Pattern.CASE_INSENSITIVE);

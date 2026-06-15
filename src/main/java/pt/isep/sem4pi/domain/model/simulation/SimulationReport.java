@@ -22,6 +22,8 @@ import java.util.Objects;
 @Entity
 public class SimulationReport implements AggregateRoot<String> {
 
+    // DEFESA:
+    // Este Aggregate Root controla os metadados e a decisão final PASS/FAIL do relatório US111.
     @Id
     @Column(nullable = false, unique = true)
     private String reportId;
@@ -53,6 +55,8 @@ public class SimulationReport implements AggregateRoot<String> {
     private List<SafetyViolationSummary> safetyViolations = new ArrayList<>();
 
     @Version
+    // DEFESA:
+    // Optimistic Locking protege o agregado sem manter bloqueios pessimistas durante a aplicação.
     private Long version;
 
     protected SimulationReport() {
@@ -81,6 +85,8 @@ public class SimulationReport implements AggregateRoot<String> {
         this.flightSummaries = new ArrayList<>(flightSummaries);
         this.safetyViolations = new ArrayList<>(safetyViolations);
         this.totalFlights = flightSummaries.size();
+        // DEFESA:
+        // A regra final fica no domínio: SCOMP FAIL, violações ou voos não concluídos implicam FAIL.
         this.finalValidationResult = calculateValidationResult(scompResult);
     }
 

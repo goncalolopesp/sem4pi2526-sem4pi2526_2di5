@@ -11,6 +11,8 @@ public class SimulationReportTest {
 
     @Test
     public void unsuccessfulFlightForcesFail() {
+        // DEFESA:
+        // Este teste unitário de domínio prova que a regra final pertence ao Aggregate Root.
         final SimulationReport report = report(
                 List.of(new FlightExecutionSummary("FLIGHT-1", "ABORTED")),
                 List.of(),
@@ -21,6 +23,8 @@ public class SimulationReportTest {
 
     @Test
     public void safetyViolationForcesFailEvenWhenScompResultIsPass() {
+        // DEFESA:
+        // Este cenário prova defesa em profundidade: um PASS externo não ultrapassa invariantes do domínio.
         final SimulationReport report = report(
                 List.of(new FlightExecutionSummary("FLIGHT-1", "FINISHED")),
                 List.of(new SafetyViolationSummary(

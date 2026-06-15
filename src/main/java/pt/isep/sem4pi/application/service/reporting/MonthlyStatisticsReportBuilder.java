@@ -13,6 +13,8 @@ import static pt.isep.sem4pi.domain.model.reporting.ReportSection.Entry.of;
 
 public class MonthlyStatisticsReportBuilder {
 
+    // DEFESA:
+    // O Builder transforma dados já recolhidos numa estrutura de relatório, sem acesso a BD ou ficheiros.
     public MonthlyStatisticsReport build(final YearMonth period,
                                          final LocalDateTime generatedAt,
                                          final MonthlyStatisticsData data) {

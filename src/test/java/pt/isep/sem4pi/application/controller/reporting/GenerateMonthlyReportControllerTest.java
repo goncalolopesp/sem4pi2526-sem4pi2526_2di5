@@ -14,6 +14,8 @@ public class GenerateMonthlyReportControllerTest {
 
     @Test
     public void allowsFlightControlOperatorAndAdminRoles() throws Exception {
+        // DEFESA:
+        // Este teste de controller fixa a responsabilidade de autorização e a delegação para o Service.
         final AuthorizationService authz = mock(AuthorizationService.class);
         final GenerateMonthlyReportService service =
                 mock(GenerateMonthlyReportService.class);

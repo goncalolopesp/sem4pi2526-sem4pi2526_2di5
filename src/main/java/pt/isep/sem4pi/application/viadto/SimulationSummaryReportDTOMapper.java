@@ -5,6 +5,8 @@ import pt.isep.sem4pi.domain.model.simulation.DTO.SimulationSummaryReportDTO;
 
 public class SimulationSummaryReportDTOMapper {
 
+    // DEFESA:
+    // O Mapper centraliza a conversão e evita que o controller conheça a estrutura interna do agregado.
     public SimulationSummaryReportDTO toDTO(final SimulationReport report) {
         return new SimulationSummaryReportDTO(
                 report.reportId(),

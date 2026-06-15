@@ -64,6 +64,8 @@ static int append_to_history(TrackEntry *entry, const TrackPoint *point)
 
 int tracker_update(PositionTracker *tracker, const PositionUpdate *update)
 {
+    // DEFESA:
+    // O tracker concentra estado atual e histórico, mantendo alta coesão na responsabilidade de acompanhamento.
     int idx = find_entry(tracker, update->flight_id);
     if (idx < 0)
     {

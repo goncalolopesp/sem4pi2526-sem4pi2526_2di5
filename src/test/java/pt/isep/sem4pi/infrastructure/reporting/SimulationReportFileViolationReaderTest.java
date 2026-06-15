@@ -21,6 +21,8 @@ public class SimulationReportFileViolationReaderTest {
 
     @Test
     public void readsTotalFromScompReportFile() throws Exception {
+        // DEFESA:
+        // Este teste de infraestrutura fixa o formato textual que o Adapter reconhece.
         final var reportFile = temporaryFolder.newFile("simulation-report.txt").toPath();
         Files.writeString(reportFile,
                 "=== US102 Safety Violations (10 shown / 14 total) ===");
@@ -32,6 +34,8 @@ public class SimulationReportFileViolationReaderTest {
 
     @Test
     public void returnsZeroWhenFileCannotBeRead() {
+        // DEFESA:
+        // Este teste documenta a política de tolerância: falha de leitura contribui com zero e não aborta a US112.
         final SimulationReport report = reportAt("missing-report.txt");
 
         assertEquals(0, new SimulationReportFileViolationReader().totalOf(report));

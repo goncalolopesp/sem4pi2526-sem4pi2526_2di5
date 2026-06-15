@@ -13,6 +13,8 @@ import java.time.format.DateTimeFormatter;
 
 public class SimulationSummaryReportExporter {
 
+    // DEFESA:
+    // Esta classe tem alta coesão: conhece apenas nome, conteúdo e escrita do relatório US111.
     private static final DateTimeFormatter FILE_TIMESTAMP =
             DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS");
     private final Path reportsDirectory;
@@ -42,6 +44,8 @@ public class SimulationSummaryReportExporter {
 
         final Path temporaryFile = path.resolveSibling(path.getFileName() + ".tmp");
         try {
+            // DEFESA:
+            // A escrita temporária seguida de move reduz o risco de deixar um relatório parcialmente escrito.
             Files.writeString(temporaryFile, content(report), StandardCharsets.UTF_8);
             try {
                 Files.move(temporaryFile, path,

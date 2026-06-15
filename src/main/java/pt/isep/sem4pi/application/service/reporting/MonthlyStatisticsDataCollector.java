@@ -17,6 +17,8 @@ import java.util.Map;
 public class MonthlyStatisticsDataCollector
         implements ReportDataCollector<MonthlyStatisticsData> {
 
+    // DEFESA:
+    // O coletor tem alta coesão: seleciona e agrega factos do mês, mas não os apresenta nem os grava.
     private final SimulationRepository simulations;
     private final SimulationReportRepository simulationReports;
     private final FlightRepository flights;

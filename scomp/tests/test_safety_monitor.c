@@ -6,6 +6,8 @@
 
 int main(void) {
 
+    // DEFESA:
+    // Este teste protege a integração usada pela simulação: uma posição abaixo do limite origina uma violação.
     PositionTracker tracker;
     tracker_init(&tracker);
 

@@ -17,6 +17,8 @@ import java.util.UUID;
 
 public class GenerateMonthlyReportService {
 
+    // DEFESA:
+    // Este serviço coordena interfaces pequenas para manter baixo acoplamento entre recolha, construção e formato.
     private static final DateTimeFormatter FILE_TIMESTAMP =
             DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
@@ -54,6 +56,8 @@ public class GenerateMonthlyReportService {
                 generatedAt.format(FILE_TIMESTAMP),
                 reportId,
                 renderer.fileExtension());
+        // DEFESA:
+        // O renderer é uma variação protegida: outro formato pode ser injetado sem alterar o caso de uso.
         final Path renderedFile = renderer.render(report, outputDirectory.resolve(fileName));
 
         final ReportMetadata metadata = new ReportMetadata(
@@ -67,6 +71,8 @@ public class GenerateMonthlyReportService {
 
     private void persistMetadata(final ReportMetadata metadata,
                                  final Path renderedFile) throws IOException {
+        // DEFESA:
+        // A transação protege a persistência dos metadados; a remoção do ficheiro compensa uma falha da BD.
         final TransactionalContext tx = repositoryFactory.newTransactionalContext();
         try {
             tx.beginTransaction();

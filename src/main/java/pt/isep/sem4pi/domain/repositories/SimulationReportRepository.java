@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public interface SimulationReportRepository {
 
+    // DEFESA:
+    // O Repository oferece uma coleção orientada ao domínio e protege a aplicação da tecnologia de persistência.
     SimulationReport save(SimulationReport report);
 
     Optional<SimulationReport> ofIdentity(String reportId);

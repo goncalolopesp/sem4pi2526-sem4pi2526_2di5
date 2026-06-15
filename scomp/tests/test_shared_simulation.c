@@ -25,6 +25,8 @@ static void *wait_for_shared_update(void *arg)
 
 int main(void)
 {
+    // DEFESA:
+    // Este teste valida que memória e primitivas process-shared são inicializadas e comunicam uma atualização.
     shm_unlink(SHM_NAME);
 
     SharedSimulationState *state = shared_create();

@@ -10,6 +10,8 @@ import java.util.Objects;
 @Embeddable
 public class FlightExecutionSummary {
 
+    // DEFESA:
+    // Este Value Object descreve o resultado de um voo por valor e pertence ao agregado SimulationReport.
     @Column(name = "flight_id", nullable = false)
     private String flightId;
 

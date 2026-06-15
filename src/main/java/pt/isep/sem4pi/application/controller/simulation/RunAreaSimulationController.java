@@ -17,6 +17,8 @@ import java.util.List;
 @UseCaseController
 public class RunAreaSimulationController {
 
+    // DEFESA:
+    // O controller coordena autorização e caso de uso, mas delega regras, persistência e execução externa.
     private final AuthorizationService authz;
     private final SimulationRepository simulationRepository;
     private final RunAreaSimulationService runAreaSimulationService;
@@ -25,6 +27,8 @@ public class RunAreaSimulationController {
     private final SimulationJobService simulationJobService;
 
     public RunAreaSimulationController() {
+        // DEFESA:
+        // Esta composição liga as abstrações da aplicação às implementações reais usadas em produção.
         this.authz = AuthzRegistry.authorizationService();
         this.simulationRepository = PersistenceContext.repositories().simulations();
         this.runAreaSimulationService = new RunAreaSimulationService(authz);
@@ -87,10 +91,14 @@ public class RunAreaSimulationController {
                         violationThreshold,
                         flightPlanIds);
 
+        // DEFESA:
+        // O Aggregate Root é persistido pelo Repository; o controller não conhece JPA nem SQL.
         final Simulation savedSimulation = simulationRepository.save(simulation);
 
         final SimulationDTORepresentationBuilder builder = new SimulationDTORepresentationBuilder();
 
+        // DEFESA:
+        // O DTO impede que a apresentação receba e altere diretamente a entidade persistente.
         return savedSimulation.buildRepresentation(builder);
     }
 
@@ -126,6 +134,8 @@ public class RunAreaSimulationController {
                 SEM4PIRoles.FLIGHT_CONTROL_OPERATOR,
                 SEM4PIRoles.ADMIN);
 
+        // DEFESA:
+        // A submissão assíncrona evita bloquear a UI durante a execução do processo C.
         simulationJobService.submit(simulationId);
     }
 }

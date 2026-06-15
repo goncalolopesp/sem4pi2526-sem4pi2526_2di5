@@ -14,6 +14,8 @@ import java.util.Objects;
 @Entity
 public class ReportMetadata implements AggregateRoot<String> {
 
+    // DEFESA:
+    // Este Aggregate Root representa o registo persistente de um relatório gerado, não o conteúdo do ficheiro.
     @Id
     @Column(nullable = false, unique = true)
     private String reportId;
@@ -40,6 +42,8 @@ public class ReportMetadata implements AggregateRoot<String> {
     private String fileLocation;
 
     @Version
+    // DEFESA:
+    // A versão permite detetar escritas concorrentes sem bloquear antecipadamente o registo.
     private Long version;
 
     protected ReportMetadata() {

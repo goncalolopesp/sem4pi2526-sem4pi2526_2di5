@@ -16,6 +16,8 @@ import java.util.UUID;
 
 public class GenerateSimulationSummaryReportService {
 
+    // DEFESA:
+    // Este Application Service orquestra parser, domínio, ficheiro e persistência sem concentrar essas implementações.
     private final RepositoryFactory repositoryFactory;
     private final SimulationReportParser parser;
     private final SimulationSummaryReportExporter exporter;
@@ -53,10 +55,14 @@ public class GenerateSimulationSummaryReportService {
                 parsed.safetyViolations(),
                 parsed.validationResult());
 
+        // DEFESA:
+        // O ficheiro é criado antes da transação; se a BD falhar existe uma compensação explícita.
         exporter.export(report);
 
         TransactionalContext tx = null;
         try {
+            // DEFESA:
+            // O TransactionalContext garante atomicidade entre SimulationReport e o estado final de Simulation.
             tx = repositoryFactory.newTransactionalContext();
             tx.beginTransaction();
             final SimulationRepository simulations = repositoryFactory.simulations(tx);

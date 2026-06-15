@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 
 public class SimulationJobService {
 
+    // DEFESA:
+    // Este serviço isola a política de execução assíncrona do controller e do adaptador C.
     private static final ExecutorService EXECUTOR =
             Executors.newCachedThreadPool();
 
@@ -28,6 +30,8 @@ public class SimulationJobService {
     }
 
     private void runSimulation(final String simulationId) {
+        // DEFESA:
+        // O agregado é recarregado dentro do job porque a execução ocorre noutra thread e noutro momento.
         final Simulation simulation = simulationRepository.ofIdentity(simulationId)
                 .orElseThrow(() -> new IllegalArgumentException("Simulation not found."));
 

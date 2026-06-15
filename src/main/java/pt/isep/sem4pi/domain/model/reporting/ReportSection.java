@@ -8,6 +8,8 @@ import java.util.List;
 
 public final class ReportSection {
 
+    // DEFESA:
+    // Este Value Object representa uma secção por valor e expõe coleções não modificáveis.
     private final String title;
     private final List<Entry> entries;
 

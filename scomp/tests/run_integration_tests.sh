@@ -25,6 +25,8 @@ rm -f "$REPORT1" "$REPORT2" "$REPORT3"
 
 echo "[1/4] US100 single flight"
 
+# DEFESA:
+# Este teste de integração valida o caminho completo do executável: argumentos, processo de voo, updates e relatório.
 ./flight_simulator \
   --area 39 43 -9 -3 \
   --start 0 \
@@ -38,6 +40,8 @@ echo "[1/4] US100 single flight"
   --flight data/Flight_Plan_v0a.json \
   --output "$REPORT1" > "$OUT1" 2>&1
 
+# DEFESA:
+# As verificações observam contratos externos; não dependem de funções internas e detetam regressões no fluxo real.
 grep -Fq "Starting simulation with 1 flight(s)." "$OUT1"
 grep -Fq "Safety thresholds: separation=3.00 NM, altitude=300.0 m, threshold=10." "$OUT1"
 grep -Fq "Position Tracker Summary (1 flights)" "$OUT1"
@@ -54,6 +58,8 @@ grep -Fq "Simulation result: PASS" "$REPORT1"
 
 echo "[2/4] Threshold termination"
 
+# DEFESA:
+# Este cenário prova o caminho de falha controlada quando o limite operacional de violações é atingido.
 ./flight_simulator \
   --area 39 43 -9 -3 \
   --start 0 \
@@ -77,6 +83,8 @@ grep -Fq "Simulation result: FAIL" "$REPORT2"
 
 echo "[3/4] US105 concurrent flights"
 
+# DEFESA:
+# Dois voos exercitam concorrência, isolamento por PID/pipe e agregação correta no processo pai.
 ./flight_simulator \
   --area 39 43 -9 -3 \
   --start 0 \
@@ -105,6 +113,8 @@ grep -Fq "Simulation result: PASS" "$REPORT3"
 
 echo "[4/4] Invalid arguments"
 
+# DEFESA:
+# O teste negativo garante fail-fast: configuração ambígua é rejeitada antes de criar processos filhos.
 set +e
 ./flight_simulator \
   --area 39 43 -9 -3 \

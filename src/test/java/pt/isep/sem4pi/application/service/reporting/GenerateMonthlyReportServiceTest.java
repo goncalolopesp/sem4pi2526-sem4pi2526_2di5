@@ -32,6 +32,8 @@ public class GenerateMonthlyReportServiceTest {
 
     @Test
     public void createsFileAndPersistsMetadataTransactionally() throws Exception {
+        // DEFESA:
+        // Este teste cobre o caso de uso: renderização, TransactionalContext, Repository e DTO coerentes.
         final TransactionalContext tx = mock(TransactionalContext.class);
         final ReportMetadataRepository metadataRepository =
                 mock(ReportMetadataRepository.class);
@@ -74,6 +76,8 @@ public class GenerateMonthlyReportServiceTest {
 
     @Test
     public void acceptsANewRendererWithoutChangingMonthlyReportLogic() throws Exception {
+        // DEFESA:
+        // Este teste demonstra Protected Variations ao substituir a Strategy sem alterar o serviço mensal.
         final TransactionalContext tx = mock(TransactionalContext.class);
         final ReportMetadataRepository metadataRepository =
                 mock(ReportMetadataRepository.class);

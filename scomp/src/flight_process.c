@@ -121,6 +121,8 @@ void run_flight_process(const char *flight_file,
 {
 
     /* ---- Handler de arranque (SIGUSR2) ---- */
+    // DEFESA:
+    // sigaction oferece controlo explícito de máscara e reinício de syscalls, adequado a sinais POSIX.
     struct sigaction start_action;
     memset(&start_action, 0, sizeof(start_action));
     start_action.sa_handler = handle_start;
@@ -183,6 +185,8 @@ void run_flight_process(const char *flight_file,
     sigprocmask(SIG_SETMASK, NULL, &wait_mask);
     sigdelset(&wait_mask, SIGUSR2);
 
+    // DEFESA:
+    // sigsuspend faz a espera atómica com a alteração temporária da máscara de sinais.
     while (!start_requested && !terminate_requested)
     {
         sigsuspend(&wait_mask);
@@ -287,6 +291,8 @@ void run_flight_process(const char *flight_file,
                 p.altitude_m = altitude;
             }
 
+            // DEFESA:
+            // PositionUpdate é o contrato binário entre filho e pai; o filho não altera o estado central.
             send_update(update_write_fd, &plan, current_time, p, STATUS_RUNNING);
 
             sem_wait(

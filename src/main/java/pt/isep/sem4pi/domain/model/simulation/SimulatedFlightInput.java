@@ -9,6 +9,8 @@ import jakarta.persistence.Embeddable;
 @Embeddable
 public class SimulatedFlightInput {
 
+    // DEFESA:
+    // Este Value Object representa um plano incluído na simulação e não possui identidade própria.
     @Column(nullable = false)
     private String flightPlanId;
 

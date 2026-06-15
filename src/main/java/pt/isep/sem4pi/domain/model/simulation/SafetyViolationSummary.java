@@ -9,6 +9,8 @@ import java.util.Objects;
 @Embeddable
 public class SafetyViolationSummary {
 
+    // DEFESA:
+    // Este Value Object preserva, como um valor imutável do relatório, o instante, tipo, posição e detalhe.
     @Column(name = "violation_timestamp", nullable = false)
     private Integer timestamp;
 

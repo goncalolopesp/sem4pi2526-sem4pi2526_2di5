@@ -41,6 +41,8 @@ public class GenerateSimulationSummaryReportServiceTest {
 
     @Test
     public void noViolationsGeneratePassReportWithFlightData() throws Exception {
+        // DEFESA:
+        // Este teste de aplicação cobre o happy path completo: parsing, regra PASS, ficheiro e persistência.
         final InMemoryRepositoryFactory factory = new InMemoryRepositoryFactory();
         final Simulation simulation = runningSimulation("SIM-PASS");
         factory.simulations().save(simulation);
@@ -70,6 +72,8 @@ public class GenerateSimulationSummaryReportServiceTest {
 
     @Test
     public void violationsGenerateFailReportWithTimestampAndPosition() throws Exception {
+        // DEFESA:
+        // Este cenário garante que uma violação externa é preservada e força o estado de domínio FAILED.
         final InMemoryRepositoryFactory factory = new InMemoryRepositoryFactory();
         final Simulation simulation = runningSimulation("SIM-FAIL");
         factory.simulations().save(simulation);
@@ -95,6 +99,8 @@ public class GenerateSimulationSummaryReportServiceTest {
 
     @Test
     public void persistenceFailureRollsBackAndDeletesExportedFile() throws Exception {
+        // DEFESA:
+        // Os mocks injetam uma falha no primeiro aggregate para provar rollback e compensação do ficheiro.
         final RepositoryFactory factory = mock(RepositoryFactory.class);
         final TransactionalContext tx = mock(TransactionalContext.class);
         final SimulationRepository simulations = mock(SimulationRepository.class);
@@ -132,6 +138,8 @@ public class GenerateSimulationSummaryReportServiceTest {
     @Test
     public void simulationSaveFailureRollsBackReportAndDeletesExportedFile()
             throws Exception {
+        // DEFESA:
+        // Este teste falha a segunda gravação para provar atomicidade entre SimulationReport e Simulation.
         final RepositoryFactory factory = mock(RepositoryFactory.class);
         final TransactionalContext tx = mock(TransactionalContext.class);
         final SimulationRepository simulations = mock(SimulationRepository.class);
@@ -169,6 +177,8 @@ public class GenerateSimulationSummaryReportServiceTest {
 
     @Test
     public void exportFailureDoesNotStartPersistenceTransaction() throws Exception {
+        // DEFESA:
+        // Este teste verifica a ordem do workflow: sem artefacto exportado não deve começar uma transação de BD.
         final RepositoryFactory factory = mock(RepositoryFactory.class);
         final Path source = writeScompReport("export-failure-source.txt", false);
         final Path invalidReportsDirectory =

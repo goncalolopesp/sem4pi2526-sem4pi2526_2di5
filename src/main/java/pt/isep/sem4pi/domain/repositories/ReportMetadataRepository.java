@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public interface ReportMetadataRepository {
 
+    // DEFESA:
+    // A interface mantém o domínio independente de JPA e permite implementações em memória nos testes.
     ReportMetadata save(ReportMetadata metadata);
 
     Optional<ReportMetadata> ofIdentity(String reportId);

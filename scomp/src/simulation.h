@@ -68,6 +68,8 @@ typedef struct
     Position position;
     int status;
 } PositionUpdate;
+// DEFESA:
+// PositionUpdate é uma mensagem autocontida para IPC; evita partilhar ponteiros entre processos.
 
 /* ===== Position Tracker (US101) ===== */
 
@@ -138,6 +140,8 @@ typedef struct
     char output_file[MAX_PATH];
     int start_time_provided;
 } SimulationConfig;
+// DEFESA:
+// SimulationConfig agrupa o contrato validado da execução e evita parâmetros globais dispersos.
 
 /* ===== US102: Safety Violations ===== */
 #define MAX_VIOLATIONS 1024

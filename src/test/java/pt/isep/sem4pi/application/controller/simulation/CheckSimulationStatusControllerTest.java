@@ -24,6 +24,8 @@ public class CheckSimulationStatusControllerTest {
 
     @Test
     public void returnsReportDtoForMenuPresentation() {
+        // DEFESA:
+        // Este teste garante que a fronteira de apresentação recebe DTO e não o Aggregate Root persistente.
         final SimulationReportRepository reports =
                 mock(SimulationReportRepository.class);
         final SimulationReport report = report();
@@ -41,6 +43,8 @@ public class CheckSimulationStatusControllerTest {
 
     @Test
     public void reportsThatSummaryIsNotAvailableYet() {
+        // DEFESA:
+        // O cenário assíncrono distingue relatório inexistente de uma simulação necessariamente falhada.
         final SimulationReportRepository reports =
                 mock(SimulationReportRepository.class);
         when(reports.findBySimulationId("SIM-RUNNING"))

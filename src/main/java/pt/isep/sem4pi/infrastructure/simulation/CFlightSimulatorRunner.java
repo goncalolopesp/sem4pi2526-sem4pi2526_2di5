@@ -15,6 +15,8 @@ import java.util.List;
 
 public class CFlightSimulatorRunner implements SimulationRunner {
 
+    // DEFESA:
+    // Este adaptador de infraestrutura traduz o Aggregate Root para o protocolo de linha de comandos do SCOMP.
     private static final String SIMULATOR_PATH = "scomp/flight_simulator";
     private static final String FLIGHT_PLAN_BASE_PATH = "scomp/data";
     private static final String REPORT_BASE_PATH = "scomp/reports";
@@ -71,6 +73,8 @@ public class CFlightSimulatorRunner implements SimulationRunner {
             command.add("--output");
             command.add(reportPath);
 
+            // DEFESA:
+            // ProcessBuilder mantém a fronteira Java/C explícita e evita misturar código nativo com o domínio.
             final ProcessBuilder processBuilder = new ProcessBuilder(command);
             processBuilder.redirectErrorStream(true);
 
@@ -87,6 +91,8 @@ public class CFlightSimulatorRunner implements SimulationRunner {
                 }
             }
 
+            // DEFESA:
+            // O exit code é o contrato técnico de sucesso; o ficheiro é o contrato de dados consumido pela US111.
             final int exitCode = process.waitFor();
 
             return new SimulationExecutionResult(

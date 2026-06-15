@@ -33,6 +33,8 @@ public class MonthlyStatisticsDataCollectorTest {
 
     @Test
     public void collectsOnlyStatisticsForSelectedMonth() throws Exception {
+        // DEFESA:
+        // Este teste isola o Collector e verifica seleção temporal e agregação das três fontes de dados.
         final Simulation juneSimulation = mock(Simulation.class);
         when(juneSimulation.startTime()).thenReturn(LocalDateTime.of(2026, 6, 3, 10, 0));
         when(juneSimulation.status()).thenReturn(SimulationStatus.FINISHED);
@@ -96,6 +98,8 @@ public class MonthlyStatisticsDataCollectorTest {
 
     @Test
     public void returnsZeroStatisticsWhenMonthHasNoData() {
+        // DEFESA:
+        // O cenário vazio garante que ausência de dados é um relatório válido e não uma exceção.
         final var simulationRepository = mock(SimulationRepository.class);
         final var reportRepository = mock(SimulationReportRepository.class);
         final var flightRepository = mock(FlightRepository.class);

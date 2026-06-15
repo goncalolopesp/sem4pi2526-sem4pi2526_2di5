@@ -21,6 +21,8 @@ public class JpaSimulationReportMappingTest {
 
     @Test
     public void persistsAndLoadsCompleteSimulationReportAggregate() {
+        // DEFESA:
+        // Este teste de integração JPA valida o mapping do Aggregate Root e das coleções de Value Objects.
         final Map<String, String> properties = Map.of(
                 "jakarta.persistence.jdbc.url",
                 "jdbc:h2:mem:us111-mapping;DB_CLOSE_DELAY=-1",

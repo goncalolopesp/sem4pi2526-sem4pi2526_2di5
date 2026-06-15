@@ -4,6 +4,8 @@ set -e
 
 echo "Compiling tests..."
 
+# DEFESA:
+# Cada binário liga apenas o módulo sob teste e as dependências mínimas, mantendo os testes unitários isolados.
 gcc -Wall -Wextra -Wpedantic -std=c11 -D_DEFAULT_SOURCE \
 tests/test_position_tracker.c \
 src/position_tracker.c \
@@ -40,6 +42,8 @@ src/position_tracker.c \
 
 echo ""
 
+# DEFESA:
+# set -e transforma qualquer assert ou exit code de falha numa falha imediata da suite.
 ./tests/test_position_tracker
 ./tests/test_safety_monitor
 ./tests/test_shared_simulation

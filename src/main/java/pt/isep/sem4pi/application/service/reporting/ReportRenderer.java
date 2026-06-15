@@ -7,6 +7,8 @@ import java.nio.file.Path;
 
 public interface ReportRenderer {
 
+    // DEFESA:
+    // Strategy e Protected Variations: TEXT pode ser substituído por HTML/PDF sem mudar recolha ou domínio.
     String format();
 
     String fileExtension();

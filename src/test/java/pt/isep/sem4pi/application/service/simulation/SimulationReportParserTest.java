@@ -22,6 +22,8 @@ public class SimulationReportParserTest {
 
     @Test
     public void parsesScompSeparationViolationWithBothPositions() throws Exception {
+        // DEFESA:
+        // Este teste fixa o contrato do Anti-Corruption Layer para violações com dois voos e duas posições.
         final ParsedSimulationReport report = parser.parse(writeReport(
                 "=== US102 Safety Violations (1 shown / 1 total) ===\n"
                         + "  t=7 SEPARATION FLIGHT-A(pid=101) <-> "
@@ -39,6 +41,8 @@ public class SimulationReportParserTest {
 
     @Test
     public void rejectsReportWhenScompOmittedViolationDetails() throws Exception {
+        // DEFESA:
+        // O teste negativo impede que um ficheiro truncado seja aceite como resumo operacional consistente.
         try {
             parser.parse(writeReport(
                     "=== US102 Safety Violations (1 shown / 2 total) ===\n"
@@ -54,6 +58,8 @@ public class SimulationReportParserTest {
 
     @Test
     public void rejectsReportWhenFlightStatusCountDoesNotMatchTotal() throws Exception {
+        // DEFESA:
+        // Esta inconsistência protege a invariante entre total declarado e estados efetivamente interpretados.
         final String content = baseReport(
                 "=== US102 Safety Violations (0 shown / 0 total) ===\n"
                         + "==========================================\n")

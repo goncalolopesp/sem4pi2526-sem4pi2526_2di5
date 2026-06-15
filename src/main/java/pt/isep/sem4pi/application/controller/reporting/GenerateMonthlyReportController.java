@@ -14,6 +14,8 @@ import java.time.YearMonth;
 @UseCaseController
 public class GenerateMonthlyReportController {
 
+    // DEFESA:
+    // O controller valida autorização e converte input da UI; a geração pertence ao serviço de aplicação.
     private final AuthorizationService authz;
     private final GenerateMonthlyReportService service;
 

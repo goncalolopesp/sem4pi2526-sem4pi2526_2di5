@@ -6,6 +6,8 @@
 
 int main(void) {
 
+    // DEFESA:
+    // Este teste unitário isola o tracker e prova que um PositionUpdate atualiza estado atual e histórico.
     PositionTracker tracker;
     tracker_init(&tracker);
 

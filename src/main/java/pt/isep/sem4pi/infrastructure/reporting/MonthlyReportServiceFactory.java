@@ -12,6 +12,8 @@ import java.time.Clock;
 
 public final class MonthlyReportServiceFactory {
 
+    // DEFESA:
+    // Esta Factory concentra a composição de dependências concretas fora do domínio e do controller.
     private MonthlyReportServiceFactory() {
     }
 

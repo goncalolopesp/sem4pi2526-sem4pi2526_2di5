@@ -14,6 +14,8 @@ import jakarta.persistence.*;
 @Entity
 public class Simulation implements AggregateRoot<String>, Representationable {
 
+    // DEFESA:
+    // Este Aggregate Root controla identidade, parâmetros, voos incluídos e transições de estado da simulação.
     @Id
     @Column(nullable = false, unique = true)
     private String simulationId;
@@ -78,6 +80,8 @@ public class Simulation implements AggregateRoot<String>, Representationable {
     private Set<SimulatedFlightInput> simulatedFlightInputs = new HashSet<>();
 
     @Version
+    // DEFESA:
+    // A versão ativa Optimistic Locking para detetar atualizações concorrentes entre UI e job assíncrono.
     private Long version;
 
     protected Simulation() {
@@ -143,10 +147,14 @@ public class Simulation implements AggregateRoot<String>, Representationable {
     public void addFlightPlan(final String flightPlanId) {
         Preconditions.nonEmpty(flightPlanId, "Flight plan id is required");
 
+        // DEFESA:
+        // A coleção só é alterada através do Aggregate Root, preservando as suas invariantes.
         this.simulatedFlightInputs.add(new SimulatedFlightInput(flightPlanId));
     }
 
     public void markAsRunning() {
+        // DEFESA:
+        // A transição pertence ao domínio; não fica espalhada por controllers ou repositórios.
         if (status != SimulationStatus.CREATED) {
             throw new IllegalStateException("Only created simulations can be started");
         }

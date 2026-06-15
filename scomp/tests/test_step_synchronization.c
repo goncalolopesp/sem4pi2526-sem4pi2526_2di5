@@ -12,6 +12,8 @@
 
 int main(void)
 {
+    // DEFESA:
+    // Este teste prova a barreira pai-filho: o voo não avança antes do sem_post do timestep.
     shm_unlink(SHM_NAME);
 
     SharedSimulationState *state = shared_create();

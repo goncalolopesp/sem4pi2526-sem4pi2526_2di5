@@ -45,6 +45,8 @@ static void *consumer_thread(void *arg)
 
 int main(void)
 {
+    // DEFESA:
+    // Este teste isola o protocolo condition-variable entre produtor de passos e consumidor de segurança.
     SimulationThreadContext ctx;
     SharedSimulationState shared;
     SimulationConfig config;

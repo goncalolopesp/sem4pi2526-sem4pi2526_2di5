@@ -393,6 +393,8 @@ static void write_report(const FlightRuntime *runtimes, int count,
 
 int main(int argc, char **argv)
 {
+    // DEFESA:
+    // O processo pai funciona como coordenador: cria filhos, recebe updates e controla o ciclo global.
     SimulationConfig config;
     if (parse_args(argc, argv, &config) != 0)
     {
@@ -447,6 +449,8 @@ int main(int argc, char **argv)
      * Os filhos herdam a máscara, instalam o handler e esperam com sigsuspend().
      * Assim evitamos perder o sinal de arranque se o pai o enviar demasiado cedo.
      */
+    // DEFESA:
+    // Bloquear antes do fork e usar sigsuspend nos filhos evita perder o SIGUSR2 por race condition.
     sigset_t start_mask;
     sigset_t previous_mask;
     sigemptyset(&start_mask);
@@ -478,6 +482,8 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
 
+        // DEFESA:
+        // Existe um pipe por voo para manter mensagens e fim de stream isolados entre processos filhos.
         if (pipe(update_pipe) != 0)
         {
             perror("pipe update_pipe");
@@ -487,6 +493,8 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
 
+        // DEFESA:
+        // Um processo por voo fornece isolamento e concretiza diretamente o requisito concorrente da US100.
         pid_t pid = fork();
         if (pid < 0)
         {
@@ -554,6 +562,8 @@ int main(int argc, char **argv)
         /* Recolhe um update por cada voo ativo neste passo */
         while (received < expected && !stop_requested)
         {
+            // DEFESA:
+            // poll permite ao pai esperar por vários pipes sem busy waiting nem uma thread por descritor.
             int ready = poll(poll_fds, (nfds_t)config.flight_count, -1);
             if (ready < 0)
             {
@@ -694,6 +704,8 @@ int main(int argc, char **argv)
     for (int i = 0; i < config.flight_count; ++i)
     {
         int status;
+        // DEFESA:
+        // waitpid recolhe cada filho e evita processos zombie no fim da simulação.
         waitpid(runtimes[i].pid, &status, 0);
     }
 

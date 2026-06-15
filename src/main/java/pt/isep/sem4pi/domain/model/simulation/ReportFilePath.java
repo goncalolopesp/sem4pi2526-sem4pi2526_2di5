@@ -10,6 +10,8 @@ import java.util.Objects;
 @Embeddable
 public class ReportFilePath {
 
+    // DEFESA:
+    // Este Value Object normaliza o caminho e evita tratar a localização do relatório como uma String sem significado.
     @Column(name = "file_location", nullable = false, length = 1000)
     private String value;
 

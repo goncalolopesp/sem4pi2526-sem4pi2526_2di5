@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
 
 public class SimulationReportParser {
 
+    // DEFESA:
+    // Este parser é um Anti-Corruption Layer entre o formato textual do SCOMP e os objetos da aplicação Java.
     private static final Pattern FLIGHT_STATUS = Pattern.compile(
             "^\\s*\\[(.+?)]\\s+pid=.*?status=([A-Z]+).*$");
     private static final Pattern FLIGHT_HEADER = Pattern.compile(
@@ -35,6 +37,8 @@ public class SimulationReportParser {
         final List<FlightExecutionSummary> flights = parseFlightStatuses(lines);
         final List<SafetyViolationSummary> violations =
                 parseSafetyViolations(lines, positions);
+        // DEFESA:
+        // A validação rejeita relatórios incompletos para não persistir um resumo aparentemente consistente.
         validateViolationCount(lines, violations.size());
 
         final int declaredTotal = extractTotalFlights(lines);
