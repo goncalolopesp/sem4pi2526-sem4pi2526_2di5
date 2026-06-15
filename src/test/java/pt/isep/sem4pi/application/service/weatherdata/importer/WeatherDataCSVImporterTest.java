@@ -8,8 +8,18 @@ import java.nio.file.Path;
 
 import static org.junit.Assert.*;
 
+/**
+ * Parser tests for the US042 CSV weather importer.
+ *
+ * <p>They document the expected source layout: wind files provide ACA,
+ * altitude limits, direction, wind speed, day and start/end times.</p>
+ */
 public class WeatherDataCSVImporterTest {
 
+    /**
+     * Confirms that the real sample CSV file is recognized and converted into
+     * parsed weather DTOs.
+     */
     @Test
     public void ensureImporterParsesKnownWindFile() {
         String filePath = Path.of("src", "main", "java", "pt", "isep", "sem4pi", "data", "weatherData",
@@ -23,6 +33,10 @@ public class WeatherDataCSVImporterTest {
         assertTrue(payload.getTotalRecords() > 0);
     }
 
+    /**
+     * Invalid numeric values are reported as row errors instead of throwing and
+     * aborting the whole file.
+     */
     @Test
     public void ensureImporterReportsInvalidLine() throws IOException {
         Path tempFile = Files.createTempFile("weather", ".csv");
@@ -36,6 +50,10 @@ public class WeatherDataCSVImporterTest {
         assertEquals(1, payload.getErrors().size());
     }
 
+    /**
+     * Confirms that the importer keeps both start and end times, which are
+     * later shown in US043 and selected in US082.
+     */
     @Test
     public void ensureImporterParsesStartAndEndTimes() throws IOException {
         Path tempFile = Files.createTempFile("weather", ".csv");
@@ -50,6 +68,10 @@ public class WeatherDataCSVImporterTest {
         assertEquals(java.time.LocalTime.of(8, 15), payload.getRecords().get(0).getEndTime());
     }
 
+    /**
+     * A row with no usable start or end time is rejected because the system
+     * cannot know the validity interval of the weather data.
+     */
     @Test
     public void ensureImporterReportsInvalidTimeRange() throws IOException {
         Path tempFile = Files.createTempFile("weather", ".csv");

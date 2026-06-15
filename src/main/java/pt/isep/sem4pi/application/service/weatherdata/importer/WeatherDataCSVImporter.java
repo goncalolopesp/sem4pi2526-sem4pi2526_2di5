@@ -11,6 +11,14 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/**
+ * CSV parsing strategy used by US042 for wind weather files.
+ *
+ * <p>The source provides area, flight-level limits, wind, date and time data.
+ * The altitude stored by the domain is the midpoint of the two flight levels,
+ * converted from feet to metres. Temperature, pressure and humidity receive
+ * reference defaults because they are absent from this source format.</p>
+ */
 public class WeatherDataCSVImporter implements WeatherDataImporter {
 
     private static final double DEFAULT_TEMPERATURE_C = 15.0;
@@ -21,6 +29,9 @@ public class WeatherDataCSVImporter implements WeatherDataImporter {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("M/d/yyyy");
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("H:mm");
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean validate(String filePath) {
         if (filePath == null || filePath.trim().isEmpty()) {
@@ -30,6 +41,13 @@ public class WeatherDataCSVImporter implements WeatherDataImporter {
         return Files.exists(path) && Files.isReadable(path) && filePath.toLowerCase().endsWith(".csv");
     }
 
+    /**
+     * Parses all non-empty CSV rows and reports malformed rows without stopping
+     * the remaining import.
+     *
+     * @param filePath readable CSV source
+     * @return parsed rows and line-specific errors
+     */
     @Override
     public WeatherImportPayload execute(String filePath) {
         WeatherImportPayload payload = new WeatherImportPayload();

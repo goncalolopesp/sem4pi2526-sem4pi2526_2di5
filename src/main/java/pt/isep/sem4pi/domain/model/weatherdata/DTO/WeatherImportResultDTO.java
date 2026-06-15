@@ -3,6 +3,12 @@ package pt.isep.sem4pi.domain.model.weatherdata.DTO;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Read-only result returned by US042 after a bulk weather import.
+ *
+ * <p>It gives the UI enough information to explain a partial success without
+ * exposing importer or persistence objects.</p>
+ */
 public class WeatherImportResultDTO {
     private final int totalRecords;
     private final int importedRecords;

@@ -15,6 +15,18 @@ import pt.isep.sem4pi.domain.repositories.WeatherBatchRepository;
 
 import java.util.*;
 
+/**
+ * Coordinates the US042 weather-data import.
+ *
+ * <p>The service separates file parsing from domain creation. An importer
+ * converts each source row into a DTO, after which this service verifies the
+ * referenced Air Control Area, creates missing areas when companion ACA data
+ * is available, builds validated domain objects and persists one
+ * {@link WeatherImportBatch} per area.</p>
+ *
+ * <p>Invalid rows do not abort the complete import. Their errors are collected
+ * so valid rows can still be persisted and reported to the user.</p>
+ */
 public class WeatherDataImportService {
 
     private final WeatherBatchRepository batchRepository;
@@ -29,6 +41,20 @@ public class WeatherDataImportService {
         this.importerFactory = importerFactory;
     }
 
+    /**
+     * Imports all valid records found in the supplied source.
+     *
+     * <p>Records are grouped by Air Control Area because
+     * {@code WeatherImportBatch} is the aggregate root that owns weather data
+     * for one area. The returned rejected count includes parsing, domain and
+     * missing-area failures.</p>
+     *
+     * @param filePath source path or file name
+     * @param fileType CSV/XLSX type, optionally inferred from the path
+     * @return immutable presentation summary of the import
+     * @throws IllegalArgumentException when the source cannot be validated or
+     *                                  the format is unsupported
+     */
     public WeatherImportResultDTO importWeatherData(String filePath, String fileType) {
         String resolvedPath = resolveFilePath(filePath, fileType);
         java.util.Map<String, AirControlAreaBoundary> acaDefinitions =

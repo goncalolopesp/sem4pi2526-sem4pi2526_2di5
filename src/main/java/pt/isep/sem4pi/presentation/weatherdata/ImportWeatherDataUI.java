@@ -7,6 +7,12 @@ import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Console interface for US042.
+ *
+ * <p>It collects only source information and presents the import summary. File
+ * parsing, validation and persistence are deliberately outside the UI.</p>
+ */
 public class ImportWeatherDataUI extends AbstractUI {
     private final ImportWeatherDataController controller = new ImportWeatherDataController();
     private final Scanner scanner = new Scanner(System.in);

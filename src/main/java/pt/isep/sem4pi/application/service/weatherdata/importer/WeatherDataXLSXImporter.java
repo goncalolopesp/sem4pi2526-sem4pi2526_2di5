@@ -22,6 +22,15 @@ import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * XLSX parsing strategy used by US042.
+ *
+ * <p>The importer scans every sheet until it finds the supported wind-data
+ * header. Apache POI is used so numeric Excel dates/times and textual values
+ * can be handled consistently. As in the CSV importer, altitude is converted
+ * from the midpoint of the flight-level range and unavailable measurements
+ * receive reference defaults.</p>
+ */
 public class WeatherDataXLSXImporter implements WeatherDataImporter {
 
     private static final double DEFAULT_TEMPERATURE_C = 15.0;
@@ -41,6 +50,9 @@ public class WeatherDataXLSXImporter implements WeatherDataImporter {
     private static final String COL_START = "star";
     private static final String COL_END = "end";
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean validate(String filePath) {
         if (filePath == null || filePath.trim().isEmpty()) {
@@ -50,6 +62,12 @@ public class WeatherDataXLSXImporter implements WeatherDataImporter {
         return Files.exists(path) && Files.isReadable(path) && filePath.toLowerCase().endsWith(".xlsx");
     }
 
+    /**
+     * Locates the wind-data table and parses its rows independently.
+     *
+     * @param filePath readable XLSX workbook
+     * @return parsed records and row-specific errors
+     */
     @Override
     public WeatherImportPayload execute(String filePath) {
         WeatherImportPayload payload = new WeatherImportPayload();

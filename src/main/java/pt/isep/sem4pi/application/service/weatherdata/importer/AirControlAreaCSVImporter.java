@@ -9,8 +9,22 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Reads Air Control Area boundaries from the companion CSV used by US042.
+ *
+ * <p>The result is auxiliary import data, not persisted directly here. The
+ * application service uses it only when a weather row references an area that
+ * does not yet exist. Invalid definitions are skipped so one bad area does not
+ * prevent other weather records from being imported.</p>
+ */
 public class AirControlAreaCSVImporter {
 
+    /**
+     * Loads valid rectangular boundaries indexed by area identifier.
+     *
+     * @param filePath companion ACA CSV path
+     * @return valid boundaries, or an empty map when the file cannot be read
+     */
     public Map<String, AirControlAreaBoundary> loadAreas(String filePath) {
         Map<String, AirControlAreaBoundary> areas = new HashMap<>();
         if (filePath == null || filePath.trim().isEmpty()) {

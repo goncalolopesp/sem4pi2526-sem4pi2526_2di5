@@ -15,8 +15,21 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Extracts Air Control Area definitions embedded in a US042 XLSX workbook.
+ *
+ * <p>Every sheet is searched for an ACA header. Coordinate pairs are
+ * normalized into minimum/maximum latitude and longitude before constructing
+ * the domain boundary.</p>
+ */
 public class AirControlAreaXLSXImporter {
 
+    /**
+     * Loads all valid ACA boundaries found in the workbook.
+     *
+     * @param filePath XLSX workbook path
+     * @return boundaries indexed by area identifier
+     */
     public Map<String, AirControlAreaBoundary> loadAreas(String filePath) {
         Map<String, AirControlAreaBoundary> areas = new HashMap<>();
         if (filePath == null || filePath.trim().isEmpty()) {

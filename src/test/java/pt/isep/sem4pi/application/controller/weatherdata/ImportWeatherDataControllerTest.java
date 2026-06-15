@@ -18,8 +18,21 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+/**
+ * Tests the US042 controller boundary.
+ *
+ * <p>The purpose is to prove that authorization is checked before the bulk
+ * import use case is executed, while still verifying that the controller
+ * delegates to the real import service.</p>
+ */
 public class ImportWeatherDataControllerTest {
 
+    /**
+     * Happy path for importing one CSV row through the controller.
+     *
+     * <p>This is the defence reminder that US042 is role-protected at
+     * controller level and that valid rows are persisted in a weather batch.</p>
+     */
     @Test
     public void ensureImportWeatherDataDelegatesAndAuthorizes() throws Exception {
         InMemoryWeatherBatchRepository batchRepository = new InMemoryWeatherBatchRepository();

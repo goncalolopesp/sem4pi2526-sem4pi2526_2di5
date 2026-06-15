@@ -14,6 +14,13 @@ import java.nio.file.Path;
 
 import static org.junit.Assert.*;
 
+/**
+ * Service-level tests for US042 bulk weather import.
+ *
+ * <p>These tests focus on the orchestration rules: the service receives parsed
+ * weather data, guarantees that the Air Control Area exists, creates batches
+ * by area and rejects unsupported formats.</p>
+ */
 public class WeatherDataImportServiceTest {
 
     private InMemoryWeatherBatchRepository batchRepository;
@@ -36,6 +43,10 @@ public class WeatherDataImportServiceTest {
         );
     }
 
+    /**
+     * Proves that a valid wind CSV creates a persisted
+     * {@code WeatherImportBatch} for an already known Air Control Area.
+     */
     @Test
     public void ensureBulkImportCreatesBatchForValidArea() {
         String filePath = Path.of("src", "main", "java", "pt", "isep", "sem4pi", "data", "weatherData",
@@ -48,6 +59,10 @@ public class WeatherDataImportServiceTest {
         assertEquals(1, batchRepository.findAllByAreaId("121").size());
     }
 
+    /**
+     * Proves the US042 fallback where a missing ACA is created from the
+     * companion ACA file before its weather records are saved.
+     */
     @Test
     public void ensureBulkImportCreatesMissingAcaFromCsv() {
         InMemoryWeatherBatchRepository localBatchRepository = new InMemoryWeatherBatchRepository();
@@ -69,6 +84,9 @@ public class WeatherDataImportServiceTest {
                 new AirControlAreaID("121")));
     }
 
+    /**
+     * Unsupported formats must fail fast because no importer strategy exists.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void ensureInvalidFileTypeThrows() {
         service.importWeatherData("missing_file.txt", "txt");
