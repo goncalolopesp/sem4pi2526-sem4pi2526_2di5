@@ -14,6 +14,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Thread-safe in-memory view model used by US091.
+ *
+ * <p>It keeps a bounded newest-first event history and derives active sessions
+ * from US090 log events. Synchronized methods are required because UDP
+ * ingestion and HTTP request threads access the same state concurrently.</p>
+ */
 public final class RemoteAccessLogStore {
 
     private static final DateTimeFormatter TIMESTAMP_FORMAT =
@@ -30,6 +37,12 @@ public final class RemoteAccessLogStore {
         this.maximumEvents = maximumEvents;
     }
 
+    /**
+     * Replays a persisted log so the HTTP view survives server restarts.
+     *
+     * @param logFile US090 semicolon-separated log
+     * @throws IOException when an existing file cannot be read
+     */
     public synchronized void load(final Path logFile) throws IOException {
         if (!Files.exists(logFile)) {
             return;
@@ -39,6 +52,17 @@ public final class RemoteAccessLogStore {
         }
     }
 
+    /**
+     * Parses and applies one log event.
+     *
+     * <p>{@code LOGIN_SUCCESS} creates/replaces a session, while
+     * {@code LOGOUT} and {@code DISCONNECT} remove the matching session.
+     * Business-operation and failed-login events remain visible but do not
+     * alter active-user state.</p>
+     *
+     * @param line semicolon-separated US090 event
+     * @return {@code false} when the line is malformed and was ignored
+     */
     public synchronized boolean record(final String line) {
         final LogEntry entry = LogEntry.parse(line);
         if (entry == null) {
@@ -62,14 +86,23 @@ public final class RemoteAccessLogStore {
         return true;
     }
 
+    /**
+     * @return defensive newest-first copy of the visible event history
+     */
     public synchronized List<LogEntry> recentEvents() {
         return new ArrayList<>(events);
     }
 
+    /**
+     * @return defensive copy of sessions currently considered active
+     */
     public synchronized List<ActiveUser> activeUsers() {
         return new ArrayList<>(activeUsers.values());
     }
 
+    /**
+     * Parsed representation of one persisted remote-access event.
+     */
     public record LogEntry(
             LocalDateTime timestamp,
             String username,
@@ -104,6 +137,9 @@ public final class RemoteAccessLogStore {
         }
     }
 
+    /**
+     * Snapshot of a session opened by a successful login.
+     */
     public record ActiveUser(
             String username,
             String clientIp,

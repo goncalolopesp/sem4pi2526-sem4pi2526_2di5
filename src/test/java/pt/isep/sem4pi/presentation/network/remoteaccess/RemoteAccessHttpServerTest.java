@@ -10,8 +10,19 @@ import java.net.http.HttpResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * HTTP endpoint tests for US091.
+ *
+ * <p>The server exposes browser pages plus JSON endpoints used by AJAX polling,
+ * without adding an external web framework.</p>
+ */
 public class RemoteAccessHttpServerTest {
 
+    /**
+     * End-to-end HTTP check: pages include the auto-refresh JavaScript, JSON
+     * endpoints expose live store data, and a disconnect immediately changes
+     * the active-user response.
+     */
     @Test
     public void servesPagesAndLiveJsonEndpoints() throws Exception {
         final RemoteAccessLogStore store = new RemoteAccessLogStore(10);

@@ -9,8 +9,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests the in-memory state model used by US091.
+ *
+ * <p>The store is the bridge between the persisted US090 log file and the live
+ * HTTP pages: it keeps recent events and reconstructs active sessions.</p>
+ */
 public class RemoteAccessLogStoreTest {
 
+    /**
+     * Recent events are shown newest first and capped so the browser page stays
+     * bounded.
+     */
     @Test
     public void keepsMostRecentEventsFirstAndLimitsTheirNumber() {
         final RemoteAccessLogStore store = new RemoteAccessLogStore(2);
@@ -24,6 +34,10 @@ public class RemoteAccessLogStoreTest {
         assertEquals("CONSULT_WEATHER_DATA", store.recentEvents().get(1).eventType());
     }
 
+    /**
+     * Active users are derived from login/logout events rather than stored as a
+     * separate persistent entity.
+     */
     @Test
     public void loginAddsAndLogoutRemovesActiveSession() {
         final RemoteAccessLogStore store = new RemoteAccessLogStore(10);
@@ -36,6 +50,10 @@ public class RemoteAccessLogStoreTest {
         assertTrue(store.activeUsers().isEmpty());
     }
 
+    /**
+     * Startup replay: existing log files rebuild the visible state, while
+     * malformed lines are ignored.
+     */
     @Test
     public void loadsExistingLogAndIgnoresInvalidLines() throws Exception {
         final Path file = Files.createTempFile("remote-access-store-", ".log");

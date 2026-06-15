@@ -9,11 +9,26 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.Executors;
 
+/**
+ * Embedded HTTP server that implements the US091 browser visualization.
+ *
+ * <p>HTML pages contain a small JavaScript client that polls JSON endpoints
+ * every two seconds. The browser replaces only table rows, so events and active
+ * users update without a full page reload. Server-side JSON escaping and DOM
+ * {@code textContent} prevent log values from being interpreted as HTML.</p>
+ */
 public final class RemoteAccessHttpServer {
 
     private final HttpServer server;
     private final RemoteAccessLogStore store;
 
+    /**
+     * Creates all US091 page and API routes.
+     *
+     * @param port requested HTTP port; zero allows the operating system to choose
+     * @param store shared live view of events and active sessions
+     * @throws IOException when the HTTP socket cannot be created
+     */
     public RemoteAccessHttpServer(final int port, final RemoteAccessLogStore store) throws IOException {
         this.server = HttpServer.create(new InetSocketAddress(port), 0);
         this.store = store;
@@ -25,14 +40,23 @@ public final class RemoteAccessHttpServer {
         server.setExecutor(Executors.newCachedThreadPool());
     }
 
+    /**
+     * Starts accepting browser requests.
+     */
     public void start() {
         server.start();
     }
 
+    /**
+     * Stops the embedded server immediately.
+     */
     public void stop() {
         server.stop(0);
     }
 
+    /**
+     * @return actual bound port, useful when tests request an ephemeral port
+     */
     public int port() {
         return server.getAddress().getPort();
     }
