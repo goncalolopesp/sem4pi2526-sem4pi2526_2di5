@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Shell scripts must remain executable by Linux shells.
+*.sh text eol=lf

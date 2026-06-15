@@ -40,6 +40,10 @@ package "Simulation Integration" {
   class SimulationReport <<AggregateRoot>>
 }
 
+package "Reporting" {
+  class ReportMetadata <<AggregateRoot>>
+}
+
 User --> Role : assigned roles
 
 CustomerCollaborator --> User : system identity
@@ -74,5 +78,6 @@ Simulation --> AirControlArea : simulated area
 Simulation --> FlightPlan : input plans
 Simulation --> WeatherData : weather input
 SimulationReport --> Simulation : result of
+ReportMetadata --> SimulationReport : may describe
 
 @enduml

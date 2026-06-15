@@ -27,17 +27,30 @@ package "Backoffice Configuration" {
     +modelName: String
     +type: AircraftType
     +motorization: String
-    +emptyWeight: Decimal
-    +maximumTakeoffWeight: Decimal
-    +maximumZeroFuelWeight: Decimal
-    +maximumFuelCapacity: Decimal
     +serviceCeiling: Decimal
     +cruiseSpeed: Decimal
     +wingArea: Decimal
-    +dragCoefficient: Decimal
-    +liftCoefficient: Decimal
     +maximumRange: Decimal
     +aspectRatio: Decimal
+  }
+
+  class AircraftModelId <<ValueObject>> {
+    +code: String
+  }
+
+  class Weight <<ValueObject>> {
+    +emptyWeight: Decimal
+    +maximumZeroFuelWeight: Decimal
+    +maximumTakeoffWeight: Decimal
+  }
+
+  class Fuel <<ValueObject>> {
+    +maximumFuelCapacity: Decimal
+  }
+
+  class Coefficient <<ValueObject>> {
+    +dragCoefficient: Decimal
+    +liftCoefficient: Decimal
   }
 
   class CertifiedEngine <<Entity>> {
@@ -59,19 +72,25 @@ package "Backoffice Configuration" {
   }
 
   class Airport <<AggregateRoot>> {
-    +airportId: AirportId
-    +airControlAreaId: AirControlAreaId
+    +iataCode: IataCode <<ID>>
+    +icaoCode: IcaoCode
     +name: String
     +town: String
     +country: String
-    +iataCode: String
-    +icaoCode: String
-    +elevation: Decimal
+    +elevation: Elevation
   }
 
   class Coordinates <<ValueObject>> {
     +latitude: Decimal
     +longitude: Decimal
+  }
+
+  class IataCodeAirport <<ValueObject>> {
+    +code: String
+  }
+
+  class IcaoCodeAirport <<ValueObject>> {
+    +code: String
   }
 
   enum AircraftType {
@@ -82,8 +101,15 @@ package "Backoffice Configuration" {
 }
 
 AircraftModel "1" *-- "1..*" CertifiedEngine
+AircraftModel "1" *-- "1" Weight
+AircraftModel "1" *-- "1" Fuel
+AircraftModel "1" *-- "1" Coefficient
+AircraftModel "1" *-- "1" AircraftModelId
+
 AirControlArea "1" *-- "1" AirControlAreaBoundary
 Airport "1" *-- "1" Coordinates
+Airport "1" *-- "1" IataCodeAirport
+Airport "1" *-- "1" IcaoCodeAirport
 
 EngineModel --> Manufacturer : made by >
 AircraftModel --> Manufacturer : made by >

@@ -10,8 +10,8 @@ import pt.isep.sem4pi.application.controller.airtransportcompany.ListCustomerCol
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompany;
 import pt.isep.sem4pi.domain.model.airtransportcompany.AirTransportCompanyCollaborator;
 import pt.isep.sem4pi.domain.model.airtransportcompany.CompanyName;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IataCode;
-import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCode;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IataCodeCompany;
+import pt.isep.sem4pi.domain.model.airtransportcompany.IcaoCodeCompany;
 import pt.isep.sem4pi.domain.usermanagement.SEM4PIPasswordPolicy;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import pt.isep.sem4pi.infrastructure.persistence.memory.InMemoryAirTransportCompanyCollaboratorRepository;
@@ -31,7 +31,7 @@ public class ListCustomerCollaboratorsControllerTest {
     private ListCustomerCollaboratorsController controller;
     private RegisterCustomerCollaboratorController registerController;
 
-    private static final IcaoCode TAP_ICAO = new IcaoCode("TAP");
+    private static final IcaoCodeCompany TAP_ICAO = new IcaoCodeCompany("TAP");
 
     private static void clearSharedCollaboratorRepository() {
         final InMemoryAirTransportCompanyCollaboratorRepository repo =
@@ -46,6 +46,7 @@ public class ListCustomerCollaboratorsControllerTest {
     @Before
     public void setUp() {
         System.setProperty("persistence.repositoryFactory", InMemoryRepositoryFactory.class.getName());
+        PersistenceContext.resetForTesting();
 
         final var factory = PersistenceContext.repositories();
         AuthzRegistry.configure(factory.users(), new SEM4PIPasswordPolicy(), new PlainTextEncoder());
@@ -63,7 +64,7 @@ public class ListCustomerCollaboratorsControllerTest {
 
         companyRepo.save(new AirTransportCompany(
                 new CompanyName("TAP Portugal"),
-                new IataCode("TP"),
+                new IataCodeCompany("TP"),
                 TAP_ICAO
         ));
     }
@@ -111,7 +112,7 @@ public class ListCustomerCollaboratorsControllerTest {
     public void listCompanyCollaborators_whenCompanyNotFound_throwsIllegalArgumentException() {
         AuthzRegistry.authenticationService().authenticate("admin", "Password1");
 
-        controller.listCompanyCollaborators(new IcaoCode("XXX"));
+        controller.listCompanyCollaborators(new IcaoCodeCompany("XXX"));
     }
 
     @Test(expected = Exception.class)

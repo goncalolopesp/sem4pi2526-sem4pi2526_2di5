@@ -1,0 +1,24 @@
+@startuml US073_SSD
+title US073 - Create Flight Route - SSD
+
+actor "ATCC" as Collab
+participant "SEM4PI System" as System
+
+Collab -> System : request to create a flight route
+System --> Collab : request route metadata (ID, Company, Origin, Destination)
+
+Collab -> System : input route metadata
+System --> Collab : request data for first segment (Start/End coords, Wind, Altitude)
+
+Collab -> System : input segment data
+System --> Collab : ask if wants to add another segment
+
+alt wants to add more segments
+    Collab -> System : yes
+    System --> Collab : request data for next segment
+    Collab -> System : input segment data
+end
+
+Collab -> System : confirm completion
+System --> Collab : display success message and save route
+@enduml

@@ -39,4 +39,34 @@ public interface RepositoryFactory {
     AircraftRepository aircrafts();
 
     FlightRepository flights();
+
+    WeatherBatchRepository weatherBatches();
+
+    FlightRouteRepository flightRoutes();
+
+    AirportRepository airports();
+
+    SimulationRepository simulations();
+
+    SimulationRepository simulations(TransactionalContext tx);
+
+    SimulationReportRepository simulationReports();
+
+    SimulationReportRepository simulationReports(TransactionalContext tx);
+
+    FlightPlanRepository flightPlans();
+
+    FlightPlanRepository flightPlans(TransactionalContext tx);
+
+    PilotRepository pilots();
+
+    PilotRepository pilots(TransactionalContext tx);
+
+    default ReportMetadataRepository reportMetadata() {
+        throw new UnsupportedOperationException("Report metadata repository is not configured");
+    }
+
+    default ReportMetadataRepository reportMetadata(final TransactionalContext tx) {
+        return reportMetadata();
+    }
 }

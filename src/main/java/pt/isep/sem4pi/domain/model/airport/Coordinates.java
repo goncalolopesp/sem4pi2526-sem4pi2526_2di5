@@ -1,9 +1,12 @@
 package pt.isep.sem4pi.domain.model.airport;
 
+import eapli.framework.domain.model.ValueObject;
 import jakarta.persistence.Embeddable;
 
+import java.io.Serializable;
+
 @Embeddable
-public class Coordinates {
+public class Coordinates implements ValueObject, Serializable {
     private double latitude;
     private double longitude;
 

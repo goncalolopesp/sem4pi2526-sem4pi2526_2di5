@@ -3,8 +3,9 @@ package pt.isep.sem4pi.infrastructure.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.isep.sem4pi.application.service.engineModel.EngineModelRegistrationService;
-import pt.isep.sem4pi.domain.model.manufacture.Manufacturer;
-import pt.isep.sem4pi.domain.model.manufacture.ManufacturerId;
+import pt.isep.sem4pi.domain.model.aircraftModel.*;
+import pt.isep.sem4pi.domain.model.manufacturer.Manufacturer;
+import pt.isep.sem4pi.domain.model.manufacturer.ManufacturerId;
 import pt.isep.sem4pi.domain.repositories.EngineModelRepository;
 import pt.isep.sem4pi.domain.repositories.ManufacturerRepository;
 import pt.isep.sem4pi.domain.repositories.AircraftModelRepository;
@@ -12,23 +13,22 @@ import pt.isep.sem4pi.domain.repositories.AircraftRepository;
 import pt.isep.sem4pi.domain.repositories.FlightRepository;
 import pt.isep.sem4pi.domain.model.aircraft.Aircraft;
 import pt.isep.sem4pi.domain.model.aircraft.AircraftRegistration;
+import pt.isep.sem4pi.domain.model.aircraft.CabinConfiguration;
 import pt.isep.sem4pi.domain.model.flight.Flight;
 import pt.isep.sem4pi.domain.model.flight.FlightId;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModel;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftModelId;
-import pt.isep.sem4pi.domain.model.aircraftModel.AircraftType;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModel;
 import pt.isep.sem4pi.domain.model.engineModel.EngineModelId;
+import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.CompanyFleetBootstrapper;
 import pt.isep.sem4pi.infrastructure.bootstrap.airtransportcompany.CustomerCollaboratorBootstrapper;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlArea;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaBoundary;
-import pt.isep.sem4pi.domain.aircontrolarea.AirControlAreaID;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlArea;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaBoundary;
+import pt.isep.sem4pi.domain.model.aircontrolarea.AirControlAreaID;
 import pt.isep.sem4pi.domain.repositories.AirControlAreaRepository;
-import eapli.framework.domain.repositories.ConcurrencyException;
-import eapli.framework.domain.repositories.IntegrityViolationException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
 
 import pt.isep.sem4pi.domain.model.engineModel.EngineType;
 import pt.isep.sem4pi.domain.model.engineModel.FuelType;
@@ -47,11 +47,11 @@ public class BackofficeConfigurationBootstrapper {
             new EngineModelRegistrationService(engineModelRepository, manufacturerRepository);
 
     public boolean execute() {
-        // Inicializar Manufacturers e Engine Models
         registerManufacturer("CFM", "CFM International", "France");
         registerManufacturer("RR", "Rolls-Royce", "United Kingdom");
         registerManufacturer("GE", "General Electric", "United States");
         registerManufacturer("AIRBUS", "Airbus", "France");
+        registerManufacturer("BOEING", "Boeing", "United States"); // NOVO FABRICANTE
 
         registerEngineModel("CFM56-5B", "CFM", "CFM56-5B", EngineType.TURBOFAN,
                 new BigDecimal("120.00"), FuelType.JET_A1, new BigDecimal("37.50"));
@@ -64,19 +64,38 @@ public class BackofficeConfigurationBootstrapper {
                 new BigDecimal("42000.00"), new BigDecimal("77000.00"), new BigDecimal("62000.00"),
                 new BigDecimal("24000.00"), new BigDecimal("39000.00"), new BigDecimal("828.00"),
                 new BigDecimal("122.60"), new BigDecimal("0.0320"), new BigDecimal("1.5200"),
-                new BigDecimal("6150.00"), new BigDecimal("9.45"), "CFM56-5B");
+                new BigDecimal("6150.00"), new BigDecimal("9.45"), "CFM56-5B", 180);
 
-        registerAircraft("CS-TST", "A320");
-        registerAircraft("CS-RET", "A320");
-        registerFlight("TP100", "CS-TST");
+        registerAircraftModel("B737", "BOEING", AircraftType.PASSENGER, "B737", "TURBOFAN",
+                new BigDecimal("41000.00"), new BigDecimal("70000.00"), new BigDecimal("60000.00"),
+                new BigDecimal("20000.00"), new BigDecimal("41000.00"), new BigDecimal("450.00"),
+                new BigDecimal("125.00"), new BigDecimal("0.0300"), new BigDecimal("1.5000"),
+                new BigDecimal("5500.00"), new BigDecimal("9.00"), "CFM56-5B", 200);
 
-        // Inicializar Air Control Areas (Critério de Aceitação 3)
+        registerAircraftModel("B787", "BOEING", AircraftType.PASSENGER, "B787", "TURBOFAN",
+                new BigDecimal("119000.00"), new BigDecimal("227000.00"), new BigDecimal("161000.00"),
+                new BigDecimal("126000.00"), new BigDecimal("43000.00"), new BigDecimal("490.00"),
+                new BigDecimal("325.00"), new BigDecimal("0.0250"), new BigDecimal("1.8000"),
+                new BigDecimal("13000.00"), new BigDecimal("11.00"), "GENX-1B", 300);
+
+        registerAircraft("CS-TST", "AIRBUS", "A320", 150, 20, 0, "Portugal", LocalDate.of(2015, 5, 10)); // Idade Média
+        registerAircraft("CS-RET", "AIRBUS", "A320", 120, 10, 0, "Portugal", LocalDate.of(2020, 8, 20)); // Mais Novo
+        registerAircraft("CS-B73", "BOEING", "B737", 180, 10, 0, "Portugal", LocalDate.of(2008, 2, 15)); // Mais Velho
+        registerAircraft("CS-B78", "BOEING", "B787", 200, 40, 10, "Portugal", LocalDate.of(2023, 11, 1)); // Novíssimo
+
+        // Atualizado com a Rota (ex: TP1001) e uma data para o voo
+        registerFlight("TP100", "CS-TST", "TP1001", LocalDate.now().plusDays(5));
+
         registerAirControlArea("LIS_FIR", 36.0, 42.0, -10.0, -6.0, "Lisbon FIR", 1000.0);
         registerAirControlArea("MAD_FIR", 35.0, 43.0, -5.0, 0.0, "Madrid FIR", 1200.0);
+        registerAirControlArea("JFK_FIR", 35.0, 45.0, -80.0, -70.0, "New York FIR", 1500.0);
+        registerAirControlArea("UK_FIR", 49.0, 53.0, -6.0, 2.0, "UK FIR", 1100.0);
 
-        //Executar o Bootstrap dos Customer Collaborators
         CustomerCollaboratorBootstrapper ccb = new CustomerCollaboratorBootstrapper();
         ccb.execute();
+
+        CompanyFleetBootstrapper fleetBootstrapper = new CompanyFleetBootstrapper();
+        fleetBootstrapper.execute();
 
         return true;
     }
@@ -106,54 +125,60 @@ public class BackofficeConfigurationBootstrapper {
                                        final BigDecimal cruiseSpeed, final BigDecimal wingArea,
                                        final BigDecimal dragCoefficient, final BigDecimal liftCoefficient,
                                        final BigDecimal maximumRange, final BigDecimal aspectRatio,
-                                       final String engineModelCode) {
-        final AircraftModelId aircraftModelId = new AircraftModelId(modelCode);
+                                       final String engineModelCode, final Integer maximumCapacity) {
+        final AircraftModelId aircraftModelId = new AircraftModelId(new ManufacturerId(manufacturerCode), modelCode);
         if (aircraftModelRepository.containsOfIdentity(aircraftModelId)) {
             return;
         }
 
+        final EngineModel engineModel = engineModelRepository.ofIdentity(new EngineModelId(engineModelCode)).orElse(null);
+        if (engineModel == null) {
+            LOGGER.warn("Engine model '{}' not found. Skipping registration of aircraft model {}.", engineModelCode, aircraftModelId);
+            return;
+        }
+
+        final EngineType motorizationEnum = EngineType.valueOf(motorization);
+
         final AircraftModel aircraftModel = new AircraftModel(
                 aircraftModelId,
-                new pt.isep.sem4pi.domain.model.manufacture.ManufacturerId(manufacturerCode),
                 aircraftType,
-                modelName,
-                motorization,
-                emptyWeight,
-                maximumTakeoffWeight,
-                maximumZeroFuelWeight,
-                maximumFuelCapacity,
-                serviceCeiling,
-                cruiseSpeed,
-                wingArea,
-                dragCoefficient,
-                liftCoefficient,
-                maximumRange,
-                aspectRatio
+                motorizationEnum,
+                new Weight(emptyWeight, maximumZeroFuelWeight, maximumTakeoffWeight),
+                new Coefficient(dragCoefficient, liftCoefficient),
+                new AircraftPerformance(serviceCeiling, cruiseSpeed, maximumRange),
+                new Fuel(maximumFuelCapacity),
+                new WingGeometry(wingArea, aspectRatio),
+                Collections.singletonList(engineModel),
+                maximumCapacity
         );
-
-        final EngineModel engineModel = engineModelRepository.ofIdentity(new EngineModelId(engineModelCode)).orElse(null);
-        if (engineModel != null) {
-            aircraftModel.certifyEngine(engineModel);
-        }
 
         aircraftModelRepository.save(aircraftModel);
     }
 
-    private void registerAircraft(final String registrationCode, final String aircraftModelCode) {
+    private void registerAircraft(final String registrationCode, final String manufacturerCode, final String aircraftModelCode,
+                                  final int eco, final int bus, final int first, final String country, final LocalDate manufacturingDate) {
         final AircraftRegistration registration = new AircraftRegistration(registrationCode);
         if (aircraftRepository.containsOfIdentity(registration)) {
             return;
         }
-        final Aircraft aircraft = new Aircraft(registration, new AircraftModelId(aircraftModelCode));
+
+        final CabinConfiguration seats = new CabinConfiguration(eco, bus, first);
+        final AircraftModelId modelId = new AircraftModelId(new ManufacturerId(manufacturerCode), aircraftModelCode);
+
+        // Passa a data de fabrico para o construtor em vez do LocalDate.now()
+        final Aircraft aircraft = new Aircraft(registration, modelId, seats, country, manufacturingDate);
         aircraftRepository.save(aircraft);
     }
 
-    private void registerFlight(final String flightCode, final String registrationCode) {
+    private void registerFlight(final String flightCode, final String registrationCode, final String routeIdCode, final LocalDate departureDate) {
         final FlightId flightId = new FlightId(flightCode);
         if (flightRepository.containsOfIdentity(flightId)) {
             return;
         }
-        final Flight flight = new Flight(flightId, new AircraftRegistration(registrationCode));
+
+        final pt.isep.sem4pi.domain.model.route.FlightRouteID routeId = new pt.isep.sem4pi.domain.model.route.FlightRouteID(routeIdCode);
+
+        final Flight flight = new Flight(flightId, new AircraftRegistration(registrationCode), routeId, departureDate);
         flightRepository.save(flight);
     }
 
@@ -161,19 +186,12 @@ public class BackofficeConfigurationBootstrapper {
         try {
             AirControlAreaID id = new AirControlAreaID(code);
             if (airControlAreaRepository.containsOfIdentity(id)) {
-                LOGGER.info("Air Control Area '{}' already exists in the system.", code);
                 return;
             }
-
             AirControlAreaBoundary boundaries = new AirControlAreaBoundary(minLat, maxLat, minLon, maxLon);
             AirControlArea newArea = new AirControlArea(code, boundaries, name, minFuel);
-
             airControlAreaRepository.save(newArea);
-            LOGGER.info("Air Control Area '{}' was successfully registered.", code);
-
-        } catch (final ConcurrencyException | IntegrityViolationException e) {
-            LOGGER.warn("Integrity violation registering '{}'", code);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             LOGGER.error("Unexpected error registering Air Control Area '{}': {}", code, e.getMessage());
         }
     }

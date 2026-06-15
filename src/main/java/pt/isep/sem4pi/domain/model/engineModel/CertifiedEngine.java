@@ -1,17 +1,19 @@
 package pt.isep.sem4pi.domain.model.engineModel;
 
+import eapli.framework.representations.RepresentationBuilder;
+import eapli.framework.representations.Representationable;
 import eapli.framework.validations.Preconditions;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 
 @Entity
-public class CertifiedEngine {
+public class CertifiedEngine implements Representationable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "engine_model_id", nullable = false)
     private EngineModel engineModel;
@@ -33,5 +35,14 @@ public class CertifiedEngine {
             return false;
         }
         return this.engineModel.identity().equals(engineModel.identity());
+    }
+
+    @Override
+    public <R> R buildRepresentation(RepresentationBuilder<R> builder) {
+        builder.startObject("certifiedEngine")
+                .withProperty("engineModelId", this.engineModel.identity().toString())
+                .endObject();
+
+        return null;
     }
 }
