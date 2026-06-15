@@ -11,6 +11,14 @@ import java.util.LinkedHashSet;
 import java.util.Scanner;
 import java.util.Set;
 
+/**
+ * Console interface for US082.
+ *
+ * <p>It presents accessible plans and complete weather measurements, then
+ * converts comma-separated row numbers into persisted weather identifiers.
+ * A {@link LinkedHashSet} removes repeated selections while preserving the
+ * order chosen by the user.</p>
+ */
 public class AssociateWeatherDataUI extends AbstractUI {
 
     private final AssociateWeatherDataController controller = new AssociateWeatherDataController();

@@ -20,6 +20,13 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
+/**
+ * Service-level tests for US082, adding weather data to flight plans.
+ *
+ * <p>The service owns the cross-aggregate part of the use case: it resolves
+ * flight plans and weather data, validates pilot ownership, allows admin
+ * bypass through the {@code canManageAll} flag and persists the changed plan.</p>
+ */
 public class AssociateWeatherDataServiceTest {
 
     private static final String PLAN_ID = "FP-001";
@@ -44,6 +51,10 @@ public class AssociateWeatherDataServiceTest {
         when(plan.pilot()).thenReturn(pilot);
     }
 
+    /**
+     * Legacy single-record flow: existing weather is associated and the result
+     * tells the UI when a previous test became invalid.
+     */
     @Test
     public void ensureAssociationPersistsExistingWeatherAndReportsInvalidation() {
         final WeatherData weatherData = mock(WeatherData.class);
@@ -63,6 +74,10 @@ public class AssociateWeatherDataServiceTest {
         verify(flightPlanRepository).save(plan);
     }
 
+    /**
+     * A pilot cannot change another pilot's flight plan; this is the ownership
+     * protection required by US082.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void ensurePilotCannotUpdateAnotherPilotsFlightPlan() {
         when(pilot.isOwnedBy("other-pilot")).thenReturn(false);
@@ -71,6 +86,10 @@ public class AssociateWeatherDataServiceTest {
         service.associate(PLAN_ID, AREA_ID, DATE, START, END, "other-pilot");
     }
 
+    /**
+     * Weather must already be persisted by US041/US042 before it can be linked
+     * to a flight plan.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void ensureWeatherMustAlreadyExist() {
         when(pilot.isOwnedBy("pilot")).thenReturn(true);
@@ -81,6 +100,9 @@ public class AssociateWeatherDataServiceTest {
         service.associate(PLAN_ID, AREA_ID, DATE, START, END, "pilot");
     }
 
+    /**
+     * The list shown to a pilot contains only plans owned by that pilot.
+     */
     @Test
     public void ensureOnlyOwnedFlightPlansAreListed() {
         final FlightPlan otherPlan = mock(FlightPlan.class);
@@ -95,6 +117,10 @@ public class AssociateWeatherDataServiceTest {
         assertEquals(List.of(plan), result);
     }
 
+    /**
+     * Main US082 batch scenario: several selected weather rows are associated
+     * in one operation and the plan is saved once at the end.
+     */
     @Test
     public void ensureSeveralWeatherRecordsCanBeAssociatedInOneOperation() {
         final WeatherData first = mock(WeatherData.class);
@@ -121,6 +147,10 @@ public class AssociateWeatherDataServiceTest {
         verify(flightPlanRepository, times(1)).save(plan);
     }
 
+    /**
+     * Repeated selected IDs are deduplicated before association, preventing the
+     * same weather record from being processed multiple times.
+     */
     @Test
     public void ensureRepeatedWeatherIdsAreProcessedOnlyOnce() {
         final WeatherData weatherData = mock(WeatherData.class);

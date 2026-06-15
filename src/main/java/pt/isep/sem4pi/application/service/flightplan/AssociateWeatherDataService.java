@@ -16,6 +16,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Coordinates the US082 association between flight plans and weather data.
+ *
+ * <p>The service performs cross-aggregate rules that do not belong inside
+ * either aggregate: resolving both repositories and checking that a pilot
+ * owns the selected plan. The {@link FlightPlan} aggregate remains responsible
+ * for duplicate prevention and invalidating a previous test.</p>
+ */
 @ApplicationService
 public class AssociateWeatherDataService {
 
@@ -32,6 +40,13 @@ public class AssociateWeatherDataService {
         return listFlightPlansAccessibleBy(username, false);
     }
 
+    /**
+     * Lists plans accessible by the current user.
+     *
+     * @param username authenticated username
+     * @param canManageAll {@code true} for an administrator
+     * @return plans owned by the pilot or all plans for an administrator
+     */
     public List<FlightPlan> listFlightPlansAccessibleBy(String username, boolean canManageAll) {
         requireUsername(username);
         final List<FlightPlan> plans = new ArrayList<>();
@@ -43,6 +58,16 @@ public class AssociateWeatherDataService {
         return plans;
     }
 
+    /**
+     * Builds the weather-data selection list.
+     *
+     * <p>Exactly identical measurements are consolidated using a key composed
+     * of area, interval and every measured value. This removes duplicate rows
+     * imported in different batches without merging genuinely different
+     * measurements from the same interval.</p>
+     *
+     * @return deduplicated and chronologically sorted selectable records
+     */
     public List<WeatherDataViewDTO> listWeatherData() {
         final Map<String, WeatherDataViewDTO> uniqueWeatherData = new LinkedHashMap<>();
         weatherRepository.findAll().forEach(batch -> batch.getRecords().forEach(record ->
@@ -55,6 +80,18 @@ public class AssociateWeatherDataService {
         return weatherData;
     }
 
+    /**
+     * Associates each distinct selected weather entity and persists the flight
+     * plan once after the complete operation.
+     *
+     * @param flightPlanId target plan identity
+     * @param weatherDataIds selected persisted weather identities
+     * @param username authenticated username
+     * @param canManageAll whether ownership restrictions may be bypassed
+     * @return association summary
+     * @throws IllegalArgumentException when the selection is empty, an entity
+     *                                  does not exist or ownership is invalid
+     */
     public WeatherAssociationResult associateByIds(String flightPlanId, List<Long> weatherDataIds,
                                                    String username, boolean canManageAll) {
         requireUsername(username);

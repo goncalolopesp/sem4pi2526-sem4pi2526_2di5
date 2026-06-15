@@ -154,6 +154,18 @@ public class FlightPlan implements AggregateRoot<FlightPlanId> {
         this.status = FlightPlanStatus.REJECTED;
     }
 
+    /**
+     * Associates a weather measurement with this flight plan.
+     *
+     * <p>The aggregate prevents duplicate entity associations. Adding new
+     * weather to a {@link FlightPlanStatus#VALIDATED} or
+     * {@link FlightPlanStatus#REJECTED} plan invalidates that previous result,
+     * so the status returns to {@link FlightPlanStatus#DRAFT} and the plan must
+     * be tested again.</p>
+     *
+     * @param weatherData existing weather entity to associate
+     * @return {@code true} only when a previous test was invalidated
+     */
     public boolean associateWeatherData(WeatherData weatherData) {
         Preconditions.nonNull(weatherData, "Weather data is required");
         if (this.weatherData.contains(weatherData)) {

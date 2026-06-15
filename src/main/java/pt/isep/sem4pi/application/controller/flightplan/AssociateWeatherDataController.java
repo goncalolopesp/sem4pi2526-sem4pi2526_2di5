@@ -14,6 +14,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+/**
+ * Application controller for US082, associating existing weather data with a
+ * flight plan.
+ *
+ * <p>It obtains the authenticated username and whether the user is an
+ * administrator, then passes those facts to the service for ownership
+ * validation. Pilots can manage only their plans; administrators can manage
+ * all plans.</p>
+ */
 @UseCaseController
 public class AssociateWeatherDataController {
 
@@ -33,11 +42,21 @@ public class AssociateWeatherDataController {
         this.service = service;
     }
 
+    /**
+     * Lists flight plans visible to the authenticated pilot or administrator.
+     *
+     * @return plans owned by the pilot, or every plan for an administrator
+     */
     public List<FlightPlan> myFlightPlans() {
         ensureAuthorized();
         return service.listFlightPlansAccessibleBy(currentUsername(), isAdmin());
     }
 
+    /**
+     * Lists persisted weather records available for selection.
+     *
+     * @return sorted view DTOs with identifiers required for association
+     */
     public List<WeatherDataViewDTO> weatherData() {
         ensureAuthorized();
         return service.listWeatherData();
@@ -50,6 +69,13 @@ public class AssociateWeatherDataController {
                 flightPlanId, areaId, date, startTime, endTime, currentUsername(), isAdmin());
     }
 
+    /**
+     * Associates multiple selected weather records in one operation.
+     *
+     * @param flightPlanId target flight-plan identity
+     * @param weatherDataIds persisted weather-data identities
+     * @return updated plan, number of additions and test-invalidation state
+     */
     public WeatherAssociationResult associate(String flightPlanId, List<Long> weatherDataIds) {
         ensureAuthorized();
         return service.associateByIds(

@@ -31,6 +31,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+/**
+ * Domain tests for the {@link FlightPlan} lifecycle.
+ *
+ * <p>The US082-related tests in this class prove that weather data is optional,
+ * can be associated later and invalidates a previous validation result inside
+ * the aggregate itself.</p>
+ */
 public class FlightPlanTest {
 
     @Test
@@ -65,6 +72,10 @@ public class FlightPlanTest {
         plan.reject();
     }
 
+    /**
+     * US082 core rule: adding weather to a validated plan makes the old test
+     * obsolete, so the aggregate returns to DRAFT.
+     */
     @Test
     public void ensureAssociatingWeatherInvalidatesPreviousValidation() {
         final FlightPlan plan = buildFlightPlan();
@@ -78,6 +89,10 @@ public class FlightPlanTest {
         assertEquals(List.of(weatherData), plan.weatherData());
     }
 
+    /**
+     * Adding weather to a plan that was never tested should not warn about
+     * invalidation, because there is no previous result to void.
+     */
     @Test
     public void ensureAssociatingWeatherToDraftPlanDoesNotReportInvalidation() {
         final FlightPlan plan = buildFlightPlan();
@@ -90,6 +105,10 @@ public class FlightPlanTest {
         assertEquals(List.of(weatherData), plan.weatherData());
     }
 
+    /**
+     * Weather data is optional; US080 can create and validate plans without
+     * any weather association.
+     */
     @Test
     public void ensureFlightPlanCanExistWithoutWeatherData() {
         final FlightPlan plan = buildFlightPlan();
@@ -99,6 +118,10 @@ public class FlightPlanTest {
         assertEquals(FlightPlanStatus.VALIDATED, plan.status());
     }
 
+    /**
+     * US082 allows more than one weather record to be associated with the same
+     * flight plan.
+     */
     @Test
     public void ensureFlightPlanCanContainMultipleWeatherRecords() {
         final FlightPlan plan = buildFlightPlan();
