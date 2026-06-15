@@ -10,6 +10,13 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Console interface for US043.
+ *
+ * <p>The UI parses the ISO date supplied by the user and renders the returned
+ * weather projection. Business validation and authorization remain in the
+ * application layer.</p>
+ */
 public class ConsultWeatherDataUI extends AbstractUI {
     private final ConsultWeatherDataController controller = new ConsultWeatherDataController();
     private final Scanner scanner = new Scanner(System.in);

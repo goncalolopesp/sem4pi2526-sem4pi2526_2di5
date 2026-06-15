@@ -14,8 +14,18 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+/**
+ * Tests the US043 controller boundary.
+ *
+ * <p>The controller must enforce the roles allowed to consult weather data and
+ * return the service DTOs unchanged to the presentation layer.</p>
+ */
 public class ConsultWeatherDataControllerTest {
 
+    /**
+     * Proves that the controller both authorizes the US043 roles and returns
+     * the filtered measurements for the requested area/date.
+     */
     @Test
     public void ensureControllerReturnsFilteredResults() {
         InMemoryWeatherBatchRepository repository = new InMemoryWeatherBatchRepository();

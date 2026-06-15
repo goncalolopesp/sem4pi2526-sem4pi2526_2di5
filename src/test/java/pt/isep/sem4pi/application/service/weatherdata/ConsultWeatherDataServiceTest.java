@@ -11,8 +11,18 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Service tests for US043 weather consultation.
+ *
+ * <p>They prove that consultation is filtered by the two required criteria:
+ * Air Control Area and calendar date.</p>
+ */
 public class ConsultWeatherDataServiceTest {
 
+    /**
+     * Only data matching both the requested area and date should be returned;
+     * records from another area or another day are excluded.
+     */
     @Test
     public void ensureFindByAreaAndDateFiltersCorrectly() {
         InMemoryWeatherBatchRepository repository = new InMemoryWeatherBatchRepository();
@@ -53,12 +63,18 @@ public class ConsultWeatherDataServiceTest {
         assertEquals(LocalTime.of(8, 15), dto.getEndTime());
     }
 
+    /**
+     * Blank area IDs are rejected to avoid meaningless repository queries.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void ensureFailsWithBlankArea() {
         ConsultWeatherDataService service = new ConsultWeatherDataService(new InMemoryWeatherBatchRepository());
         service.findByAreaAndDate(" ", LocalDate.now());
     }
 
+    /**
+     * The date is mandatory because US043 is explicitly a consultation by day.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void ensureFailsWithNullDate() {
         ConsultWeatherDataService service = new ConsultWeatherDataService(new InMemoryWeatherBatchRepository());

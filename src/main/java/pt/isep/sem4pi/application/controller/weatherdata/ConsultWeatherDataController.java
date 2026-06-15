@@ -12,6 +12,13 @@ import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Application controller for US043, weather-data consultation by area and day.
+ *
+ * <p>It enforces the four roles allowed by the requirement and delegates the
+ * query to a service so the presentation layer never accesses repositories
+ * directly.</p>
+ */
 @UseCaseController
 public class ConsultWeatherDataController {
 
@@ -27,6 +34,13 @@ public class ConsultWeatherDataController {
         this.service = new ConsultWeatherDataService(repository);
     }
 
+    /**
+     * Returns weather measurements for one Air Control Area and calendar day.
+     *
+     * @param areaId Air Control Area identifier
+     * @param date requested day
+     * @return matching weather records, or an empty list when none exist
+     */
     public List<WeatherDataViewDTO> consultByAreaAndDate(String areaId, LocalDate date) {
         authz.ensureAuthenticatedUserHasAnyOf(
                 SEM4PIRoles.ADMIN,

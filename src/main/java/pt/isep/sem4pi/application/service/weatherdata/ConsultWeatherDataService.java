@@ -9,6 +9,14 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Implements the US043 weather-data query.
+ *
+ * <p>The filtering is delegated to {@link WeatherBatchRepository}, allowing
+ * the JPA implementation to execute the query in the database instead of
+ * loading every import batch into memory. Domain entities are mapped to view
+ * DTOs before crossing into the presentation layer.</p>
+ */
 public class ConsultWeatherDataService {
 
     private final WeatherBatchRepository repository;
@@ -17,6 +25,18 @@ public class ConsultWeatherDataService {
         this.repository = repository;
     }
 
+    /**
+     * Finds all measurements belonging to an area on the requested date.
+     *
+     * <p>The preliminary count avoids retrieving and mapping records when no
+     * match exists. Times are normalized before presentation to remove
+     * irrelevant seconds/nanoseconds introduced by external file formats.</p>
+     *
+     * @param areaId Air Control Area identifier
+     * @param date requested day
+     * @return matching measurements represented as presentation DTOs
+     * @throws IllegalArgumentException when the area or date is missing
+     */
     public List<WeatherDataViewDTO> findByAreaAndDate(String areaId, LocalDate date) {
         if (areaId == null || areaId.trim().isEmpty()) {
             throw new IllegalArgumentException("Air Control Area ID is required.");

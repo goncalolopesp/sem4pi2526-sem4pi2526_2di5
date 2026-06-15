@@ -3,6 +3,14 @@ package pt.isep.sem4pi.domain.model.weatherdata.DTO;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+/**
+ * Read-only weather projection shared by US043 consultation and US082
+ * selection screens.
+ *
+ * <p>The optional database identifier is not needed for consultation, but it
+ * is essential in US082 so the selected row can be associated with the exact
+ * persisted {@code WeatherData} entity.</p>
+ */
 public class WeatherDataViewDTO {
     private final Long weatherDataId;
     private final String airControlAreaId;
@@ -16,6 +24,9 @@ public class WeatherDataViewDTO {
     private final double humidityPercentage;
     private final double altitudeMeters;
 
+    /**
+     * Creates a view without persistence identity, as used by US043.
+     */
     public WeatherDataViewDTO(String airControlAreaId, LocalDate date, LocalTime startTime, LocalTime endTime,
                               double windSpeedKnots, double windDirectionDegrees,
                               double temperatureCelsius, double pressureHpa,
@@ -25,6 +36,9 @@ public class WeatherDataViewDTO {
                 humidityPercentage, altitudeMeters);
     }
 
+    /**
+     * Creates a selectable view retaining the persistence identity for US082.
+     */
     public WeatherDataViewDTO(Long weatherDataId, String airControlAreaId, LocalDate date,
                               LocalTime startTime, LocalTime endTime,
                               double windSpeedKnots, double windDirectionDegrees,
