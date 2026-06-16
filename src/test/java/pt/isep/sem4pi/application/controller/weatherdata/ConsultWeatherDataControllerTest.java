@@ -15,16 +15,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 /**
- * Tests the US043 controller boundary.
+ * Testa a fronteira do controller da US043.
  *
- * <p>The controller must enforce the roles allowed to consult weather data and
- * return the service DTOs unchanged to the presentation layer.</p>
+ * <p>O controller deve garantir os papeis autorizados a consultar dados
+ * meteorologicos e devolver a camada de apresentacao os DTOs do servico sem
+ * alteracoes.</p>
  */
 public class ConsultWeatherDataControllerTest {
 
     /**
-     * Proves that the controller both authorizes the US043 roles and returns
-     * the filtered measurements for the requested area/date.
+     * Prova que o controller autoriza os papeis da US043 e devolve as medicoes
+     * filtradas para a area/data pedida.
      */
     @Test
     public void ensureControllerReturnsFilteredResults() {

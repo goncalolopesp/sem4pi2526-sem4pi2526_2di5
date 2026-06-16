@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Console interface for US043.
+ * Interface de consola da US043.
  *
- * <p>The UI parses the ISO date supplied by the user and renders the returned
- * weather projection. Business validation and authorization remain in the
- * application layer.</p>
+ * <p>A UI interpreta a data ISO fornecida pelo utilizador e apresenta a
+ * projecao meteorologica devolvida. A validacao de negocio e a autorizacao
+ * permanecem na camada aplicacional.</p>
  */
 public class ConsultWeatherDataUI extends AbstractUI {
     private final ConsultWeatherDataController controller = new ConsultWeatherDataController();

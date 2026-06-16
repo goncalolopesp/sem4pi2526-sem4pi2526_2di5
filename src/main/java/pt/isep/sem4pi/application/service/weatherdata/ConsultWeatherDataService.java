@@ -10,12 +10,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implements the US043 weather-data query.
+ * Implementa a consulta de dados meteorologicos da US043.
  *
- * <p>The filtering is delegated to {@link WeatherBatchRepository}, allowing
- * the JPA implementation to execute the query in the database instead of
- * loading every import batch into memory. Domain entities are mapped to view
- * DTOs before crossing into the presentation layer.</p>
+ * <p>A filtragem e delegada ao {@link WeatherBatchRepository}, permitindo que
+ * a implementacao JPA execute a query na base de dados em vez de carregar
+ * todos os lotes de importacao em memoria. As entidades de dominio sao
+ * mapeadas para DTOs de visualizacao antes de chegarem a camada de
+ * apresentacao.</p>
  */
 public class ConsultWeatherDataService {
 
@@ -26,16 +27,17 @@ public class ConsultWeatherDataService {
     }
 
     /**
-     * Finds all measurements belonging to an area on the requested date.
+     * Encontra todas as medicoes de uma area na data pedida.
      *
-     * <p>The preliminary count avoids retrieving and mapping records when no
-     * match exists. Times are normalized before presentation to remove
-     * irrelevant seconds/nanoseconds introduced by external file formats.</p>
+     * <p>A contagem preliminar evita obter e mapear registos quando nao existe
+     * correspondencia. As horas sao normalizadas antes da apresentacao para
+     * remover segundos/nanossegundos irrelevantes introduzidos por formatos
+     * externos.</p>
      *
-     * @param areaId Air Control Area identifier
-     * @param date requested day
-     * @return matching measurements represented as presentation DTOs
-     * @throws IllegalArgumentException when the area or date is missing
+     * @param areaId identificador da Air Control Area
+     * @param date dia pedido
+     * @return medicoes encontradas representadas como DTOs de apresentacao
+     * @throws IllegalArgumentException quando a area ou a data esta em falta
      */
     public List<WeatherDataViewDTO> findByAreaAndDate(String areaId, LocalDate date) {
         if (areaId == null || areaId.trim().isEmpty()) {

@@ -4,12 +4,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Read-only weather projection shared by US043 consultation and US082
- * selection screens.
+ * Projecao meteorologica apenas de leitura partilhada pela consulta da US043 e pelos ecra de selecao da US082.
  *
- * <p>The optional database identifier is not needed for consultation, but it
- * is essential in US082 so the selected row can be associated with the exact
- * persisted {@code WeatherData} entity.</p>
+ * <p>O identificador opcional da base de dados nao e necessario para a
+ * consulta, mas e essencial na US082 para que a linha selecionada seja
+ * associada a entidade {@code WeatherData} persistida exata.</p>
  */
 public class WeatherDataViewDTO {
     private final Long weatherDataId;
@@ -25,7 +24,7 @@ public class WeatherDataViewDTO {
     private final double altitudeMeters;
 
     /**
-     * Creates a view without persistence identity, as used by US043.
+     * Cria uma visualizacao sem identidade de persistencia, como usado na US043.
      */
     public WeatherDataViewDTO(String airControlAreaId, LocalDate date, LocalTime startTime, LocalTime endTime,
                               double windSpeedKnots, double windDirectionDegrees,
@@ -37,7 +36,7 @@ public class WeatherDataViewDTO {
     }
 
     /**
-     * Creates a selectable view retaining the persistence identity for US082.
+     * Cria uma visualizacao selecionavel mantendo a identidade de persistencia para a US082.
      */
     public WeatherDataViewDTO(Long weatherDataId, String airControlAreaId, LocalDate date,
                               LocalTime startTime, LocalTime endTime,

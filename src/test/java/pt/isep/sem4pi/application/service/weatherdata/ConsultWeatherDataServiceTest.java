@@ -12,16 +12,16 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Service tests for US043 weather consultation.
+ * Testes de servico para a consulta meteorologica da US043.
  *
- * <p>They prove that consultation is filtered by the two required criteria:
- * Air Control Area and calendar date.</p>
+ * <p>Provam que a consulta e filtrada pelos dois criterios obrigatorios:
+ * Air Control Area e data de calendario.</p>
  */
 public class ConsultWeatherDataServiceTest {
 
     /**
-     * Only data matching both the requested area and date should be returned;
-     * records from another area or another day are excluded.
+     * Apenas dados que correspondem a area e data pedidas devem ser devolvidos;
+     * registos de outra area ou outro dia sao excluidos.
      */
     @Test
     public void ensureFindByAreaAndDateFiltersCorrectly() {
@@ -64,7 +64,7 @@ public class ConsultWeatherDataServiceTest {
     }
 
     /**
-     * Blank area IDs are rejected to avoid meaningless repository queries.
+     * Identificadores de area em branco sao rejeitados para evitar queries sem sentido.
      */
     @Test(expected = IllegalArgumentException.class)
     public void ensureFailsWithBlankArea() {
@@ -73,7 +73,7 @@ public class ConsultWeatherDataServiceTest {
     }
 
     /**
-     * The date is mandatory because US043 is explicitly a consultation by day.
+     * A data e obrigatoria porque a US043 e explicitamente uma consulta por dia.
      */
     @Test(expected = IllegalArgumentException.class)
     public void ensureFailsWithNullDate() {

@@ -13,11 +13,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Application controller for US043, weather-data consultation by area and day.
+ * Controller aplicacional da US043, consulta de dados meteorologicos por area e dia.
  *
- * <p>It enforces the four roles allowed by the requirement and delegates the
- * query to a service so the presentation layer never accesses repositories
- * directly.</p>
+ * <p>Garante os quatro papeis permitidos pelo requisito e delega a consulta
+ * num servico para que a camada de apresentacao nunca aceda diretamente aos
+ * repositorios.</p>
  */
 @UseCaseController
 public class ConsultWeatherDataController {
@@ -35,11 +35,11 @@ public class ConsultWeatherDataController {
     }
 
     /**
-     * Returns weather measurements for one Air Control Area and calendar day.
+     * Devolve medicoes meteorologicas de uma Air Control Area num dia especifico.
      *
-     * @param areaId Air Control Area identifier
-     * @param date requested day
-     * @return matching weather records, or an empty list when none exist
+     * @param areaId identificador da Air Control Area
+     * @param date dia pedido
+     * @return registos meteorologicos encontrados, ou lista vazia quando nao existem
      */
     public List<WeatherDataViewDTO> consultByAreaAndDate(String areaId, LocalDate date) {
         authz.ensureAuthenticatedUserHasAnyOf(
