@@ -26,11 +26,18 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Testes do collector da US112.
+ * Verificam que só entram estatísticas do mês escolhido.
+ */
 public class MonthlyStatisticsDataCollectorTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    /**
+     * Conta simulações, relatórios, violações e voos apenas para junho de 2026.
+     */
     @Test
     public void collectsOnlyStatisticsForSelectedMonth() throws Exception {
         final Simulation juneSimulation = mock(Simulation.class);
@@ -94,6 +101,9 @@ public class MonthlyStatisticsDataCollectorTest {
         assertEquals(Long.valueOf(1), data.flightsByStatus().get(FlightStatus.PENDING));
     }
 
+    /**
+     * Garante que um mês sem dados devolve contadores a zero.
+     */
     @Test
     public void returnsZeroStatisticsWhenMonthHasNoData() {
         final var simulationRepository = mock(SimulationRepository.class);

@@ -25,11 +25,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Testes do serviço principal da US112.
+ * Confirmam criação do ficheiro, transação e possibilidade de trocar renderer.
+ */
 public class GenerateMonthlyReportServiceTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    /**
+     * Garante que o relatório é escrito e os metadados ficam gravados na BD.
+     */
     @Test
     public void createsFileAndPersistsMetadataTransactionally() throws Exception {
         final TransactionalContext tx = mock(TransactionalContext.class);
@@ -72,6 +79,9 @@ public class GenerateMonthlyReportServiceTest {
         assertEquals(result.fileLocation(), metadata.getValue().fileLocation());
     }
 
+    /**
+     * Mostra que o formato pode mudar sem alterar a lógica do relatório mensal.
+     */
     @Test
     public void acceptsANewRendererWithoutChangingMonthlyReportLogic() throws Exception {
         final TransactionalContext tx = mock(TransactionalContext.class);

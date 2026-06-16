@@ -17,8 +17,15 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Teste de mapeamento JPA do Aggregate Root SimulationReport.
+ * Garante que listas e Value Objects são persistidos e carregados corretamente.
+ */
 public class JpaSimulationReportMappingTest {
 
+    /**
+     * Persiste e recarrega um relatório completo com voos e violações.
+     */
     @Test
     public void persistsAndLoadsCompleteSimulationReportAggregate() {
         final Map<String, String> properties = Map.of(
@@ -46,6 +53,9 @@ public class JpaSimulationReportMappingTest {
         }
     }
 
+    /**
+     * Grava o relatório numa BD H2 em memória para testar só o mapeamento.
+     */
     private void persistReport(final EntityManagerFactory factory) {
         final SimulationReport report = new SimulationReport(
                 "REPORT-1",

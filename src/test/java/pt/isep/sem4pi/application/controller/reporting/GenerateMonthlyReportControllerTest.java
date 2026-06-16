@@ -10,8 +10,15 @@ import java.time.YearMonth;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+/**
+ * Teste do controller da US112.
+ * Confirma autorização e delegação para o serviço aplicacional.
+ */
 public class GenerateMonthlyReportControllerTest {
 
+    /**
+     * Garante que só os papéis esperados podem gerar o relatório mensal.
+     */
     @Test
     public void allowsFlightControlOperatorAndAdminRoles() throws Exception {
         final AuthorizationService authz = mock(AuthorizationService.class);

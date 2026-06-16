@@ -14,11 +14,18 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Testes do leitor usado na US112 para contar violações em ficheiros da US111.
+ * Mantém a regra de leitura fora do collector.
+ */
 public class SimulationReportFileViolationReaderTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    /**
+     * Lê o total declarado pela SCOMP na secção de violações.
+     */
     @Test
     public void readsTotalFromScompReportFile() throws Exception {
         final var reportFile = temporaryFolder.newFile("simulation-report.txt").toPath();
@@ -30,6 +37,9 @@ public class SimulationReportFileViolationReaderTest {
         assertEquals(14, new SimulationReportFileViolationReader().totalOf(report));
     }
 
+    /**
+     * Se o ficheiro não existir, devolve zero para não bloquear o relatório mensal.
+     */
     @Test
     public void returnsZeroWhenFileCannotBeRead() {
         final SimulationReport report = reportAt("missing-report.txt");
@@ -37,6 +47,9 @@ public class SimulationReportFileViolationReaderTest {
         assertEquals(0, new SimulationReportFileViolationReader().totalOf(report));
     }
 
+    /**
+     * Cria um SimulationReport apontado para o ficheiro indicado.
+     */
     private SimulationReport reportAt(final String path) {
         return new SimulationReport(
                 "REP-1",

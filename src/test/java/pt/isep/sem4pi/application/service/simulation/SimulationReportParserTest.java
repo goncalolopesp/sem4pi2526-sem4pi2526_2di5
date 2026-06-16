@@ -13,6 +13,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+/**
+ * Testes do parser usado na US111.
+ * Garantem que o ficheiro SCOMP é lido e validado antes de entrar no domínio.
+ */
 public class SimulationReportParserTest {
 
     @Rule
@@ -20,6 +24,9 @@ public class SimulationReportParserTest {
 
     private final SimulationReportParser parser = new SimulationReportParser();
 
+    /**
+     * Confirma que uma violação de separação inclui as posições dos dois voos.
+     */
     @Test
     public void parsesScompSeparationViolationWithBothPositions() throws Exception {
         final ParsedSimulationReport report = parser.parse(writeReport(
@@ -37,6 +44,9 @@ public class SimulationReportParserTest {
                 .contains("FLIGHT-B: lat=40.900000, lon=-8.200000, alt=520.00m"));
     }
 
+    /**
+     * Rejeita relatórios em que a SCOMP declarou mais violações do que mostrou.
+     */
     @Test
     public void rejectsReportWhenScompOmittedViolationDetails() throws Exception {
         try {
@@ -52,6 +62,9 @@ public class SimulationReportParserTest {
         }
     }
 
+    /**
+     * Rejeita relatórios com total de voos diferente dos estados listados.
+     */
     @Test
     public void rejectsReportWhenFlightStatusCountDoesNotMatchTotal() throws Exception {
         final String content = baseReport(
@@ -68,6 +81,9 @@ public class SimulationReportParserTest {
         }
     }
 
+    /**
+     * Cria um ficheiro de relatório completo com a secção de violações escolhida.
+     */
     private String writeReport(final String violationSection) throws Exception {
         return write("scomp-report.txt", baseReport(violationSection));
     }
@@ -78,6 +94,9 @@ public class SimulationReportParserTest {
         return file.toString();
     }
 
+    /**
+     * Mantém o texto comum do relatório SCOMP num só sítio.
+     */
     private String baseReport(final String violationSection) {
         return "US109 Simulation Report\n"
                 + "Total flights: 2\n\n"

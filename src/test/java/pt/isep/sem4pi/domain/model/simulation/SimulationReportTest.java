@@ -7,8 +7,15 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Testes das regras de domínio do SimulationReport.
+ * Mostram quando o resultado final deve passar a FAIL.
+ */
 public class SimulationReportTest {
 
+    /**
+     * Um voo que não terminou com sucesso invalida o relatório.
+     */
     @Test
     public void unsuccessfulFlightForcesFail() {
         final SimulationReport report = report(
@@ -19,6 +26,9 @@ public class SimulationReportTest {
         assertEquals(SimulationValidationResult.FAIL, report.validationResult());
     }
 
+    /**
+     * Uma violação de segurança invalida o relatório mesmo que a SCOMP indique PASS.
+     */
     @Test
     public void safetyViolationForcesFailEvenWhenScompResultIsPass() {
         final SimulationReport report = report(
@@ -33,6 +43,9 @@ public class SimulationReportTest {
         assertEquals(SimulationValidationResult.FAIL, report.validationResult());
     }
 
+    /**
+     * Cria relatórios pequenos para testar só a regra de validação.
+     */
     private SimulationReport report(
             final List<FlightExecutionSummary> flights,
             final List<SafetyViolationSummary> violations,

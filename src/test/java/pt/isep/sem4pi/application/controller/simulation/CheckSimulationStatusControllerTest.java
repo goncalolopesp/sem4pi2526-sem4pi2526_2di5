@@ -20,8 +20,15 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Testes da consulta do resumo gerado pela US111.
+ * Garantem que o menu recebe um DTO simples ou uma mensagem clara.
+ */
 public class CheckSimulationStatusControllerTest {
 
+    /**
+     * Devolve um DTO pronto para apresentar ao utilizador.
+     */
     @Test
     public void returnsReportDtoForMenuPresentation() {
         final SimulationReportRepository reports =
@@ -39,6 +46,9 @@ public class CheckSimulationStatusControllerTest {
         assertEquals("FINISHED", dto.flights().get(0).executionStatus());
     }
 
+    /**
+     * Informa que o resumo ainda não existe, por exemplo durante a execução.
+     */
     @Test
     public void reportsThatSummaryIsNotAvailableYet() {
         final SimulationReportRepository reports =
@@ -56,6 +66,9 @@ public class CheckSimulationStatusControllerTest {
         }
     }
 
+    /**
+     * Monta o controller com repositórios simulados para isolar o teste.
+     */
     private CheckSimulationStatusController controller(
             final SimulationReportRepository reports) {
         return new CheckSimulationStatusController(
@@ -65,6 +78,9 @@ public class CheckSimulationStatusControllerTest {
                 new SimulationSummaryReportDTOMapper());
     }
 
+    /**
+     * Cria um relatório simples para testar a conversão para DTO.
+     */
     private SimulationReport report() {
         return new SimulationReport(
                 "REP-MENU",

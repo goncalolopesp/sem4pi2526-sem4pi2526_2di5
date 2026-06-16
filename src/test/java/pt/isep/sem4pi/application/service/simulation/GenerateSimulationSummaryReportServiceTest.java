@@ -30,6 +30,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Testes da US111 para a geração do resumo da simulação.
+ * Confirmam o resultado normal e os casos de rollback/compensação.
+ */
 public class GenerateSimulationSummaryReportServiceTest {
 
     private static final Clock FIXED_CLOCK = Clock.fixed(
@@ -39,6 +43,9 @@ public class GenerateSimulationSummaryReportServiceTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    /**
+     * Garante que uma simulação sem violações gera relatório PASS.
+     */
     @Test
     public void noViolationsGeneratePassReportWithFlightData() throws Exception {
         final InMemoryRepositoryFactory factory = new InMemoryRepositoryFactory();
@@ -68,6 +75,9 @@ public class GenerateSimulationSummaryReportServiceTest {
                 .isPresent());
     }
 
+    /**
+     * Garante que uma violação passa para o relatório com instante e posição.
+     */
     @Test
     public void violationsGenerateFailReportWithTimestampAndPosition() throws Exception {
         final InMemoryRepositoryFactory factory = new InMemoryRepositoryFactory();
@@ -93,6 +103,9 @@ public class GenerateSimulationSummaryReportServiceTest {
         assertTrue(content.contains("Scheduled flights plan validation: FAIL"));
     }
 
+    /**
+     * Confirma que uma falha ao gravar o relatório faz rollback e apaga o ficheiro.
+     */
     @Test
     public void persistenceFailureRollsBackAndDeletesExportedFile() throws Exception {
         final RepositoryFactory factory = mock(RepositoryFactory.class);
@@ -129,6 +142,9 @@ public class GenerateSimulationSummaryReportServiceTest {
         }
     }
 
+    /**
+     * Confirma que uma falha ao guardar a simulação também desfaz o relatório.
+     */
     @Test
     public void simulationSaveFailureRollsBackReportAndDeletesExportedFile()
             throws Exception {
@@ -167,6 +183,9 @@ public class GenerateSimulationSummaryReportServiceTest {
         }
     }
 
+    /**
+     * Garante que a BD não é chamada se o ficheiro nem chegar a ser criado.
+     */
     @Test
     public void exportFailureDoesNotStartPersistenceTransaction() throws Exception {
         final RepositoryFactory factory = mock(RepositoryFactory.class);
@@ -185,6 +204,9 @@ public class GenerateSimulationSummaryReportServiceTest {
         verify(factory, never()).newTransactionalContext();
     }
 
+    /**
+     * Cria o serviço com repositórios e pasta controlados pelo teste.
+     */
     private GenerateSimulationSummaryReportService service(
             final RepositoryFactory factory,
             final Path reportsDirectory) {
@@ -195,6 +217,9 @@ public class GenerateSimulationSummaryReportServiceTest {
                 FIXED_CLOCK);
     }
 
+    /**
+     * Cria uma simulação já em RUNNING, como aconteceria depois da US100.
+     */
     private Simulation runningSimulation(final String simulationId) {
         final Simulation simulation = new Simulation(
                 simulationId,
@@ -219,6 +244,9 @@ public class GenerateSimulationSummaryReportServiceTest {
         return simulation;
     }
 
+    /**
+     * Escreve um relatório SCOMP mínimo para alimentar a US111.
+     */
     private Path writeScompReport(final String filename,
                                   final boolean withViolation) throws Exception {
         final String violationSection = withViolation
