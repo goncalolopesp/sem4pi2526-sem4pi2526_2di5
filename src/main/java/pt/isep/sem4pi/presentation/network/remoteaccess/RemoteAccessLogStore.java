@@ -15,11 +15,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Thread-safe in-memory view model used by US091.
+ * Modelo de visualizacao em memoria, thread-safe, usado pela US091.
  *
- * <p>It keeps a bounded newest-first event history and derives active sessions
- * from US090 log events. Synchronized methods are required because UDP
- * ingestion and HTTP request threads access the same state concurrently.</p>
+ * <p>Mantem um historico limitado de eventos do mais recente para o mais antigo
+ * e deriva sessoes ativas a partir dos eventos de log da US090. Os metodos
+ * sincronizados sao necessarios porque a ingestao UDP e as threads de pedidos
+ * HTTP acedem ao mesmo estado em simultaneo.</p>
  */
 public final class RemoteAccessLogStore {
 
@@ -38,10 +39,11 @@ public final class RemoteAccessLogStore {
     }
 
     /**
-     * Replays a persisted log so the HTTP view survives server restarts.
+     * Reproduz um log persistido para que a visualizacao HTTP sobreviva a
+     * reinicios do servidor.
      *
-     * @param logFile US090 semicolon-separated log
-     * @throws IOException when an existing file cannot be read
+     * @param logFile log da US090 separado por ponto e virgula
+     * @throws IOException quando um ficheiro existente nao pode ser lido
      */
     public synchronized void load(final Path logFile) throws IOException {
         if (!Files.exists(logFile)) {
@@ -53,15 +55,15 @@ public final class RemoteAccessLogStore {
     }
 
     /**
-     * Parses and applies one log event.
+     * Analisa e aplica um evento de log.
      *
-     * <p>{@code LOGIN_SUCCESS} creates/replaces a session, while
-     * {@code LOGOUT} and {@code DISCONNECT} remove the matching session.
-     * Business-operation and failed-login events remain visible but do not
-     * alter active-user state.</p>
+     * <p>{@code LOGIN_SUCCESS} cria/substitui uma sessao, enquanto
+     * {@code LOGOUT} e {@code DISCONNECT} removem a sessao correspondente.
+     * Eventos de operacao de negocio e logins falhados continuam visiveis, mas
+     * nao alteram o estado dos utilizadores ativos.</p>
      *
-     * @param line semicolon-separated US090 event
-     * @return {@code false} when the line is malformed and was ignored
+     * @param line evento da US090 separado por ponto e virgula
+     * @return {@code false} quando a linha esta mal formada e foi ignorada
      */
     public synchronized boolean record(final String line) {
         final LogEntry entry = LogEntry.parse(line);
@@ -87,21 +89,21 @@ public final class RemoteAccessLogStore {
     }
 
     /**
-     * @return defensive newest-first copy of the visible event history
+     * @return copia defensiva do historico visivel, do mais recente para o mais antigo
      */
     public synchronized List<LogEntry> recentEvents() {
         return new ArrayList<>(events);
     }
 
     /**
-     * @return defensive copy of sessions currently considered active
+     * @return copia defensiva das sessoes atualmente consideradas ativas
      */
     public synchronized List<ActiveUser> activeUsers() {
         return new ArrayList<>(activeUsers.values());
     }
 
     /**
-     * Parsed representation of one persisted remote-access event.
+     * Representacao analisada de um evento persistido de acesso remoto.
      */
     public record LogEntry(
             LocalDateTime timestamp,
@@ -138,7 +140,7 @@ public final class RemoteAccessLogStore {
     }
 
     /**
-     * Snapshot of a session opened by a successful login.
+     * Snapshot de uma sessao aberta por um login bem-sucedido.
      */
     public record ActiveUser(
             String username,

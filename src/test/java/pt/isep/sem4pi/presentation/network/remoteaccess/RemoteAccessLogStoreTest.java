@@ -10,16 +10,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the in-memory state model used by US091.
+ * Testa o modelo de estado em memoria usado pela US091.
  *
- * <p>The store is the bridge between the persisted US090 log file and the live
- * HTTP pages: it keeps recent events and reconstructs active sessions.</p>
+ * <p>O store e a ponte entre o ficheiro de log persistido da US090 e as
+ * paginas HTTP em direto: mantem eventos recentes e reconstrói sessoes ativas.</p>
  */
 public class RemoteAccessLogStoreTest {
 
     /**
-     * Recent events are shown newest first and capped so the browser page stays
-     * bounded.
+     * Eventos recentes sao mostrados do mais recente para o mais antigo e
+     * limitados para manter a pagina do browser controlada.
      */
     @Test
     public void keepsMostRecentEventsFirstAndLimitsTheirNumber() {
@@ -35,8 +35,8 @@ public class RemoteAccessLogStoreTest {
     }
 
     /**
-     * Active users are derived from login/logout events rather than stored as a
-     * separate persistent entity.
+     * Utilizadores ativos sao derivados de eventos de login/logout em vez de
+     * serem guardados como entidade persistente separada.
      */
     @Test
     public void loginAddsAndLogoutRemovesActiveSession() {
@@ -51,8 +51,8 @@ public class RemoteAccessLogStoreTest {
     }
 
     /**
-     * Startup replay: existing log files rebuild the visible state, while
-     * malformed lines are ignored.
+     * Replay no arranque: ficheiros de log existentes reconstroem o estado
+     * visivel, enquanto linhas mal formadas sao ignoradas.
      */
     @Test
     public void loadsExistingLogAndIgnoresInvalidLines() throws Exception {

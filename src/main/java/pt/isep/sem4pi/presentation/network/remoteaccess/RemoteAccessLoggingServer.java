@@ -9,12 +9,12 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
- * Process hosting the US090 UDP log receiver and the US091 HTTP visualization.
+ * Processo que aloja o recetor UDP de logs da US090 e a visualizacao HTTP da US091.
  *
- * <p>At startup, previous log lines are loaded into an in-memory
- * {@link RemoteAccessLogStore}. Each new UDP datagram is appended to the log
- * file and then recorded in that store, making persisted and live events
- * visible through the same HTTP pages.</p>
+ * <p>No arranque, as linhas de log anteriores sao carregadas para um
+ * {@link RemoteAccessLogStore} em memoria. Cada novo datagrama UDP e anexado
+ * ao ficheiro de log e depois registado nesse store, tornando eventos
+ * persistidos e eventos em direto visiveis nas mesmas paginas HTTP.</p>
  */
 public final class RemoteAccessLoggingServer {
 
@@ -49,11 +49,11 @@ public final class RemoteAccessLoggingServer {
     }
 
     /**
-     * Starts the HTTP status server and then receives UDP log events until
-     * {@link #stop()} is called.
+     * Inicia o servidor HTTP de estado e depois recebe eventos UDP ate
+     * {@link #stop()} ser chamado.
      *
-     * @throws IOException when the log file, UDP socket or HTTP server cannot
-     *                     be initialized
+     * @throws IOException quando o ficheiro de log, socket UDP ou servidor HTTP
+     *                     nao consegue ser inicializado
      */
     public void start() throws IOException {
         final Path parent = logFile.toAbsolutePath().getParent();
@@ -84,8 +84,8 @@ public final class RemoteAccessLoggingServer {
     }
 
     /**
-     * Stops both network endpoints. The socket close also releases a blocking
-     * receive operation.
+     * Para ambos os endpoints de rede. Fechar o socket tambem liberta uma
+     * operacao de receive bloqueada.
      */
     public void stop() {
         running = false;
