@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Read-only result returned by US042 after a bulk weather import.
+ * Resultado apenas de leitura devolvido pela US042 apos uma importacao meteorologica em massa.
  *
- * <p>It gives the UI enough information to explain a partial success without
- * exposing importer or persistence objects.</p>
+ * <p>Da a UI informacao suficiente para explicar um sucesso parcial sem expor
+ * objetos de importacao ou de persistencia.</p>
  */
 public class WeatherImportResultDTO {
     private final int totalRecords;

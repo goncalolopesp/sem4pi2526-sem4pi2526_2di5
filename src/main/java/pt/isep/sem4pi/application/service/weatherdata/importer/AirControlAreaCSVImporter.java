@@ -10,20 +10,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Reads Air Control Area boundaries from the companion CSV used by US042.
+ * Le limites de Air Control Area a partir do CSV auxiliar usado pela US042.
  *
- * <p>The result is auxiliary import data, not persisted directly here. The
- * application service uses it only when a weather row references an area that
- * does not yet exist. Invalid definitions are skipped so one bad area does not
- * prevent other weather records from being imported.</p>
+ * <p>O resultado e dado auxiliar de importacao, nao persistido diretamente
+ * aqui. O servico aplicacional usa-o apenas quando uma linha meteorologica
+ * referencia uma area que ainda nao existe. Definicoes invalidas sao ignoradas
+ * para que uma area errada nao impeça outros registos meteorologicos de serem
+ * importados.</p>
  */
 public class AirControlAreaCSVImporter {
 
     /**
-     * Loads valid rectangular boundaries indexed by area identifier.
+     * Carrega limites retangulares validos indexados pelo identificador da area.
      *
-     * @param filePath companion ACA CSV path
-     * @return valid boundaries, or an empty map when the file cannot be read
+     * @param filePath caminho do CSV ACA auxiliar
+     * @return limites validos, ou mapa vazio quando o ficheiro nao pode ser lido
      */
     public Map<String, AirControlAreaBoundary> loadAreas(String filePath) {
         Map<String, AirControlAreaBoundary> areas = new HashMap<>();

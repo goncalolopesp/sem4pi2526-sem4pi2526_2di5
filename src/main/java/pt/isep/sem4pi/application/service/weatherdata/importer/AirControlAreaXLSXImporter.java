@@ -16,19 +16,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Extracts Air Control Area definitions embedded in a US042 XLSX workbook.
+ * Extrai definicoes de Air Control Area embebidas num workbook XLSX da US042.
  *
- * <p>Every sheet is searched for an ACA header. Coordinate pairs are
- * normalized into minimum/maximum latitude and longitude before constructing
- * the domain boundary.</p>
+ * <p>Todas as folhas sao pesquisadas ate encontrar um cabecalho ACA. Os pares
+ * de coordenadas sao normalizados para latitude e longitude minima/maxima
+ * antes de construir o limite de dominio.</p>
  */
 public class AirControlAreaXLSXImporter {
 
     /**
-     * Loads all valid ACA boundaries found in the workbook.
+     * Carrega todos os limites ACA validos encontrados no workbook.
      *
-     * @param filePath XLSX workbook path
-     * @return boundaries indexed by area identifier
+     * @param filePath caminho do workbook XLSX
+     * @return limites indexados pelo identificador da area
      */
     public Map<String, AirControlAreaBoundary> loadAreas(String filePath) {
         Map<String, AirControlAreaBoundary> areas = new HashMap<>();

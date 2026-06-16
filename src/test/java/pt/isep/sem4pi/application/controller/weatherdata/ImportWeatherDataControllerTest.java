@@ -19,19 +19,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 /**
- * Tests the US042 controller boundary.
+ * Testa a fronteira do controller da US042.
  *
- * <p>The purpose is to prove that authorization is checked before the bulk
- * import use case is executed, while still verifying that the controller
- * delegates to the real import service.</p>
+ * <p>O objetivo e provar que a autorizacao e verificada antes de executar o
+ * caso de uso de importacao em massa, confirmando tambem que o controller
+ * delega no servico real de importacao.</p>
  */
 public class ImportWeatherDataControllerTest {
 
     /**
-     * Happy path for importing one CSV row through the controller.
+     * Caminho feliz para importar uma linha CSV atraves do controller.
      *
-     * <p>This is the defence reminder that US042 is role-protected at
-     * controller level and that valid rows are persisted in a weather batch.</p>
+     * <p>Serve como lembrete para a defesa: a US042 e protegida por papeis ao
+     * nivel do controller e as linhas validas sao persistidas num lote
+     * meteorologico.</p>
      */
     @Test
     public void ensureImportWeatherDataDelegatesAndAuthorizes() throws Exception {

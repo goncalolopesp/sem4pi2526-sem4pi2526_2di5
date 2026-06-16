@@ -12,12 +12,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 /**
- * CSV parsing strategy used by US042 for wind weather files.
+ * Estrategia de parsing CSV usada pela US042 para ficheiros meteorologicos de vento.
  *
- * <p>The source provides area, flight-level limits, wind, date and time data.
- * The altitude stored by the domain is the midpoint of the two flight levels,
- * converted from feet to metres. Temperature, pressure and humidity receive
- * reference defaults because they are absent from this source format.</p>
+ * <p>A fonte fornece area, limites de flight level, vento, data e hora. A
+ * altitude guardada pelo dominio e o ponto medio dos dois flight levels,
+ * convertido de pes para metros. Temperatura, pressao e humidade recebem
+ * valores de referencia porque nao existem neste formato de origem.</p>
  */
 public class WeatherDataCSVImporter implements WeatherDataImporter {
 
@@ -42,11 +42,11 @@ public class WeatherDataCSVImporter implements WeatherDataImporter {
     }
 
     /**
-     * Parses all non-empty CSV rows and reports malformed rows without stopping
-     * the remaining import.
+     * Faz o parsing de todas as linhas CSV nao vazias e reporta linhas mal
+     * formadas sem parar o resto da importacao.
      *
-     * @param filePath readable CSV source
-     * @return parsed rows and line-specific errors
+     * @param filePath fonte CSV legivel
+     * @return linhas analisadas e erros especificos por linha
      */
     @Override
     public WeatherImportPayload execute(String filePath) {

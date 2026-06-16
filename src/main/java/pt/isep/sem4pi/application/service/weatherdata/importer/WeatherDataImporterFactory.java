@@ -1,17 +1,17 @@
 package pt.isep.sem4pi.application.service.weatherdata.importer;
 
 /**
- * Selects the US042 parser according to an explicit type or file extension.
+ * Seleciona o parser da US042 de acordo com o tipo explicito ou a extensao do ficheiro.
  */
 public class WeatherDataImporterFactory {
 
     /**
-     * Creates a stateless importer for the requested weather-data format.
+     * Cria um importador sem estado para o formato meteorologico pedido.
      *
-     * @param fileType explicit format, such as {@code csv} or {@code xlsx}
-     * @param filePath path used to infer the format when {@code fileType} is blank
-     * @return importer matching the normalized format
-     * @throws IllegalArgumentException when no supported format can be determined
+     * @param fileType formato explicito, como {@code csv} ou {@code xlsx}
+     * @param filePath caminho usado para inferir o formato quando {@code fileType} esta vazio
+     * @return importador correspondente ao formato normalizado
+     * @throws IllegalArgumentException quando nao e possivel determinar um formato suportado
      */
     public WeatherDataImporter createImporter(String fileType, String filePath) {
         String normalizedType = normalizeType(fileType, filePath);

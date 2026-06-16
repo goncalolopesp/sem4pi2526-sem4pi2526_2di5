@@ -7,11 +7,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Intermediate result produced by a US042 file parser.
+ * Resultado intermmedio produzido por um parser de ficheiros da US042.
  *
- * <p>It deliberately keeps successful records and errors together, allowing a
- * partial import. Every added record or error represents one processed source
- * row and therefore increments {@code totalRecords}.</p>
+ * <p>Mantem propositadamente registos bem-sucedidos e erros em conjunto,
+ * permitindo uma importacao parcial. Cada registo ou erro adicionado representa
+ * uma linha de origem processada e por isso incrementa {@code totalRecords}.</p>
  */
 public class WeatherImportPayload {
     private final List<WeatherDataDTO> records = new ArrayList<>();
@@ -19,9 +19,9 @@ public class WeatherImportPayload {
     private int totalRecords;
 
     /**
-     * Registers one successfully parsed source row.
+     * Regista uma linha de origem analisada com sucesso.
      *
-     * @param dto transport object retaining the original source line
+     * @param dto objeto de transporte que mantem a linha de origem original
      */
     public void addRecord(WeatherDataDTO dto) {
         records.add(dto);
@@ -29,9 +29,9 @@ public class WeatherImportPayload {
     }
 
     /**
-     * Registers one source row that could not be parsed.
+     * Regista uma linha de origem que nao conseguiu ser analisada.
      *
-     * @param message diagnostic message, normally including the line number
+     * @param message mensagem de diagnostico, normalmente com o numero da linha
      */
     public void addError(String message) {
         errors.add(message);

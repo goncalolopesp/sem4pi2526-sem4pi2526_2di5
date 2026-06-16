@@ -9,15 +9,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Parser tests for the US042 XLSX weather importer.
+ * Testes do parser para o importador meteorologico XLSX da US042.
  *
- * <p>The XLSX importer has to detect the wind-data header inside a workbook
- * and handle both textual and Excel-native date/time values.</p>
+ * <p>O importador XLSX tem de detetar o cabecalho de dados de vento dentro de
+ * um workbook e lidar com valores textuais e datas/horas nativas do Excel.</p>
  */
 public class WeatherDataXLSXImporterTest {
 
     /**
-     * Confirms that the provided sample workbook is a supported weather source.
+     * Confirma que o workbook de exemplo fornecido e uma fonte meteorologica suportada.
      */
     @Test
     public void ensureImporterParsesKnownXlsxFile() {
@@ -33,8 +33,8 @@ public class WeatherDataXLSXImporterTest {
     }
 
     /**
-     * Builds a minimal workbook to prove that the importer preserves the start
-     * and end interval used by consultation and association screens.
+     * Constroi um workbook minimo para provar que o importador preserva o
+     * intervalo de inicio e fim usado nos ecras de consulta e associacao.
      */
     @Test
     public void ensureImporterParsesStartAndEndTimes() throws Exception {
@@ -71,8 +71,8 @@ public class WeatherDataXLSXImporterTest {
     }
 
     /**
-     * Verifies the same invalid-time rule as CSV: without a valid interval,
-     * the row is reported as an error.
+     * Verifica a mesma regra de hora invalida do CSV: sem intervalo valido, a
+     * linha e reportada como erro.
      */
     @Test
     public void ensureImporterReportsInvalidTimeRange() throws Exception {

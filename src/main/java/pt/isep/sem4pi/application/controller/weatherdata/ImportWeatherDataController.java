@@ -6,10 +6,10 @@ import pt.isep.sem4pi.domain.model.weatherdata.DTO.WeatherImportResultDTO;
 import pt.isep.sem4pi.infrastructure.persistence.PersistenceContext;
 
 /**
- * Application controller for US042, the bulk import of weather data.
+ * Controller aplicacional da US042, responsavel pela importacao em massa de dados meteorologicos.
  *
- * <p>The controller is intentionally small: it protects the use case with the
- * required roles and delegates all parsing and persistence decisions to
+ * <p>Este controller e intencionalmente simples: protege o caso de uso com os
+ * papeis exigidos e delega todas as decisoes de parsing e persistencia para
  * {@link WeatherDataImportService}.</p>
  */
 public class ImportWeatherDataController {
@@ -31,12 +31,12 @@ public class ImportWeatherDataController {
     }
 
     /**
-     * Imports weather records from a CSV or XLSX source.
+     * Importa registos meteorologicos a partir de uma fonte CSV ou XLSX.
      *
-     * @param filePath path or known weather-data file name
-     * @param fileType explicit file type; when omitted, the extension is used
-     * @return summary containing imported/rejected totals and row errors
-     * @throws IllegalArgumentException when the path or format is unsupported
+     * @param filePath caminho ou nome de ficheiro conhecido de dados meteorologicos
+     * @param fileType tipo de ficheiro explicito; quando omitido, usa-se a extensao
+     * @return resumo com totais importados/rejeitados e erros por linha
+     * @throws IllegalArgumentException quando o caminho ou formato nao e suportado
      */
     public WeatherImportResultDTO importWeatherData(String filePath, String fileType) {
         authz.ensureAuthenticatedUserHasAnyOf(

@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Console interface for US042.
+ * Interface de consola da US042.
  *
- * <p>It collects only source information and presents the import summary. File
- * parsing, validation and persistence are deliberately outside the UI.</p>
+ * <p>Recolhe apenas a informacao da fonte e apresenta o resumo da importacao.
+ * O parsing do ficheiro, a validacao e a persistencia ficam propositadamente
+ * fora da UI.</p>
  */
 public class ImportWeatherDataUI extends AbstractUI {
     private final ImportWeatherDataController controller = new ImportWeatherDataController();

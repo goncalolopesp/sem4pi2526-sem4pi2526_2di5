@@ -23,13 +23,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * XLSX parsing strategy used by US042.
+ * Estrategia de parsing XLSX usada pela US042.
  *
- * <p>The importer scans every sheet until it finds the supported wind-data
- * header. Apache POI is used so numeric Excel dates/times and textual values
- * can be handled consistently. As in the CSV importer, altitude is converted
- * from the midpoint of the flight-level range and unavailable measurements
- * receive reference defaults.</p>
+ * <p>O importador percorre todas as folhas ate encontrar o cabecalho suportado
+ * de dados de vento. O Apache POI e usado para tratar de forma consistente
+ * datas/horas numericas do Excel e valores textuais. Tal como no importador
+ * CSV, a altitude e convertida a partir do ponto medio do intervalo de flight
+ * levels e as medicoes indisponiveis recebem valores de referencia.</p>
  */
 public class WeatherDataXLSXImporter implements WeatherDataImporter {
 
@@ -63,10 +63,10 @@ public class WeatherDataXLSXImporter implements WeatherDataImporter {
     }
 
     /**
-     * Locates the wind-data table and parses its rows independently.
+     * Localiza a tabela de dados de vento e analisa as suas linhas de forma independente.
      *
-     * @param filePath readable XLSX workbook
-     * @return parsed records and row-specific errors
+     * @param filePath workbook XLSX legivel
+     * @return registos analisados e erros especificos por linha
      */
     @Override
     public WeatherImportPayload execute(String filePath) {

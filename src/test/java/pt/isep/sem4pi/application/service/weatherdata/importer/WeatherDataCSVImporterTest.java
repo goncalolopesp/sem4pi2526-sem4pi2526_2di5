@@ -9,16 +9,16 @@ import java.nio.file.Path;
 import static org.junit.Assert.*;
 
 /**
- * Parser tests for the US042 CSV weather importer.
+ * Testes do parser para o importador meteorologico CSV da US042.
  *
- * <p>They document the expected source layout: wind files provide ACA,
- * altitude limits, direction, wind speed, day and start/end times.</p>
+ * <p>Documentam o layout esperado da fonte: ficheiros de vento fornecem ACA,
+ * limites de altitude, direcao, velocidade do vento, dia e horas de inicio/fim.</p>
  */
 public class WeatherDataCSVImporterTest {
 
     /**
-     * Confirms that the real sample CSV file is recognized and converted into
-     * parsed weather DTOs.
+     * Confirma que o ficheiro CSV real de exemplo e reconhecido e convertido
+     * em DTOs meteorologicos analisados.
      */
     @Test
     public void ensureImporterParsesKnownWindFile() {
@@ -34,8 +34,8 @@ public class WeatherDataCSVImporterTest {
     }
 
     /**
-     * Invalid numeric values are reported as row errors instead of throwing and
-     * aborting the whole file.
+     * Valores numericos invalidos sao reportados como erros de linha em vez de
+     * lancarem excecao e cancelarem o ficheiro inteiro.
      */
     @Test
     public void ensureImporterReportsInvalidLine() throws IOException {
@@ -51,8 +51,8 @@ public class WeatherDataCSVImporterTest {
     }
 
     /**
-     * Confirms that the importer keeps both start and end times, which are
-     * later shown in US043 and selected in US082.
+     * Confirma que o importador preserva as horas de inicio e fim, que depois
+     * sao mostradas na US043 e selecionadas na US082.
      */
     @Test
     public void ensureImporterParsesStartAndEndTimes() throws IOException {
@@ -69,8 +69,8 @@ public class WeatherDataCSVImporterTest {
     }
 
     /**
-     * A row with no usable start or end time is rejected because the system
-     * cannot know the validity interval of the weather data.
+     * Uma linha sem hora de inicio nem fim utilizavel e rejeitada porque o
+     * sistema nao consegue saber o intervalo de validade dos dados meteorologicos.
      */
     @Test
     public void ensureImporterReportsInvalidTimeRange() throws IOException {

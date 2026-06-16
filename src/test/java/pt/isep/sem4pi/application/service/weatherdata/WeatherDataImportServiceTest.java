@@ -15,11 +15,11 @@ import java.nio.file.Path;
 import static org.junit.Assert.*;
 
 /**
- * Service-level tests for US042 bulk weather import.
+ * Testes ao nivel do servico para a importacao meteorologica em massa da US042.
  *
- * <p>These tests focus on the orchestration rules: the service receives parsed
- * weather data, guarantees that the Air Control Area exists, creates batches
- * by area and rejects unsupported formats.</p>
+ * <p>Estes testes focam as regras de orquestracao: o servico recebe dados
+ * meteorologicos ja analisados, garante que a Air Control Area existe, cria
+ * lotes por area e rejeita formatos nao suportados.</p>
  */
 public class WeatherDataImportServiceTest {
 
@@ -44,8 +44,8 @@ public class WeatherDataImportServiceTest {
     }
 
     /**
-     * Proves that a valid wind CSV creates a persisted
-     * {@code WeatherImportBatch} for an already known Air Control Area.
+     * Prova que um CSV de vento valido cria um {@code WeatherImportBatch}
+     * persistido para uma Air Control Area ja conhecida.
      */
     @Test
     public void ensureBulkImportCreatesBatchForValidArea() {
@@ -60,8 +60,9 @@ public class WeatherDataImportServiceTest {
     }
 
     /**
-     * Proves the US042 fallback where a missing ACA is created from the
-     * companion ACA file before its weather records are saved.
+     * Prova o fallback da US042 em que uma ACA em falta e criada a partir do
+     * ficheiro ACA auxiliar antes de guardar os respetivos registos
+     * meteorologicos.
      */
     @Test
     public void ensureBulkImportCreatesMissingAcaFromCsv() {
@@ -85,7 +86,7 @@ public class WeatherDataImportServiceTest {
     }
 
     /**
-     * Unsupported formats must fail fast because no importer strategy exists.
+     * Formatos nao suportados devem falhar cedo porque nao existe estrategia de importacao.
      */
     @Test(expected = IllegalArgumentException.class)
     public void ensureInvalidFileTypeThrows() {
