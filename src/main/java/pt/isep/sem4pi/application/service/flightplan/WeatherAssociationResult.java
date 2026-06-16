@@ -3,12 +3,12 @@ package pt.isep.sem4pi.application.service.flightplan;
 import pt.isep.sem4pi.domain.model.flight.FlightPlan;
 
 /**
- * Result of US082 containing both the updated aggregate and presentation
- * information about the operation.
+ * Resultado da US082 contendo o aggregate atualizado e informacao de apresentacao sobre a operacao.
  *
- * <p>{@code previousTestInvalidated} tells the UI to warn that weather changes
- * made a previous validation result obsolete. {@code associatedWeatherCount}
- * excludes duplicate selections and records already present in the plan.</p>
+ * <p>{@code previousTestInvalidated} indica a UI que deve avisar que as
+ * alteracoes meteorologicas tornaram obsoleto um resultado de validacao
+ * anterior. {@code associatedWeatherCount} exclui selecoes duplicadas e
+ * registos ja existentes no plano.</p>
  */
 public class WeatherAssociationResult {
 

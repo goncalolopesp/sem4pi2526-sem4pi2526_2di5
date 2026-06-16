@@ -17,12 +17,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Coordinates the US082 association between flight plans and weather data.
+ * Coordena a associacao da US082 entre planos de voo e dados meteorologicos.
  *
- * <p>The service performs cross-aggregate rules that do not belong inside
- * either aggregate: resolving both repositories and checking that a pilot
- * owns the selected plan. The {@link FlightPlan} aggregate remains responsible
- * for duplicate prevention and invalidating a previous test.</p>
+ * <p>O servico executa regras entre aggregates que nao pertencem a nenhum
+ * aggregate em particular: resolver ambos os repositorios e verificar que o
+ * piloto e dono do plano selecionado. O aggregate {@link FlightPlan} continua
+ * responsavel por prevenir duplicados e invalidar um teste anterior.</p>
  */
 @ApplicationService
 public class AssociateWeatherDataService {
@@ -41,11 +41,11 @@ public class AssociateWeatherDataService {
     }
 
     /**
-     * Lists plans accessible by the current user.
+     * Lista planos acessiveis ao utilizador atual.
      *
-     * @param username authenticated username
-     * @param canManageAll {@code true} for an administrator
-     * @return plans owned by the pilot or all plans for an administrator
+     * @param username username autenticado
+     * @param canManageAll {@code true} para um administrador
+     * @return planos do piloto ou todos os planos para um administrador
      */
     public List<FlightPlan> listFlightPlansAccessibleBy(String username, boolean canManageAll) {
         requireUsername(username);
@@ -59,14 +59,14 @@ public class AssociateWeatherDataService {
     }
 
     /**
-     * Builds the weather-data selection list.
+     * Constroi a lista de selecao de dados meteorologicos.
      *
-     * <p>Exactly identical measurements are consolidated using a key composed
-     * of area, interval and every measured value. This removes duplicate rows
-     * imported in different batches without merging genuinely different
-     * measurements from the same interval.</p>
+     * <p>Medicoes exatamente identicas sao consolidadas usando uma chave
+     * composta por area, intervalo e todos os valores medidos. Isto remove
+     * linhas duplicadas importadas em lotes diferentes sem juntar medicoes
+     * genuinamente diferentes do mesmo intervalo.</p>
      *
-     * @return deduplicated and chronologically sorted selectable records
+     * @return registos selecionaveis sem duplicados e ordenados cronologicamente
      */
     public List<WeatherDataViewDTO> listWeatherData() {
         final Map<String, WeatherDataViewDTO> uniqueWeatherData = new LinkedHashMap<>();
@@ -81,16 +81,16 @@ public class AssociateWeatherDataService {
     }
 
     /**
-     * Associates each distinct selected weather entity and persists the flight
-     * plan once after the complete operation.
+     * Associa cada entidade meteorologica selecionada de forma distinta e
+     * persiste o plano de voo uma vez no fim da operacao.
      *
-     * @param flightPlanId target plan identity
-     * @param weatherDataIds selected persisted weather identities
-     * @param username authenticated username
-     * @param canManageAll whether ownership restrictions may be bypassed
-     * @return association summary
-     * @throws IllegalArgumentException when the selection is empty, an entity
-     *                                  does not exist or ownership is invalid
+     * @param flightPlanId identidade do plano alvo
+     * @param weatherDataIds identidades persistidas dos dados meteorologicos selecionados
+     * @param username username autenticado
+     * @param canManageAll indica se as restricoes de propriedade podem ser ignoradas
+     * @return resumo da associacao
+     * @throws IllegalArgumentException quando a selecao esta vazia, uma entidade
+     *                                  nao existe ou a propriedade e invalida
      */
     public WeatherAssociationResult associateByIds(String flightPlanId, List<Long> weatherDataIds,
                                                    String username, boolean canManageAll) {

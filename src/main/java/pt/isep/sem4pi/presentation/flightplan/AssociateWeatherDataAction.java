@@ -3,7 +3,7 @@ package pt.isep.sem4pi.presentation.flightplan;
 import eapli.framework.actions.Action;
 
 /**
- * Menu action that opens the US082 console interface.
+ * Acao de menu que abre a interface de consola da US082.
  */
 public class AssociateWeatherDataAction implements Action {
 

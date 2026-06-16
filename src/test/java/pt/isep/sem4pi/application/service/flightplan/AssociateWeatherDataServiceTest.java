@@ -21,11 +21,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 /**
- * Service-level tests for US082, adding weather data to flight plans.
+ * Testes ao nivel do servico para a US082, adicionar dados meteorologicos a planos de voo.
  *
- * <p>The service owns the cross-aggregate part of the use case: it resolves
- * flight plans and weather data, validates pilot ownership, allows admin
- * bypass through the {@code canManageAll} flag and persists the changed plan.</p>
+ * <p>O servico possui a parte cross-aggregate do caso de uso: resolve planos
+ * de voo e dados meteorologicos, valida a propriedade do piloto, permite o
+ * bypass de admin atraves da flag {@code canManageAll} e persiste o plano
+ * alterado.</p>
  */
 public class AssociateWeatherDataServiceTest {
 
@@ -52,8 +53,8 @@ public class AssociateWeatherDataServiceTest {
     }
 
     /**
-     * Legacy single-record flow: existing weather is associated and the result
-     * tells the UI when a previous test became invalid.
+     * Fluxo antigo de um unico registo: meteorologia existente e associada e o
+     * resultado indica a UI quando um teste anterior ficou invalido.
      */
     @Test
     public void ensureAssociationPersistsExistingWeatherAndReportsInvalidation() {
@@ -75,8 +76,8 @@ public class AssociateWeatherDataServiceTest {
     }
 
     /**
-     * A pilot cannot change another pilot's flight plan; this is the ownership
-     * protection required by US082.
+     * Um piloto nao pode alterar o plano de voo de outro piloto; esta e a
+     * protecao de propriedade exigida pela US082.
      */
     @Test(expected = IllegalArgumentException.class)
     public void ensurePilotCannotUpdateAnotherPilotsFlightPlan() {
@@ -87,8 +88,8 @@ public class AssociateWeatherDataServiceTest {
     }
 
     /**
-     * Weather must already be persisted by US041/US042 before it can be linked
-     * to a flight plan.
+     * A meteorologia ja deve estar persistida pela US041/US042 antes de poder
+     * ser ligada a um plano de voo.
      */
     @Test(expected = IllegalArgumentException.class)
     public void ensureWeatherMustAlreadyExist() {
@@ -101,7 +102,7 @@ public class AssociateWeatherDataServiceTest {
     }
 
     /**
-     * The list shown to a pilot contains only plans owned by that pilot.
+     * A lista mostrada a um piloto contem apenas planos desse piloto.
      */
     @Test
     public void ensureOnlyOwnedFlightPlansAreListed() {
@@ -118,8 +119,8 @@ public class AssociateWeatherDataServiceTest {
     }
 
     /**
-     * Main US082 batch scenario: several selected weather rows are associated
-     * in one operation and the plan is saved once at the end.
+     * Cenario principal em lote da US082: varias linhas meteorologicas
+     * selecionadas sao associadas numa operacao e o plano e guardado uma vez no fim.
      */
     @Test
     public void ensureSeveralWeatherRecordsCanBeAssociatedInOneOperation() {
@@ -148,8 +149,8 @@ public class AssociateWeatherDataServiceTest {
     }
 
     /**
-     * Repeated selected IDs are deduplicated before association, preventing the
-     * same weather record from being processed multiple times.
+     * IDs selecionados repetidos sao deduplicados antes da associacao,
+     * impedindo que o mesmo registo meteorologico seja processado varias vezes.
      */
     @Test
     public void ensureRepeatedWeatherIdsAreProcessedOnlyOnce() {

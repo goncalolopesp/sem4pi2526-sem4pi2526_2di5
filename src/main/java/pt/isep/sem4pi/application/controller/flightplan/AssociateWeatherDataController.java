@@ -15,13 +15,11 @@ import java.time.LocalTime;
 import java.util.List;
 
 /**
- * Application controller for US082, associating existing weather data with a
- * flight plan.
+ * Controller aplicacional da US082, associacao de dados meteorologicos existentes a um plano de voo.
  *
- * <p>It obtains the authenticated username and whether the user is an
- * administrator, then passes those facts to the service for ownership
- * validation. Pilots can manage only their plans; administrators can manage
- * all plans.</p>
+ * <p>Obtem o username autenticado e se o utilizador e administrador, passando
+ * esses dados ao servico para validacao de propriedade. Pilotos apenas podem
+ * gerir os seus planos; administradores podem gerir todos os planos.</p>
  */
 @UseCaseController
 public class AssociateWeatherDataController {
@@ -43,9 +41,9 @@ public class AssociateWeatherDataController {
     }
 
     /**
-     * Lists flight plans visible to the authenticated pilot or administrator.
+     * Lista os planos de voo visiveis para o piloto ou administrador autenticado.
      *
-     * @return plans owned by the pilot, or every plan for an administrator
+     * @return planos do piloto, ou todos os planos para um administrador
      */
     public List<FlightPlan> myFlightPlans() {
         ensureAuthorized();
@@ -53,9 +51,9 @@ public class AssociateWeatherDataController {
     }
 
     /**
-     * Lists persisted weather records available for selection.
+     * Lista registos meteorologicos persistidos disponiveis para selecao.
      *
-     * @return sorted view DTOs with identifiers required for association
+     * @return DTOs de visualizacao ordenados com os identificadores necessarios para associacao
      */
     public List<WeatherDataViewDTO> weatherData() {
         ensureAuthorized();
@@ -70,11 +68,11 @@ public class AssociateWeatherDataController {
     }
 
     /**
-     * Associates multiple selected weather records in one operation.
+     * Associa varios registos meteorologicos selecionados numa unica operacao.
      *
-     * @param flightPlanId target flight-plan identity
-     * @param weatherDataIds persisted weather-data identities
-     * @return updated plan, number of additions and test-invalidation state
+     * @param flightPlanId identidade do plano de voo alvo
+     * @param weatherDataIds identidades persistidas dos dados meteorologicos
+     * @return plano atualizado, numero de adicoes e estado de invalidacao do teste
      */
     public WeatherAssociationResult associate(String flightPlanId, List<Long> weatherDataIds) {
         ensureAuthorized();

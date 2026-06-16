@@ -12,12 +12,12 @@ import java.util.Scanner;
 import java.util.Set;
 
 /**
- * Console interface for US082.
+ * Interface de consola da US082.
  *
- * <p>It presents accessible plans and complete weather measurements, then
- * converts comma-separated row numbers into persisted weather identifiers.
- * A {@link LinkedHashSet} removes repeated selections while preserving the
- * order chosen by the user.</p>
+ * <p>Apresenta os planos acessiveis e as medicoes meteorologicas completas,
+ * depois converte numeros de linha separados por virgulas em identificadores
+ * meteorologicos persistidos. Um {@link LinkedHashSet} remove selecoes
+ * repetidas preservando a ordem escolhida pelo utilizador.</p>
  */
 public class AssociateWeatherDataUI extends AbstractUI {
 
