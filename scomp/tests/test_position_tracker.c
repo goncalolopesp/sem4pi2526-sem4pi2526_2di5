@@ -4,11 +4,14 @@
 
 #include "../src/simulation.h"
 
-int main(void) {
+int main(void)
+{
 
     PositionTracker tracker;
     tracker_init(&tracker);
 
+    /* Simula a chegada de um PositionUpdate enviado por um voo.
+     */
     PositionUpdate update;
 
     memset(&update, 0, sizeof(update));
@@ -23,10 +26,11 @@ int main(void) {
 
     update.status = STATUS_RUNNING;
 
+    /* Valida que o PositionTracker aceita e guarda uma atualização válida. */
     assert(tracker_update(&tracker, &update) == 0);
 
     const TrackEntry *entry =
-            tracker_get_current(&tracker, "TEST-1");
+        tracker_get_current(&tracker, "TEST-1");
 
     assert(entry != NULL);
 
@@ -34,6 +38,8 @@ int main(void) {
 
     assert(entry->history_count == 1);
 
+    /* Confirma que o PositionTracker mantém o estado mais recente do voo.
+     */
     assert(entry->last_time_step == 60);
 
     tracker_destroy(&tracker);

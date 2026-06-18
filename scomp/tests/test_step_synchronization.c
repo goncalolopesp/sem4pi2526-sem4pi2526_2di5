@@ -29,10 +29,13 @@ int main(void)
 
     if (pid == 0)
     {
-        /* Filho simula o comportamento da US108:
-           fica bloqueado até o pai libertar o timestep. */
+        /* O filho fica bloqueado neste semáforo.
+         * Isto prova que um voo não avança sozinho para o próximo passo.
+         * Apenas o processo pai pode libertar o voo através de sem_post().
+         */
         sem_wait(&state->step_start[0]);
 
+        /* Atualiza o estado partilhado apenas dentro da secção protegida. */
         sem_wait(&state->mutex);
         state->flights[0].pid = getpid();
         state->flights[0].time_step = 30;
@@ -50,7 +53,9 @@ int main(void)
     assert(state->shared_update_counter == 0);
     sem_post(&state->mutex);
 
-    /* Pai autoriza o próximo timestep. */
+    /* O pai autoriza explicitamente o próximo passo.
+     * Este teste valida a sincronização passo-a-passo da US108.
+     */
     sem_post(&state->step_start[0]);
 
     int status;
@@ -60,6 +65,7 @@ int main(void)
     assert(WEXITSTATUS(status) == EXIT_SUCCESS);
 
     /* Depois do sem_post, o filho avançou. */
+    /* Depois da autorização, o filho tem de publicar o passo na memória partilhada. */
     sem_wait(&state->mutex);
     assert(state->shared_update_counter == 1);
     assert(state->flights[0].time_step == 30);

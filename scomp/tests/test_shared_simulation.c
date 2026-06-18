@@ -11,10 +11,12 @@ static void *wait_for_shared_update(void *arg)
 {
     SharedSimulationState *state = arg;
 
+    /* Protege a condição enquanto a thread observa o estado partilhado. */
     pthread_mutex_lock(&state->pthread_mutex);
 
     while (state->shared_update_counter == 0)
     {
+        /* Simula a thread consumidora à espera de uma notificação de atualização. */
         pthread_cond_wait(&state->pthread_cond, &state->pthread_mutex);
     }
 
@@ -25,6 +27,9 @@ static void *wait_for_shared_update(void *arg)
 
 int main(void)
 {
+    /* Valida a criação da memória partilhada usada pelos processos filho.
+     * A memória é criada com shm_open + mmap.
+     */
     shm_unlink(SHM_NAME);
 
     SharedSimulationState *state = shared_create();
@@ -33,6 +38,9 @@ int main(void)
     assert(state->active_flights == 0);
     assert(state->shared_update_counter == 0);
 
+    /* Protege a escrita na memória partilhada.
+     * Evita condições de corrida quando vários processos acedem aos mesmos dados.
+     */
     sem_wait(&state->mutex);
 
     state->active_flights = 1;
@@ -48,16 +56,19 @@ int main(void)
     pthread_t thread;
     pthread_create(&thread, NULL, wait_for_shared_update, state);
 
+    /* Publica uma atualização e acorda a thread bloqueada na condição. */
     pthread_mutex_lock(&state->pthread_mutex);
 
     state->shared_update_counter++;
 
+    /* Confirma o mecanismo de notificação usado para coordenar atualizações. */
     pthread_cond_signal(&state->pthread_cond);
 
     pthread_mutex_unlock(&state->pthread_mutex);
 
     pthread_join(thread, NULL);
 
+    /* Verifica que os dados escritos continuam visíveis depois da sincronização. */
     assert(state->active_flights == 1);
     assert(state->shared_update_counter == 1);
     assert(state->flights[0].pid == 1234);

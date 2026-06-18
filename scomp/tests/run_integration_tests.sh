@@ -2,6 +2,7 @@
 set -e
 
 echo "Building simulator..."
+# Compila o simulador completo antes dos testes de integração.
 make >/dev/null
 
 echo "Running integration tests..."
@@ -9,6 +10,7 @@ echo ""
 
 mkdir -p tests/reports
 
+# Guarda a saída e os relatórios em ficheiros separados por cenário.
 OUT1="tests/out_us100_single.txt"
 REPORT1="tests/reports/us100_single.txt"
 
@@ -23,6 +25,8 @@ OUT4="tests/out_invalid_args.txt"
 rm -f "$OUT1" "$OUT2" "$OUT3" "$OUT4"
 rm -f "$REPORT1" "$REPORT2" "$REPORT3"
 
+# Valida o fluxo completo da simulação para um único voo.
+# Exercita parser, processos, pipes, tracker, monitor de segurança e relatório.
 echo "[1/4] US100 single flight"
 
 ./flight_simulator \
@@ -38,11 +42,13 @@ echo "[1/4] US100 single flight"
   --flight data/Flight_Plan_v0a.json \
   --output "$REPORT1" > "$OUT1" 2>&1
 
+# Confirma que o simulador mostra a configuração e o relatório esperado.
 grep -Fq "Starting simulation with 1 flight(s)." "$OUT1"
 grep -Fq "Safety thresholds: separation=3.00 NM, altitude=300.0 m, threshold=10." "$OUT1"
 grep -Fq "Position Tracker Summary (1 flights)" "$OUT1"
 grep -Fq "Simulation finished. Report saved in $REPORT1" "$OUT1"
 
+# Verifica que a US100 gera secções de tracker, segurança e resultado final.
 test -f "$REPORT1"
 grep -Fq "Total flights: 1" "$REPORT1"
 grep -Fq "Violation threshold: 10" "$REPORT1"
@@ -52,6 +58,8 @@ grep -Fq "US101 Position Tracker (1 entries)" "$REPORT1"
 grep -Fq "US102 Safety Violations (2 shown / 2 total)" "$REPORT1"
 grep -Fq "Simulation result: PASS" "$REPORT1"
 
+# Valida a terminação antecipada quando o número de violações
+# excede o limite configurado.
 echo "[2/4] Threshold termination"
 
 ./flight_simulator \
@@ -67,14 +75,18 @@ echo "[2/4] Threshold termination"
   --flight data/Flight_Plan_v0a.json \
   --output "$REPORT2" > "$OUT2" 2>&1
 
+# Confirma que a interrupção por limite aparece na saída.
 grep -Fq "threshold=2" "$OUT2"
 grep -Fq "Violation threshold (2) exceeded. Aborting simulation." "$OUT2"
 grep -Fq "Simulation finished. Report saved in $REPORT2" "$OUT2"
 
+# Verifica que o relatório regista a falha causada pela terminação antecipada.
 test -f "$REPORT2"
 grep -Fq "Violation threshold: 2" "$REPORT2"
 grep -Fq "Simulation result: FAIL" "$REPORT2"
 
+# Valida a execução concorrente de múltiplos voos.
+# Exercita fork(), memória partilhada, semáforos e sincronização.
 echo "[3/4] US105 concurrent flights"
 
 ./flight_simulator \
@@ -91,10 +103,12 @@ echo "[3/4] US105 concurrent flights"
   --flight data/Flight_Plan_v0c.json \
   --output "$REPORT3" > "$OUT3" 2>&1
 
+# Confirma que os dois voos concorrentes são acompanhados até ao fim.
 grep -Fq "Starting simulation with 2 flight(s)." "$OUT3"
 grep -Fq "Position Tracker Summary (2 flights)" "$OUT3"
 grep -Fq "Simulation finished. Report saved in $REPORT3" "$OUT3"
 
+# Verifica que o relatório agrega os dois voos e as violações detetadas.
 test -f "$REPORT3"
 grep -Fq "Total flights: 2" "$REPORT3"
 grep -Fq "Flight 123456-" "$REPORT3"
@@ -103,6 +117,8 @@ grep -Fq "US101 Position Tracker (2 entries)" "$REPORT3"
 grep -Fq "US102 Safety Violations (4 shown / 4 total)" "$REPORT3"
 grep -Fq "Simulation result: PASS" "$REPORT3"
 
+# Confirma que argumentos inválidos são rejeitados.
+# O simulador não deve arrancar com configuração inconsistente.
 echo "[4/4] Invalid arguments"
 
 set +e
@@ -121,10 +137,12 @@ STATUS=$?
 set -e
 
 if [ "$STATUS" -eq 0 ]; then
+  # Se o código for zero, os argumentos inválidos foram aceites indevidamente.
   echo "Expected invalid argument test to fail"
   exit 1
 fi
 
+# Valida que a falha é reportada como erro de argumentos.
 grep -Fq "Invalid argument" "$OUT4"
 
 echo ""
